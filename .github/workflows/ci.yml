@@ -1,0 +1,135 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # --- Frontend Setup and Build ---
+  frontend-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run lint
+        working-directory: frontend
+        run: npm run lint
+
+  frontend-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+  
+  # --- Backend Tests with PostgreSQL ---
+  backend-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      TEST_DATABASE_URL: postgresql+psycopg2://testuser:testpass@localhost:5432/testdb
+      PYTHONPATH: .
+      FIRST_SUPERUSER: admin@example.com
+      FIRST_SUPERUSER_PASSWORD: supersecret
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_HOST: localhost
+      RABBITMQ_PORT: 5672
+      PROJECT_NAME: "SkillLink"
+      # llms
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY  }}
+      HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        working-directory: backend
+        run: poetry install --no-interaction --no-root
+
+      - name: Run tests
+        working-directory: backend
+        env:
+          DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+          PYTHONPATH: ${{ env.PYTHONPATH }}
+          FIRST_SUPERUSER: ${{ env.FIRST_SUPERUSER }}
+          FIRST_SUPERUSER_PASSWORD: ${{ env.FIRST_SUPERUSER_PASSWORD }}
+          RABBITMQ_DEFAULT_USER: ${{ env.RABBITMQ_DEFAULT_USER }}
+          RABBITMQ_DEFAULT_PASS: ${{ env.RABBITMQ_DEFAULT_PASS }}
+          RABBITMQ_HOST: ${{ env.RABBITMQ_HOST }}
+          RABBITMQ_PORT: ${{ env.RABBITMQ_PORT }}
+          # Pass all API keys to the test environment
+          GROQ_API_KEY: ${{ env.GROQ_API_KEY }}
+          HUGGINGFACE_API_KEY: ${{ env.HUGGINGFACE_API_KEY }}
+          OPENAI_API_KEY: ${{ env.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ env.ANTHROPIC_API_KEY }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+          SUPABASE_JWT_SECRET: ${{ secrets.SUPABASE_JWT_SECRET }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: poetry run pytest app/tests --cov=app --cov-report=xml --junitxml=test-results.xml
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-results
+          path: backend/test-results.xml
+
+  # --- Gate for deployment --- Only runs for branches that are pushed/merged to main.
+  deploy-ready:
+    needs: [frontend-lint, frontend-build, backend-test]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Confirm deploy readiness
+        run: echo "✅ All checks passed. Ready to deploy!"
