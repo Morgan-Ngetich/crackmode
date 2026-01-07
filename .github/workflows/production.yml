@@ -1,4 +1,4 @@
-name: Production
+name: Deploy Production
 
 on:
   workflow_run:
@@ -24,20 +24,20 @@ jobs:
 
       - name: Deploy to Vercel Production
         id: deploy
-        uses: amondnet/vercel-action@v25
+        uses: vercel/action@v1
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod --yes'
-          working-directory: ./
+          production: true
         env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - name: Create deployment status
         run: |
           echo "🎉 CrackMode deployed to production!"
-          echo "🌐 Production URL: ${{ steps.deploy.outputs.preview-url }}"
+          echo "🌐 Production URL: ${{ steps.deploy.outputs.url }}"
           echo "📦 Version: ${{ github.event.workflow_run.head_sha }}"
           echo "👤 Deployed by: ${{ github.actor }}"
           echo "✅ All CI checks (lint, build, test, security) passed"
@@ -55,7 +55,7 @@ jobs:
               name: `Production Deploy ${tag}`,
               body: `Deployed to production
               
-              🌐 URL: ${{ steps.deploy.outputs.preview-url }}
+              🌐 URL: ${{ steps.deploy.outputs.url }}
               📦 Commit: ${context.payload.workflow_run.head_sha}
               👤 Author: ${{ github.actor }}
               ✅ All CI checks passed`,
