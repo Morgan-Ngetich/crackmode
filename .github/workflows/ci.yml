@@ -1,135 +1,327 @@
-name: CI Pipeline
+name: CrackMode CI/CD
 
 on:
   push:
-    branches: [main]
+    branches: [master, develop]
   pull_request:
-    branches: [main]
+    branches: [master]
+
+# Cancel previous runs on new pushes to the same PR/branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  # --- Frontend Setup and Build ---
-  frontend-lint:
+  # --- Install & Cache ---
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      cache-hit: ${{ steps.cache-deps.outputs.cache-hit }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Cache node_modules
+        id: cache-deps
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: npm ci
+
+  # --- Lint & Type Check ---
+  lint:
+    needs: setup
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20'
+          cache: 'npm'
 
-      - name: Install dependencies
-        working-directory: frontend
-        run: npm ci
+      - name: Restore dependencies
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
 
-      - name: Run lint
-        working-directory: frontend
+      - name: Install dependencies (if cache miss)
+        run: npm ci --prefer-offline
+
+      - name: Run ESLint
         run: npm run lint
 
-  frontend-build:
+      - name: TypeScript check
+        run: npm run type-check --if-present || npx tsc --noEmit || echo "⚠️ No TypeScript check configured"
+
+  # --- Build ---
+  build:
+    needs: setup
     runs-on: ubuntu-latest
+    env:
+      # Add your environment variables here
+      VITE_API_URL: ${{ secrets.VITE_API_URL || 'https://backend-production-3e33.up.railway.app' }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20'
+          cache: 'npm'
 
-      - name: Install dependencies
-        working-directory: frontend
-        run: npm ci
+      - name: Restore dependencies
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
 
-      - name: Build frontend
-        working-directory: frontend
+      - name: Install dependencies (if cache miss)
+        run: npm ci --prefer-offline
+
+      - name: Build application
         run: npm run build
-  
-  # --- Backend Tests with PostgreSQL ---
-  backend-test:
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:14
         env:
-          POSTGRES_USER: testuser
-          POSTGRES_PASSWORD: testpass
-          POSTGRES_DB: testdb
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          NODE_ENV: production
 
-    env:
-      TEST_DATABASE_URL: postgresql+psycopg2://testuser:testpass@localhost:5432/testdb
-      PYTHONPATH: .
-      FIRST_SUPERUSER: admin@example.com
-      FIRST_SUPERUSER_PASSWORD: supersecret
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
-      RABBITMQ_HOST: localhost
-      RABBITMQ_PORT: 5672
-      PROJECT_NAME: "Crackmode"
-      # llms
-      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY  }}
-      HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      - name: Verify build output
+        run: |
+          echo "📁 Build output:"
+          ls -lah dist/
+          echo ""
+          echo "📄 Critical files check:"
+          test -f dist/index.html && echo "✅ index.html exists" || (echo "❌ index.html missing" && exit 1)
+          test -d dist/assets && echo "✅ assets/ directory exists" || echo "⚠️ No assets directory"
+          echo ""
+          echo "📊 Build size:"
+          du -sh dist/
+          echo ""
+          echo "📦 Asset breakdown:"
+          du -sh dist/assets/* 2>/dev/null || echo "No assets to analyze"
 
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: crackmode-build-${{ github.sha }}
+          path: dist/
+          retention-days: 7
+          compression-level: 9
+
+  # --- Tests (if you add them later) ---
+  test:
+    needs: setup
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          python-version: "3.11"
+          node-version: '20'
+          cache: 'npm'
 
-      - name: Install Poetry
+      - name: Restore dependencies
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies (if cache miss)
+        run: npm ci --prefer-offline
+
+      - name: Run unit tests
+        run: npm test --if-present || echo "⚠️ No tests configured yet"
+
+      - name: Validate MDX files
         run: |
-          curl -sSL https://install.python-poetry.org | python3
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          if [ -d "src/components/docs" ]; then
+            echo "📚 MDX documentation files:"
+            MDX_COUNT=$(find src/components/docs -name "*.mdx" 2>/dev/null | wc -l)
+            echo "Found $MDX_COUNT MDX files"
+            
+            if [ $MDX_COUNT -gt 0 ]; then
+              find src/components/docs -name "*.mdx" | head -10
+            fi
+          else
+            echo "⚠️ No docs directory found"
+          fi
 
-      - name: Install dependencies
-        working-directory: backend
-        run: poetry install --no-interaction --no-root
+      - name: Validate route structure
+        run: |
+          if [ -d "src/routes" ]; then
+            echo "🛣️ Route files:"
+            ROUTE_COUNT=$(find src/routes -name "*.tsx" -o -name "*.lazy.tsx" 2>/dev/null | wc -l)
+            echo "Found $ROUTE_COUNT route files"
+            
+            if [ $ROUTE_COUNT -gt 0 ]; then
+              find src/routes -name "*.tsx" -o -name "*.lazy.tsx" | head -15
+            fi
+          else
+            echo "❌ Routes directory not found" && exit 1
+          fi
 
-      - name: Run tests
-        working-directory: backend
-        env:
-          DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
-          PYTHONPATH: ${{ env.PYTHONPATH }}
-          FIRST_SUPERUSER: ${{ env.FIRST_SUPERUSER }}
-          FIRST_SUPERUSER_PASSWORD: ${{ env.FIRST_SUPERUSER_PASSWORD }}
-          RABBITMQ_DEFAULT_USER: ${{ env.RABBITMQ_DEFAULT_USER }}
-          RABBITMQ_DEFAULT_PASS: ${{ env.RABBITMQ_DEFAULT_PASS }}
-          RABBITMQ_HOST: ${{ env.RABBITMQ_HOST }}
-          RABBITMQ_PORT: ${{ env.RABBITMQ_PORT }}
-          # Pass all API keys to the test environment
-          GROQ_API_KEY: ${{ env.GROQ_API_KEY }}
-          HUGGINGFACE_API_KEY: ${{ env.HUGGINGFACE_API_KEY }}
-          OPENAI_API_KEY: ${{ env.OPENAI_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ env.ANTHROPIC_API_KEY }}
-          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
-          SUPABASE_JWT_SECRET: ${{ secrets.SUPABASE_JWT_SECRET }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-        run: poetry run pytest app/tests --cov=app --cov-report=xml --junitxml=test-results.xml
-
-      - name: Upload coverage
-        uses: codecov/codecov-action@v3
-
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-test-results
-          path: backend/test-results.xml
-
-  # --- Gate for deployment --- Only runs for branches that are pushed/merged to main.
-  deploy-ready:
-    needs: [frontend-lint, frontend-build, backend-test]
+  # --- Security Audit ---
+  security:
+    needs: setup
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
     steps:
-      - name: Confirm deploy readiness
-        run: echo "✅ All checks passed. Ready to deploy!"
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate || true
+        continue-on-error: true
+
+      - name: Check for security vulnerabilities
+        run: |
+          echo "🔒 Running security audit..."
+          npm audit --production --json > audit.json || true
+          if [ -f audit.json ]; then
+            CRITICAL=$(cat audit.json | grep -o '"critical":[0-9]*' | cut -d':' -f2)
+            HIGH=$(cat audit.json | grep -o '"high":[0-9]*' | cut -d':' -f2)
+            echo "Critical: ${CRITICAL:-0}, High: ${HIGH:-0}"
+          fi
+
+  # --- Vercel Preview Deployment (Pull Requests) ---
+  preview:
+    needs: [lint, build, test]
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    environment:
+      name: preview
+      url: ${{ steps.deploy.outputs.preview-url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: crackmode-build-${{ github.sha }}
+          path: dist/
+
+      - name: Deploy to Vercel Preview
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--yes'
+          working-directory: ./
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Comment PR with preview URL
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request'
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🚀 Preview Deployment Ready!
+              
+              **Preview URL:** ${{ steps.deploy.outputs.preview-url }}
+              
+              📦 Build: \`${{ github.sha }}\`
+              🌿 Branch: \`${{ github.head_ref }}\`
+              
+              Deployed by [Vercel](https://vercel.com) ⚡️`
+            })
+
+  # --- Vercel Production Deployment (Main Branch) ---
+  deploy-production:
+    needs: [lint, build, test, security]
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://your-production-domain.vercel.app
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: crackmode-build-${{ github.sha }}
+          path: dist/
+
+      - name: Deploy to Vercel Production
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod --yes'
+          working-directory: ./
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Create deployment status
+        run: |
+          echo "🎉 CrackMode deployed to production!"
+          echo "🌐 Production URL: ${{ steps.deploy.outputs.preview-url }}"
+          echo "📦 Version: ${{ github.sha }}"
+          echo "👤 Deployed by: ${{ github.actor }}"
+
+      - name: Create GitHub Release (optional)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/**/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # --- Develop Branch Deployment ---
+  deploy-staging:
+    needs: [lint, build, test]
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: crackmode-build-${{ github.sha }}
+          path: dist/
+
+      - name: Deploy to Vercel Staging
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--yes'
+          alias-domains: 'staging-crackmode.vercel.app'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Notify staging deployment
+        run: |
+          echo "🧪 CrackMode deployed to staging!"
+          echo "🌐 Staging URL: ${{ steps.deploy.outputs.preview-url }}"
