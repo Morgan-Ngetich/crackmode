@@ -1,0 +1,21 @@
+services:
+
+  # FRONTEND SERVICE
+  frontend:
+    restart: always
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
+    container_name: frontend
+    volumes:
+      - uploads:/shared/uploads
+    expose:
+      - "8000"
+      - "5173:5173"
+
+volumes:
+  uploads:
