@@ -2,7 +2,7 @@ name: Staging
 
 on:
   push:
-    branches: [develop]
+    branches: [staging]
 
 concurrency:
   group: staging
@@ -43,4 +43,4 @@ jobs:
           echo "🧪 CrackMode deployed to staging!"
           echo "🌐 Staging URL: ${{ steps.deploy.outputs.preview-url }}"
           echo "📦 Version: ${{ github.sha }}"
-          echo "🌿 Branch: develop"
+          echo "🌿 Branch: staging"
