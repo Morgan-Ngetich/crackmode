@@ -108,7 +108,7 @@ jobs:
           ls -lah dist/
           echo ""
           echo "📄 Critical files check:"
-          test -f dist/index.html && echo "✅ index.html exists" || (echo "❌ index.html missing" && exit 1)
+          test -f index.html && echo "✅ index.html exists" || (echo "❌ index.html missing" && exit 1)
           test -d dist/assets && echo "✅ assets/ directory exists" || echo "⚠️ No assets directory"
           echo ""
           echo "📊 Build size:"
