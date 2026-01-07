@@ -6,7 +6,7 @@ import mdx from '@mdx-js/rollup'
 import remarkGfm from 'remark-gfm'
 
 export default defineConfig((configEnv: ConfigEnv): UserConfig => {
-  const { mode } = configEnv;
+  const { mode, command } = configEnv;
   const isDev = mode === 'development'
   const isProd = mode === 'production'
 
@@ -24,7 +24,7 @@ export default defineConfig((configEnv: ConfigEnv): UserConfig => {
         open: true,
         gzipSize: true,
         brotliSize: true,
-        filename: 'dist/stats.html',
+        filename: 'dist/client/stats.html', // Changed: put in client dir
       }),
     ].filter(Boolean),
 
@@ -39,11 +39,10 @@ export default defineConfig((configEnv: ConfigEnv): UserConfig => {
       target: 'es2020',
       cssCodeSplit: true,
       chunkSizeWarningLimit: 500,
-      outDir: 'dist', // Vercel default
-
       rollupOptions: {
         output: {
-          manualChunks: (id) => {
+          // Only use manualChunks for client build (not SSR)
+          manualChunks: command === 'build' ? (id) => {
             // Route-based splitting
             if (id.includes('/src/routes/') && id.includes('.lazy.tsx')) {
               const routeMatch = id.match(/\/src\/routes\/(.+?)\/index\.lazy\.tsx/)
@@ -106,7 +105,7 @@ export default defineConfig((configEnv: ConfigEnv): UserConfig => {
             if (id.includes('node_modules')) {
               return 'vendor-other'
             }
-          },
+          } : undefined, // Don't split chunks for SSR build
 
           chunkFileNames: 'assets/[name]-[hash:8].js',
           entryFileNames: 'assets/[name]-[hash:8].js',
@@ -127,6 +126,17 @@ export default defineConfig((configEnv: ConfigEnv): UserConfig => {
         },
       },
     } : undefined,
+
+    // SSR-specific configuration
+    ssr: {
+      // Don't externalize these for SSR
+      noExternal: [
+        '@tanstack/react-router',
+        '@chakra-ui/react',
+        '@emotion/react',
+        '@emotion/styled',
+      ],
+    },
 
     optimizeDeps: {
       include: [
