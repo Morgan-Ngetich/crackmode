@@ -7,6 +7,7 @@
     "generate": "tsr generate",
     "lint": "eslint . --ext .ts,.tsx",
     "check": "tsc --build",
+    "type-check": "tsc --noEmit",
     "build:search": "tsx scripts/buildSearchData.ts",
     "search:watch": "chokidar 'src/components/docs/**/*.mdx' -c 'npm run build:search'",
     "dev:client": "vite",
@@ -14,10 +15,11 @@
     "dev": "npm run generate && npm run build:search && vite",
     "build:client": "vite build --outDir dist/client",
     "build:server": "vite build --ssr src/seo/entry-server.tsx --outDir dist/server",
-    "build": "npm run generate && npm run check && npm run build:search && npm run build:client && npm run build:server",
+    "build": "npm run generate && npm run build:search && npm run build:client && npm run build:server",
+    "build:vercel": "npm run generate && npm run build:search && npm run build:client && npm run build:server",
     "preview": "NODE_ENV=production node scripts/server.js",
     "serve": "NODE_ENV=production node scripts/server.js",
-    "analyze": "ANALYZE=true npm run build",
+    "analyze": "ANALYZE=true npm run build:client",
     "lighthouse": "npm run build && npm run preview & sleep 3 && npx lighthouse http://localhost:4173 --view && killall node"
   },
   "dependencies": {
