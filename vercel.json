@@ -2,22 +2,28 @@
   "buildCommand": "cd frontend && npm run build",
   "outputDirectory": "frontend/dist/client",
   "installCommand": "cd frontend && npm install",
-  "framework": "vite",
+  "framework": null,
   "rewrites": [
     {
       "source": "/api/:path*",
       "destination": "https://backend-production-3e33.up.railway.app/api/:path*"
-    }
-  ],
-  "routes": [
-    {
-      "handle": "filesystem"
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/assets/:path*",
+      "destination": "/assets/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/render"
     }
   ],
+  "functions": {
+    "api/render.js": {
+      "runtime": "nodejs20.x",
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  },
   "headers": [
     {
       "source": "/assets/(.*)",
@@ -43,15 +49,6 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/index.html",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
         }
       ]
     }
