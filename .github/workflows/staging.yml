@@ -1,7 +1,10 @@
 name: Staging
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
     branches: [staging]
 
 concurrency:
@@ -11,19 +14,13 @@ concurrency:
 jobs:
   deploy-staging:
     runs-on: ubuntu-latest
+    # CRITICAL: Only run if CI workflow succeeded
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     environment:
       name: staging
       url: https://staging-crackmode.vercel.app
     steps:
       - uses: actions/checkout@v4
-
-      - name: Wait for CI to pass
-        uses: lewagon/wait-on-check-action@v1.3.1
-        with:
-          ref: ${{ github.sha }}
-          check-regexp: '(lint|build|test)'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 10
 
       - name: Deploy to Vercel Staging
         id: deploy
@@ -42,5 +39,6 @@ jobs:
         run: |
           echo "🧪 CrackMode deployed to staging!"
           echo "🌐 Staging URL: ${{ steps.deploy.outputs.preview-url }}"
-          echo "📦 Version: ${{ github.sha }}"
+          echo "📦 Version: ${{ github.event.workflow_run.head_sha }}"
           echo "🌿 Branch: staging"
+          echo "✅ All CI checks passed before deployment"
