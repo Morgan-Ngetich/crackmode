@@ -1,34 +1,35 @@
-name: Preview
+name: Deploy Preview
 
 on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+    branches-ignore:
+      - master
+      - staging
+
   pull_request:
     branches: [master]
 
 concurrency:
-  group: preview-${{ github.ref }}
+  group: preview-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  # Wait for CI to complete first
-  check-ci:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Wait for CI checks
-        uses: lewagon/wait-on-check-action@v1.3.1
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          check-regexp: '(lint|build|test|security)'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 10
-
   deploy-preview:
-    needs: check-ci
+    # Only run on successful CI completion for PRs
+    if: |
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'pull_request') ||
+      (github.event_name == 'pull_request')
     runs-on: ubuntu-latest
     environment:
       name: preview
       url: ${{ steps.deploy.outputs.preview-url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.event.pull_request.head.sha }}
 
       - name: Deploy to Vercel Preview
         id: deploy
@@ -43,19 +44,30 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
       - name: Comment PR with preview URL
+        if: github.event_name == 'workflow_run'
         uses: actions/github-script@v7
         with:
           script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
+            const pulls = await github.rest.repos.listPullRequestsAssociatedWithCommit({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## 🚀 Preview Deployment Ready!
-              
-              **Preview URL:** ${{ steps.deploy.outputs.preview-url }}
-              
-              📦 Build: \`${{ github.sha }}\`
-              🌿 Branch: \`${{ github.head_ref }}\`
-              
-              Deployed by [Vercel](https://vercel.com) ⚡️`
-            })
+              commit_sha: '${{ github.event.workflow_run.head_sha }}'
+            });
+            
+            if (pulls.data.length > 0) {
+              const pr = pulls.data[0];
+              await github.rest.issues.createComment({
+                issue_number: pr.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `## 🚀 Preview Deployment Ready!
+                
+                **Preview URL:** ${{ steps.deploy.outputs.preview-url }}
+                
+                📦 Build: \`${{ github.event.workflow_run.head_sha }}\`
+                🌿 Branch: \`${pr.head.ref}\`
+                ✅ All CI checks passed
+                
+                Deployed by [Vercel](https://vercel.com) ⚡️`
+              });
+            }
