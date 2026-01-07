@@ -1,10 +1,10 @@
-name: CI Pipeline
+name: CI
 
 on:
   push:
-    branches: [master, develop]
+    branches: [master, staging]
   pull_request:
-    branches: [master, develop]
+    branches: [master, staging]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -108,8 +108,8 @@ jobs:
           ls -lah dist/
           echo ""
           echo "📄 Critical files check:"
-          test -f dist/index.html && echo "✅ index.html exists" || (echo "❌ index.html missing" && exit 1)
-          test -d dist/assets && echo "✅ assets/ directory exists" || echo "⚠️ No assets directory"
+          test -d dist/client/assets && echo "✅ assets/ directory exists" || echo "⚠️ No assets directory"
+          test -f dist/client/index.html && echo "✅ index.html exists" || (echo "❌ index.html missing" && exit 1)
           echo ""
           echo "📊 Build size:"
           du -sh dist/
