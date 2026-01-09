@@ -1,15 +1,25 @@
 {
   "buildCommand": "cd frontend && npm run build",
-  "outputDirectory": "frontend/dist/client",
   "installCommand": "cd frontend && npm install",
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/:path*",
-      "destination": "https://backend-production-3e33.up.railway.app/api/:path*"
+      "src": "/assets/(.*)",
+      "headers": { "cache-control": "public, max-age=31536000, immutable" },
+      "dest": "/frontend/dist/client/assets/$1"
     },
     {
-      "source": "/((?!assets/|.*\\.[^.]*$).*)",
-      "destination": "/render"
+      "src": "/api/(.*)",
+      "dest": "https://backend-production-3e33.up.railway.app/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/api/render"
     }
-  ]
+  ],
+  "functions": {
+    "api/render.js": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  }
 }
