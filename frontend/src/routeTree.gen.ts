@@ -8,8 +8,6 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { createFileRoute } from '@tanstack/react-router'
-
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as SignupRouteImport } from './routes/signup'
@@ -18,7 +16,6 @@ import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 import { Route as LayoutDocsIndexRouteImport } from './routes/_layout/docs/index'
-import { Route as LayoutDocsLayoutRouteImport } from './routes/_layout/docs/_layout'
 import { Route as LayoutDocsLeetcode75IndexRouteImport } from './routes/_layout/docs/leetcode75/index'
 import { Route as LayoutDocsIntroductionIndexRouteImport } from './routes/_layout/docs/introduction/index'
 import { Route as LayoutDocsProblemsValidParenthesesRouteImport } from './routes/_layout/docs/problems/valid-parentheses'
@@ -51,8 +48,6 @@ import { Route as LayoutDocsLeetcode75ArraysStringsIntroductionRouteImport } fro
 import { Route as LayoutDocsLeetcode75ArraysStringsIncreasingTripletSubsequenceRouteImport } from './routes/_layout/docs/leetcode75/arrays-strings/increasing-triplet-subsequence'
 import { Route as LayoutDocsLeetcode75ArraysStringsGcdOfStringsRouteImport } from './routes/_layout/docs/leetcode75/arrays-strings/gcd-of-strings'
 
-const LayoutDocsRouteImport = createFileRoute('/_layout/docs')()
-
 const VerifyEmailRoute = VerifyEmailRouteImport.update({
   id: '/verify-email',
   path: '/verify-email',
@@ -77,214 +72,205 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LayoutDocsRoute = LayoutDocsRouteImport.update({
-  id: '/docs',
-  path: '/docs',
-  getParentRoute: () => LayoutRoute,
-} as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/auth/callback',
   path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LayoutDocsIndexRoute = LayoutDocsIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => LayoutDocsRoute,
-} as any)
-const LayoutDocsLayoutRoute = LayoutDocsLayoutRouteImport.update({
-  id: '/_layout',
-  getParentRoute: () => LayoutDocsRoute,
+  id: '/docs/',
+  path: '/docs/',
+  getParentRoute: () => LayoutRoute,
 } as any)
 const LayoutDocsLeetcode75IndexRoute =
   LayoutDocsLeetcode75IndexRouteImport.update({
-    id: '/leetcode75/',
-    path: '/leetcode75/',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/leetcode75/',
+    path: '/docs/leetcode75/',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsIntroductionIndexRoute =
   LayoutDocsIntroductionIndexRouteImport.update({
-    id: '/introduction/',
-    path: '/introduction/',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/introduction/',
+    path: '/docs/introduction/',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsProblemsValidParenthesesRoute =
   LayoutDocsProblemsValidParenthesesRouteImport.update({
-    id: '/problems/valid-parentheses',
-    path: '/problems/valid-parentheses',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/problems/valid-parentheses',
+    path: '/docs/problems/valid-parentheses',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsProblemsUniqueNumberOfOccurrencesRoute =
   LayoutDocsProblemsUniqueNumberOfOccurrencesRouteImport.update({
-    id: '/problems/unique-number-of-occurrences',
-    path: '/problems/unique-number-of-occurrences',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/problems/unique-number-of-occurrences',
+    path: '/docs/problems/unique-number-of-occurrences',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsProblemsTwoSumRoute =
   LayoutDocsProblemsTwoSumRouteImport.update({
-    id: '/problems/two-sum',
-    path: '/problems/two-sum',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/problems/two-sum',
+    path: '/docs/problems/two-sum',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsProblemsNumberOfGoodPairsRoute =
   LayoutDocsProblemsNumberOfGoodPairsRouteImport.update({
-    id: '/problems/number-of-good-pairs',
-    path: '/problems/number-of-good-pairs',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/problems/number-of-good-pairs',
+    path: '/docs/problems/number-of-good-pairs',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsProblemsNumberOf1BitsRoute =
   LayoutDocsProblemsNumberOf1BitsRouteImport.update({
-    id: '/problems/number-of-1-bits',
-    path: '/problems/number-of-1-bits',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/problems/number-of-1-bits',
+    path: '/docs/problems/number-of-1-bits',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsProblemsMostCommonWordRoute =
   LayoutDocsProblemsMostCommonWordRouteImport.update({
-    id: '/problems/most-common-word',
-    path: '/problems/most-common-word',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/problems/most-common-word',
+    path: '/docs/problems/most-common-word',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsProblemsMissingNumberRoute =
   LayoutDocsProblemsMissingNumberRouteImport.update({
-    id: '/problems/missing-number',
-    path: '/problems/missing-number',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/problems/missing-number',
+    path: '/docs/problems/missing-number',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsProblemsMergeSortedArrayRoute =
   LayoutDocsProblemsMergeSortedArrayRouteImport.update({
-    id: '/problems/merge-sorted-array',
-    path: '/problems/merge-sorted-array',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/problems/merge-sorted-array',
+    path: '/docs/problems/merge-sorted-array',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsProblemsLongestPalindromeRoute =
   LayoutDocsProblemsLongestPalindromeRouteImport.update({
-    id: '/problems/longest-palindrome',
-    path: '/problems/longest-palindrome',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/problems/longest-palindrome',
+    path: '/docs/problems/longest-palindrome',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsProblemsLongestConsecutiveSequenceRoute =
   LayoutDocsProblemsLongestConsecutiveSequenceRouteImport.update({
-    id: '/problems/longest-consecutive-sequence',
-    path: '/problems/longest-consecutive-sequence',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/problems/longest-consecutive-sequence',
+    path: '/docs/problems/longest-consecutive-sequence',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsProblemsImplementStackUsingQueuesRoute =
   LayoutDocsProblemsImplementStackUsingQueuesRouteImport.update({
-    id: '/problems/implement-stack-using-queues',
-    path: '/problems/implement-stack-using-queues',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/problems/implement-stack-using-queues',
+    path: '/docs/problems/implement-stack-using-queues',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsProblemsFindTheDifferenceOfTwoArraysRoute =
   LayoutDocsProblemsFindTheDifferenceOfTwoArraysRouteImport.update({
-    id: '/problems/find-the-difference-of-two-arrays',
-    path: '/problems/find-the-difference-of-two-arrays',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/problems/find-the-difference-of-two-arrays',
+    path: '/docs/problems/find-the-difference-of-two-arrays',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsProblemsFindTheDifferenceRoute =
   LayoutDocsProblemsFindTheDifferenceRouteImport.update({
-    id: '/problems/find-the-difference',
-    path: '/problems/find-the-difference',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/problems/find-the-difference',
+    path: '/docs/problems/find-the-difference',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsProblemsFindAllNumbersDisappearedInAnArrayRoute =
   LayoutDocsProblemsFindAllNumbersDisappearedInAnArrayRouteImport.update({
-    id: '/problems/find-all-numbers-disappeared-in-an-array',
-    path: '/problems/find-all-numbers-disappeared-in-an-array',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/problems/find-all-numbers-disappeared-in-an-array',
+    path: '/docs/problems/find-all-numbers-disappeared-in-an-array',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsProblemsFindAllDuplicatesInAnArrayRoute =
   LayoutDocsProblemsFindAllDuplicatesInAnArrayRouteImport.update({
-    id: '/problems/find-all-duplicates-in-an-array',
-    path: '/problems/find-all-duplicates-in-an-array',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/problems/find-all-duplicates-in-an-array',
+    path: '/docs/problems/find-all-duplicates-in-an-array',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsProblemsDistributeCandiesRoute =
   LayoutDocsProblemsDistributeCandiesRouteImport.update({
-    id: '/problems/distribute-candies',
-    path: '/problems/distribute-candies',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/problems/distribute-candies',
+    path: '/docs/problems/distribute-candies',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsProblemsDetermineIfTwoStringsAreCloseRoute =
   LayoutDocsProblemsDetermineIfTwoStringsAreCloseRouteImport.update({
-    id: '/problems/determine-if-two-strings-are-close',
-    path: '/problems/determine-if-two-strings-are-close',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/problems/determine-if-two-strings-are-close',
+    path: '/docs/problems/determine-if-two-strings-are-close',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsProblemsContainsDuplicateRoute =
   LayoutDocsProblemsContainsDuplicateRouteImport.update({
-    id: '/problems/contains-duplicate',
-    path: '/problems/contains-duplicate',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/problems/contains-duplicate',
+    path: '/docs/problems/contains-duplicate',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsProblemsCheckIfNumberHasEqualDigitCountAndDigitValueRoute =
   LayoutDocsProblemsCheckIfNumberHasEqualDigitCountAndDigitValueRouteImport.update(
     {
-      id: '/problems/check-if-number-has-equal-digit-count-and-digit-value',
-      path: '/problems/check-if-number-has-equal-digit-count-and-digit-value',
-      getParentRoute: () => LayoutDocsRoute,
+      id: '/docs/problems/check-if-number-has-equal-digit-count-and-digit-value',
+      path: '/docs/problems/check-if-number-has-equal-digit-count-and-digit-value',
+      getParentRoute: () => LayoutRoute,
     } as any,
   )
 const LayoutDocsProblemsBestTimeToBuyAndSellStockRoute =
   LayoutDocsProblemsBestTimeToBuyAndSellStockRouteImport.update({
-    id: '/problems/best-time-to-buy-and-sell-stock',
-    path: '/problems/best-time-to-buy-and-sell-stock',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/problems/best-time-to-buy-and-sell-stock',
+    path: '/docs/problems/best-time-to-buy-and-sell-stock',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsProblemsAsteroidCollisionRoute =
   LayoutDocsProblemsAsteroidCollisionRouteImport.update({
-    id: '/problems/asteroid-collision',
-    path: '/problems/asteroid-collision',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/problems/asteroid-collision',
+    path: '/docs/problems/asteroid-collision',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsLeetcode75ArraysStringsIndexRoute =
   LayoutDocsLeetcode75ArraysStringsIndexRouteImport.update({
-    id: '/leetcode75/arrays-strings/',
-    path: '/leetcode75/arrays-strings/',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/leetcode75/arrays-strings/',
+    path: '/docs/leetcode75/arrays-strings/',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsLeetcode75ArraysStringsStringCompressionRoute =
   LayoutDocsLeetcode75ArraysStringsStringCompressionRouteImport.update({
-    id: '/leetcode75/arrays-strings/string-compression',
-    path: '/leetcode75/arrays-strings/string-compression',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/leetcode75/arrays-strings/string-compression',
+    path: '/docs/leetcode75/arrays-strings/string-compression',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsLeetcode75ArraysStringsProductOfArrayExceptSelfRoute =
   LayoutDocsLeetcode75ArraysStringsProductOfArrayExceptSelfRouteImport.update({
-    id: '/leetcode75/arrays-strings/product-of-array-except-self',
-    path: '/leetcode75/arrays-strings/product-of-array-except-self',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/leetcode75/arrays-strings/product-of-array-except-self',
+    path: '/docs/leetcode75/arrays-strings/product-of-array-except-self',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsLeetcode75ArraysStringsMergeStringsAlternatelyRoute =
   LayoutDocsLeetcode75ArraysStringsMergeStringsAlternatelyRouteImport.update({
-    id: '/leetcode75/arrays-strings/merge-strings-alternately',
-    path: '/leetcode75/arrays-strings/merge-strings-alternately',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/leetcode75/arrays-strings/merge-strings-alternately',
+    path: '/docs/leetcode75/arrays-strings/merge-strings-alternately',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsLeetcode75ArraysStringsKidsWithGreatestCandiesRoute =
   LayoutDocsLeetcode75ArraysStringsKidsWithGreatestCandiesRouteImport.update({
-    id: '/leetcode75/arrays-strings/kids-with-greatest-candies',
-    path: '/leetcode75/arrays-strings/kids-with-greatest-candies',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/leetcode75/arrays-strings/kids-with-greatest-candies',
+    path: '/docs/leetcode75/arrays-strings/kids-with-greatest-candies',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsLeetcode75ArraysStringsIntroductionRoute =
   LayoutDocsLeetcode75ArraysStringsIntroductionRouteImport.update({
-    id: '/leetcode75/arrays-strings/introduction',
-    path: '/leetcode75/arrays-strings/introduction',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/leetcode75/arrays-strings/introduction',
+    path: '/docs/leetcode75/arrays-strings/introduction',
+    getParentRoute: () => LayoutRoute,
   } as any)
 const LayoutDocsLeetcode75ArraysStringsIncreasingTripletSubsequenceRoute =
   LayoutDocsLeetcode75ArraysStringsIncreasingTripletSubsequenceRouteImport.update(
     {
-      id: '/leetcode75/arrays-strings/increasing-triplet-subsequence',
-      path: '/leetcode75/arrays-strings/increasing-triplet-subsequence',
-      getParentRoute: () => LayoutDocsRoute,
+      id: '/docs/leetcode75/arrays-strings/increasing-triplet-subsequence',
+      path: '/docs/leetcode75/arrays-strings/increasing-triplet-subsequence',
+      getParentRoute: () => LayoutRoute,
     } as any,
   )
 const LayoutDocsLeetcode75ArraysStringsGcdOfStringsRoute =
   LayoutDocsLeetcode75ArraysStringsGcdOfStringsRouteImport.update({
-    id: '/leetcode75/arrays-strings/gcd-of-strings',
-    path: '/leetcode75/arrays-strings/gcd-of-strings',
-    getParentRoute: () => LayoutDocsRoute,
+    id: '/docs/leetcode75/arrays-strings/gcd-of-strings',
+    path: '/docs/leetcode75/arrays-strings/gcd-of-strings',
+    getParentRoute: () => LayoutRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -293,8 +279,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/verify-email': typeof VerifyEmailRoute
   '/auth/callback': typeof AuthCallbackRoute
-  '/docs': typeof LayoutDocsLayoutRoute
-  '/docs/': typeof LayoutDocsIndexRoute
+  '/docs': typeof LayoutDocsIndexRoute
   '/docs/problems/asteroid-collision': typeof LayoutDocsProblemsAsteroidCollisionRoute
   '/docs/problems/best-time-to-buy-and-sell-stock': typeof LayoutDocsProblemsBestTimeToBuyAndSellStockRoute
   '/docs/problems/check-if-number-has-equal-digit-count-and-digit-value': typeof LayoutDocsProblemsCheckIfNumberHasEqualDigitCountAndDigitValueRoute
@@ -374,8 +359,6 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/verify-email': typeof VerifyEmailRoute
   '/auth/callback': typeof AuthCallbackRoute
-  '/_layout/docs': typeof LayoutDocsRouteWithChildren
-  '/_layout/docs/_layout': typeof LayoutDocsLayoutRoute
   '/_layout/docs/': typeof LayoutDocsIndexRoute
   '/_layout/docs/problems/asteroid-collision': typeof LayoutDocsProblemsAsteroidCollisionRoute
   '/_layout/docs/problems/best-time-to-buy-and-sell-stock': typeof LayoutDocsProblemsBestTimeToBuyAndSellStockRoute
@@ -418,7 +401,6 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/auth/callback'
     | '/docs'
-    | '/docs/'
     | '/docs/problems/asteroid-collision'
     | '/docs/problems/best-time-to-buy-and-sell-stock'
     | '/docs/problems/check-if-number-has-equal-digit-count-and-digit-value'
@@ -497,8 +479,6 @@ export interface FileRouteTypes {
     | '/signup'
     | '/verify-email'
     | '/auth/callback'
-    | '/_layout/docs'
-    | '/_layout/docs/_layout'
     | '/_layout/docs/'
     | '/_layout/docs/problems/asteroid-collision'
     | '/_layout/docs/problems/best-time-to-buy-and-sell-stock'
@@ -579,13 +559,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_layout/docs': {
-      id: '/_layout/docs'
-      path: '/docs'
-      fullPath: '/docs'
-      preLoaderRoute: typeof LayoutDocsRouteImport
-      parentRoute: typeof LayoutRoute
-    }
     '/auth/callback': {
       id: '/auth/callback'
       path: '/auth/callback'
@@ -595,240 +568,232 @@ declare module '@tanstack/react-router' {
     }
     '/_layout/docs/': {
       id: '/_layout/docs/'
-      path: '/'
-      fullPath: '/docs/'
-      preLoaderRoute: typeof LayoutDocsIndexRouteImport
-      parentRoute: typeof LayoutDocsRoute
-    }
-    '/_layout/docs/_layout': {
-      id: '/_layout/docs/_layout'
       path: '/docs'
       fullPath: '/docs'
-      preLoaderRoute: typeof LayoutDocsLayoutRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      preLoaderRoute: typeof LayoutDocsIndexRouteImport
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/leetcode75/': {
       id: '/_layout/docs/leetcode75/'
-      path: '/leetcode75'
+      path: '/docs/leetcode75'
       fullPath: '/docs/leetcode75'
       preLoaderRoute: typeof LayoutDocsLeetcode75IndexRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/introduction/': {
       id: '/_layout/docs/introduction/'
-      path: '/introduction'
+      path: '/docs/introduction'
       fullPath: '/docs/introduction'
       preLoaderRoute: typeof LayoutDocsIntroductionIndexRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/problems/valid-parentheses': {
       id: '/_layout/docs/problems/valid-parentheses'
-      path: '/problems/valid-parentheses'
+      path: '/docs/problems/valid-parentheses'
       fullPath: '/docs/problems/valid-parentheses'
       preLoaderRoute: typeof LayoutDocsProblemsValidParenthesesRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/problems/unique-number-of-occurrences': {
       id: '/_layout/docs/problems/unique-number-of-occurrences'
-      path: '/problems/unique-number-of-occurrences'
+      path: '/docs/problems/unique-number-of-occurrences'
       fullPath: '/docs/problems/unique-number-of-occurrences'
       preLoaderRoute: typeof LayoutDocsProblemsUniqueNumberOfOccurrencesRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/problems/two-sum': {
       id: '/_layout/docs/problems/two-sum'
-      path: '/problems/two-sum'
+      path: '/docs/problems/two-sum'
       fullPath: '/docs/problems/two-sum'
       preLoaderRoute: typeof LayoutDocsProblemsTwoSumRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/problems/number-of-good-pairs': {
       id: '/_layout/docs/problems/number-of-good-pairs'
-      path: '/problems/number-of-good-pairs'
+      path: '/docs/problems/number-of-good-pairs'
       fullPath: '/docs/problems/number-of-good-pairs'
       preLoaderRoute: typeof LayoutDocsProblemsNumberOfGoodPairsRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/problems/number-of-1-bits': {
       id: '/_layout/docs/problems/number-of-1-bits'
-      path: '/problems/number-of-1-bits'
+      path: '/docs/problems/number-of-1-bits'
       fullPath: '/docs/problems/number-of-1-bits'
       preLoaderRoute: typeof LayoutDocsProblemsNumberOf1BitsRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/problems/most-common-word': {
       id: '/_layout/docs/problems/most-common-word'
-      path: '/problems/most-common-word'
+      path: '/docs/problems/most-common-word'
       fullPath: '/docs/problems/most-common-word'
       preLoaderRoute: typeof LayoutDocsProblemsMostCommonWordRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/problems/missing-number': {
       id: '/_layout/docs/problems/missing-number'
-      path: '/problems/missing-number'
+      path: '/docs/problems/missing-number'
       fullPath: '/docs/problems/missing-number'
       preLoaderRoute: typeof LayoutDocsProblemsMissingNumberRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/problems/merge-sorted-array': {
       id: '/_layout/docs/problems/merge-sorted-array'
-      path: '/problems/merge-sorted-array'
+      path: '/docs/problems/merge-sorted-array'
       fullPath: '/docs/problems/merge-sorted-array'
       preLoaderRoute: typeof LayoutDocsProblemsMergeSortedArrayRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/problems/longest-palindrome': {
       id: '/_layout/docs/problems/longest-palindrome'
-      path: '/problems/longest-palindrome'
+      path: '/docs/problems/longest-palindrome'
       fullPath: '/docs/problems/longest-palindrome'
       preLoaderRoute: typeof LayoutDocsProblemsLongestPalindromeRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/problems/longest-consecutive-sequence': {
       id: '/_layout/docs/problems/longest-consecutive-sequence'
-      path: '/problems/longest-consecutive-sequence'
+      path: '/docs/problems/longest-consecutive-sequence'
       fullPath: '/docs/problems/longest-consecutive-sequence'
       preLoaderRoute: typeof LayoutDocsProblemsLongestConsecutiveSequenceRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/problems/implement-stack-using-queues': {
       id: '/_layout/docs/problems/implement-stack-using-queues'
-      path: '/problems/implement-stack-using-queues'
+      path: '/docs/problems/implement-stack-using-queues'
       fullPath: '/docs/problems/implement-stack-using-queues'
       preLoaderRoute: typeof LayoutDocsProblemsImplementStackUsingQueuesRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/problems/find-the-difference-of-two-arrays': {
       id: '/_layout/docs/problems/find-the-difference-of-two-arrays'
-      path: '/problems/find-the-difference-of-two-arrays'
+      path: '/docs/problems/find-the-difference-of-two-arrays'
       fullPath: '/docs/problems/find-the-difference-of-two-arrays'
       preLoaderRoute: typeof LayoutDocsProblemsFindTheDifferenceOfTwoArraysRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/problems/find-the-difference': {
       id: '/_layout/docs/problems/find-the-difference'
-      path: '/problems/find-the-difference'
+      path: '/docs/problems/find-the-difference'
       fullPath: '/docs/problems/find-the-difference'
       preLoaderRoute: typeof LayoutDocsProblemsFindTheDifferenceRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/problems/find-all-numbers-disappeared-in-an-array': {
       id: '/_layout/docs/problems/find-all-numbers-disappeared-in-an-array'
-      path: '/problems/find-all-numbers-disappeared-in-an-array'
+      path: '/docs/problems/find-all-numbers-disappeared-in-an-array'
       fullPath: '/docs/problems/find-all-numbers-disappeared-in-an-array'
       preLoaderRoute: typeof LayoutDocsProblemsFindAllNumbersDisappearedInAnArrayRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/problems/find-all-duplicates-in-an-array': {
       id: '/_layout/docs/problems/find-all-duplicates-in-an-array'
-      path: '/problems/find-all-duplicates-in-an-array'
+      path: '/docs/problems/find-all-duplicates-in-an-array'
       fullPath: '/docs/problems/find-all-duplicates-in-an-array'
       preLoaderRoute: typeof LayoutDocsProblemsFindAllDuplicatesInAnArrayRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/problems/distribute-candies': {
       id: '/_layout/docs/problems/distribute-candies'
-      path: '/problems/distribute-candies'
+      path: '/docs/problems/distribute-candies'
       fullPath: '/docs/problems/distribute-candies'
       preLoaderRoute: typeof LayoutDocsProblemsDistributeCandiesRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/problems/determine-if-two-strings-are-close': {
       id: '/_layout/docs/problems/determine-if-two-strings-are-close'
-      path: '/problems/determine-if-two-strings-are-close'
+      path: '/docs/problems/determine-if-two-strings-are-close'
       fullPath: '/docs/problems/determine-if-two-strings-are-close'
       preLoaderRoute: typeof LayoutDocsProblemsDetermineIfTwoStringsAreCloseRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/problems/contains-duplicate': {
       id: '/_layout/docs/problems/contains-duplicate'
-      path: '/problems/contains-duplicate'
+      path: '/docs/problems/contains-duplicate'
       fullPath: '/docs/problems/contains-duplicate'
       preLoaderRoute: typeof LayoutDocsProblemsContainsDuplicateRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/problems/check-if-number-has-equal-digit-count-and-digit-value': {
       id: '/_layout/docs/problems/check-if-number-has-equal-digit-count-and-digit-value'
-      path: '/problems/check-if-number-has-equal-digit-count-and-digit-value'
+      path: '/docs/problems/check-if-number-has-equal-digit-count-and-digit-value'
       fullPath: '/docs/problems/check-if-number-has-equal-digit-count-and-digit-value'
       preLoaderRoute: typeof LayoutDocsProblemsCheckIfNumberHasEqualDigitCountAndDigitValueRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/problems/best-time-to-buy-and-sell-stock': {
       id: '/_layout/docs/problems/best-time-to-buy-and-sell-stock'
-      path: '/problems/best-time-to-buy-and-sell-stock'
+      path: '/docs/problems/best-time-to-buy-and-sell-stock'
       fullPath: '/docs/problems/best-time-to-buy-and-sell-stock'
       preLoaderRoute: typeof LayoutDocsProblemsBestTimeToBuyAndSellStockRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/problems/asteroid-collision': {
       id: '/_layout/docs/problems/asteroid-collision'
-      path: '/problems/asteroid-collision'
+      path: '/docs/problems/asteroid-collision'
       fullPath: '/docs/problems/asteroid-collision'
       preLoaderRoute: typeof LayoutDocsProblemsAsteroidCollisionRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/leetcode75/arrays-strings/': {
       id: '/_layout/docs/leetcode75/arrays-strings/'
-      path: '/leetcode75/arrays-strings'
+      path: '/docs/leetcode75/arrays-strings'
       fullPath: '/docs/leetcode75/arrays-strings'
       preLoaderRoute: typeof LayoutDocsLeetcode75ArraysStringsIndexRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/leetcode75/arrays-strings/string-compression': {
       id: '/_layout/docs/leetcode75/arrays-strings/string-compression'
-      path: '/leetcode75/arrays-strings/string-compression'
+      path: '/docs/leetcode75/arrays-strings/string-compression'
       fullPath: '/docs/leetcode75/arrays-strings/string-compression'
       preLoaderRoute: typeof LayoutDocsLeetcode75ArraysStringsStringCompressionRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/leetcode75/arrays-strings/product-of-array-except-self': {
       id: '/_layout/docs/leetcode75/arrays-strings/product-of-array-except-self'
-      path: '/leetcode75/arrays-strings/product-of-array-except-self'
+      path: '/docs/leetcode75/arrays-strings/product-of-array-except-self'
       fullPath: '/docs/leetcode75/arrays-strings/product-of-array-except-self'
       preLoaderRoute: typeof LayoutDocsLeetcode75ArraysStringsProductOfArrayExceptSelfRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/leetcode75/arrays-strings/merge-strings-alternately': {
       id: '/_layout/docs/leetcode75/arrays-strings/merge-strings-alternately'
-      path: '/leetcode75/arrays-strings/merge-strings-alternately'
+      path: '/docs/leetcode75/arrays-strings/merge-strings-alternately'
       fullPath: '/docs/leetcode75/arrays-strings/merge-strings-alternately'
       preLoaderRoute: typeof LayoutDocsLeetcode75ArraysStringsMergeStringsAlternatelyRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/leetcode75/arrays-strings/kids-with-greatest-candies': {
       id: '/_layout/docs/leetcode75/arrays-strings/kids-with-greatest-candies'
-      path: '/leetcode75/arrays-strings/kids-with-greatest-candies'
+      path: '/docs/leetcode75/arrays-strings/kids-with-greatest-candies'
       fullPath: '/docs/leetcode75/arrays-strings/kids-with-greatest-candies'
       preLoaderRoute: typeof LayoutDocsLeetcode75ArraysStringsKidsWithGreatestCandiesRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/leetcode75/arrays-strings/introduction': {
       id: '/_layout/docs/leetcode75/arrays-strings/introduction'
-      path: '/leetcode75/arrays-strings/introduction'
+      path: '/docs/leetcode75/arrays-strings/introduction'
       fullPath: '/docs/leetcode75/arrays-strings/introduction'
       preLoaderRoute: typeof LayoutDocsLeetcode75ArraysStringsIntroductionRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/leetcode75/arrays-strings/increasing-triplet-subsequence': {
       id: '/_layout/docs/leetcode75/arrays-strings/increasing-triplet-subsequence'
-      path: '/leetcode75/arrays-strings/increasing-triplet-subsequence'
+      path: '/docs/leetcode75/arrays-strings/increasing-triplet-subsequence'
       fullPath: '/docs/leetcode75/arrays-strings/increasing-triplet-subsequence'
       preLoaderRoute: typeof LayoutDocsLeetcode75ArraysStringsIncreasingTripletSubsequenceRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/docs/leetcode75/arrays-strings/gcd-of-strings': {
       id: '/_layout/docs/leetcode75/arrays-strings/gcd-of-strings'
-      path: '/leetcode75/arrays-strings/gcd-of-strings'
+      path: '/docs/leetcode75/arrays-strings/gcd-of-strings'
       fullPath: '/docs/leetcode75/arrays-strings/gcd-of-strings'
       preLoaderRoute: typeof LayoutDocsLeetcode75ArraysStringsGcdOfStringsRouteImport
-      parentRoute: typeof LayoutDocsRoute
+      parentRoute: typeof LayoutRoute
     }
   }
 }
 
-interface LayoutDocsRouteChildren {
-  LayoutDocsLayoutRoute: typeof LayoutDocsLayoutRoute
+interface LayoutRouteChildren {
   LayoutDocsIndexRoute: typeof LayoutDocsIndexRoute
   LayoutDocsProblemsAsteroidCollisionRoute: typeof LayoutDocsProblemsAsteroidCollisionRoute
   LayoutDocsProblemsBestTimeToBuyAndSellStockRoute: typeof LayoutDocsProblemsBestTimeToBuyAndSellStockRoute
@@ -863,8 +828,7 @@ interface LayoutDocsRouteChildren {
   LayoutDocsLeetcode75ArraysStringsIndexRoute: typeof LayoutDocsLeetcode75ArraysStringsIndexRoute
 }
 
-const LayoutDocsRouteChildren: LayoutDocsRouteChildren = {
-  LayoutDocsLayoutRoute: LayoutDocsLayoutRoute,
+const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutDocsIndexRoute: LayoutDocsIndexRoute,
   LayoutDocsProblemsAsteroidCollisionRoute:
     LayoutDocsProblemsAsteroidCollisionRoute,
@@ -922,18 +886,6 @@ const LayoutDocsRouteChildren: LayoutDocsRouteChildren = {
     LayoutDocsLeetcode75ArraysStringsStringCompressionRoute,
   LayoutDocsLeetcode75ArraysStringsIndexRoute:
     LayoutDocsLeetcode75ArraysStringsIndexRoute,
-}
-
-const LayoutDocsRouteWithChildren = LayoutDocsRoute._addFileChildren(
-  LayoutDocsRouteChildren,
-)
-
-interface LayoutRouteChildren {
-  LayoutDocsRoute: typeof LayoutDocsRouteWithChildren
-}
-
-const LayoutRouteChildren: LayoutRouteChildren = {
-  LayoutDocsRoute: LayoutDocsRouteWithChildren,
 }
 
 const LayoutRouteWithChildren =

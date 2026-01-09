@@ -1,15 +1,12 @@
-import { Spinner } from "@chakra-ui/react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Suspense, lazy } from "react";
+import { lazy } from "react";
 
 // Lazy load the MDX component
 const LazyKidsWithGreatestCandies = lazy(() => import("@/components/docs/leetcode75/arrays-strings/kids-with-greatest-candies.mdx"));
 
 function KidsWithGreatestCandies() {
   return (
-    <Suspense fallback={<Spinner />}>
       <LazyKidsWithGreatestCandies />
-    </Suspense>
   );
 }
 

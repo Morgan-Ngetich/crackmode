@@ -7,9 +7,9 @@ const LazyLeetcode75 = lazy(() => import("@/components/docs/leetcode75/leetcode7
 
 function Leetcode75() {
   return (
-    <Suspense fallback={<Spinner />}>
+    // <Suspense fallback={<Spinner />}>
       <LazyLeetcode75 />
-    </Suspense>
+    // </Suspense>
   );
 }
 
