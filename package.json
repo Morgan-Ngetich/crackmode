@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "husky install",
-    "preinstall": "node ./scripts/check-location.js"
+    "preinstall": "node ./frontend/scripts/check-location.js"
   },
   "keywords": [],
   "author": "",
