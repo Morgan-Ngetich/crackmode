@@ -1,7 +1,6 @@
 // src/AppLayout.tsx
-import { Box, Spinner, HStack } from '@chakra-ui/react';
+import { Box, HStack } from '@chakra-ui/react';
 import { Outlet } from '@tanstack/react-router';
-import { Suspense } from "react";
 import { useAuthPromptStore } from '@/hooks/auth/store/useAuthPromptStore';
 import AuthPromptDialog from '@/components/auth/AuthPromptDialog';
 import { useAuthPromptController } from '@/hooks/auth/store/useAuthPromptController';
@@ -24,10 +23,10 @@ interface AppLayoutProps {
   children?: React.ReactNode; // Only if you want to use children instead of Outlet
 }
 
+
 const AppLayout: React.FC<AppLayoutProps> = ({
   serverDoc,
   serverBreadcrumbs = [],
-  serverHeadings = [],
   serverCurrentPath,
   serverBaseUrl
 }) => {
@@ -40,12 +39,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   // Client-side hooks
   const clientDoc = useDocumentFromPath();
   const clientBreadcrumbData = useBreadcrumbItems();
-  const clientHeadings = useHeadings();
 
-  // Choose between server data (from loader) and client hooks
+  // Use doc to get headings (works for both client and server)
   const doc = isClient ? clientDoc : serverDoc;
+  const headings = useHeadings(doc); // Pass the document, not serverHeadings
+
   const breadcrumbs = isClient ? clientBreadcrumbData.structuredDataItems : serverBreadcrumbs;
-  const headings = isClient ? clientHeadings : serverHeadings;
   const currentPath = isClient ? window.location.pathname : (serverCurrentPath || '/');
   const baseUrl = isClient ? window.location.origin : (serverBaseUrl || '');
 
@@ -59,7 +58,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({
       />
       <CrackModeHeader page="crackmode/docs" />
       <HStack flex="1" align="start" gap={0} w="100%" overflow="hidden">
-        {/* Sidebar */}
         <Box
           as="nav"
           w="280px"
@@ -75,12 +73,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({
         >
           <Sidebar />
         </Box>
-        <Suspense fallback={<Spinner />}>
-          {/* Main Docs Content */}
-          <DocsLayout headings={headings}>
-            <Outlet /> {/* This renders child routes */}
-          </DocsLayout>
-        </Suspense>
+        <DocsLayout headings={headings}>
+          <Outlet />
+        </DocsLayout>
       </HStack>
       {open && (
         <AuthPromptDialog

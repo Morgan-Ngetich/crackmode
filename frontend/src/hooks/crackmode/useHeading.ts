@@ -1,40 +1,20 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import type { HeadingData } from "@/client/types";
-import slugify from "slugify";
+import type { EnhancedSearchableDoc } from "@/client/types/search";
 
-export function useHeadings(): HeadingData[] {
-  const [headings, setHeadings] = useState<HeadingData[]>([]);
-
-  useEffect(() => {
-    const elements = Array.from(
-      document.querySelectorAll("h2, h3, h4")
-    ) as HTMLElement[];
-
-    const idCountMap: Record<string, number> = {};
-
-    const mapped = elements.map((el) => {
-      let baseId = el.id || slugify(el.innerText, { lower: true, strict: true });
-
-      // Ensure unique ID
-      if (idCountMap[baseId]) {
-        idCountMap[baseId] += 1;
-        baseId = `${baseId}-${idCountMap[baseId]}`;
-      } else {
-        idCountMap[baseId] = 1;
-      }
-
-      // Update the element's id in the DOM to match the unique ID
-      el.id = baseId;
-
-      return {
-        id: baseId,
-        text: el.innerText,
-        level: Number(el.tagName.replace("H", "")),
-      };
-    });
-
-    setHeadings(mapped);
-  }, []);
+export function useHeadings(doc?: EnhancedSearchableDoc): HeadingData[] {
+  const headings = useMemo(() => {
+    // If doc has headings, use them
+    if (doc?.headings && doc.headings.length > 0) {
+      return doc.headings.map((heading, index) => ({
+        id: heading.id || `heading-${index}`,
+        text: heading.text,
+        level: heading.level || 2
+      }));
+    }
+    
+    return [];
+  }, [doc]);
 
   return headings;
 }
