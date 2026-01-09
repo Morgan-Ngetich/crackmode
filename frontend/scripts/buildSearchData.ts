@@ -3,7 +3,7 @@ import path from "path";
 
 async function main() {
   const docsDirectory = path.join(process.cwd(), "src/components/docs");
-  const outputPath = path.join(process.cwd(), "src/assets/searchData.json");
+  const outputPath = path.join(process.cwd(), "public/assets/searchData.json");
 
   try {
     await generateSearchDataFromMDX(docsDirectory, outputPath);
