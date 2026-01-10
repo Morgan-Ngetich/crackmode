@@ -12,7 +12,7 @@ function loadTemplate() {
     console.log('🔍 Searching for template...')
     console.log('Current working directory:', process.cwd())
     console.log('__dirname:', __dirname)
-    
+
     // Try multiple possible paths
     const possiblePaths = [
       // Vercel's likely structure (build outputs at root)
@@ -25,7 +25,7 @@ function loadTemplate() {
       path.join(process.cwd(), 'frontend/dist/client/index.html'),
       path.join(__dirname, '../frontend/dist/client/index.html'),
     ]
-    
+
     let templatePath = null
     for (const possiblePath of possiblePaths) {
       console.log('Checking:', possiblePath)
@@ -35,7 +35,7 @@ function loadTemplate() {
         break
       }
     }
-    
+
     if (!templatePath) {
       // Log what's actually available for debugging
       console.log('📁 Available files:')
@@ -44,16 +44,16 @@ function loadTemplate() {
       } catch (e) {
         console.log('Cannot read process.cwd():', e.message)
       }
-      
+
       try {
         console.log('Files in __dirname:', fs.readdirSync(__dirname))
       } catch (e) {
         console.log('Cannot read __dirname:', e.message)
       }
-      
+
       throw new Error(`Template not found. Checked paths:\n${possiblePaths.join('\n')}`)
     }
-    
+
     template = fs.readFileSync(templatePath, 'utf-8')
     console.log('📄 Template loaded, size:', template.length, 'bytes')
   }
@@ -63,7 +63,7 @@ function loadTemplate() {
 async function loadRender() {
   if (!render) {
     console.log('🔍 Searching for server bundle...')
-    
+
     const possiblePaths = [
       path.join(process.cwd(), 'dist/server/entry-server.js'),
       path.join(__dirname, '../dist/server/entry-server.js'),
@@ -71,7 +71,7 @@ async function loadRender() {
       path.join(process.cwd(), 'frontend/dist/server/entry-server.js'),
       path.join(__dirname, '../frontend/dist/server/entry-server.js'),
     ]
-    
+
     let serverPath = null
     for (const possiblePath of possiblePaths) {
       console.log('Checking:', possiblePath)
@@ -81,39 +81,39 @@ async function loadRender() {
         break
       }
     }
-    
+
     if (!serverPath) {
       throw new Error(`Server entry not found. Checked paths:\n${possiblePaths.join('\n')}`)
     }
-    
+
     try {
       // For serverless environments, we need to use file:// URLs
       const fileUrl = `file://${serverPath}`
       console.log('Importing from:', fileUrl)
-      
+
       const module = await import(fileUrl)
       render = module.render
-      
+
       if (!render) {
         throw new Error('No render function exported from entry-server.js')
       }
-      
+
       console.log('✅ Render function loaded')
       return render
     } catch (importError) {
       console.error('❌ Failed to import server bundle:', importError.message)
       console.error('Stack:', importError.stack)
-      
+
       // Try alternative import method
       try {
         console.log('Trying alternative import method...')
         const module = await import(serverPath)
         render = module.render
-        
+
         if (!render) {
           throw new Error('No render function exported (alt import)')
         }
-        
+
         console.log('✅ Render function loaded via alternative method')
         return render
       } catch (secondError) {
@@ -132,63 +132,75 @@ export default async function handler(req, res) {
   console.log('Method:', req.method)
   console.log('User-Agent:', req.headers['user-agent']?.substring(0, 100) || 'none')
   console.log('='.repeat(50))
-  
+
   try {
     const url = req.url?.split('?')[0] || '/'
-    
+
     // Load template and render function
     console.log('\n📦 Loading resources...')
+    console.log('Template has <script type="module">:', htmlTemplate.includes('<script type="module"'))
+    const scriptMatch = htmlTemplate.match(/<script[^>]*src="\/assets\/[^"]+\.js"[^>]*>/g)
+    console.log('Script tags found:', scriptMatch ? scriptMatch.length : 0)
+    if (scriptMatch) {
+      scriptMatch.forEach((tag, i) => console.log(`  Script ${i + 1}:`, tag))
+    }
     const htmlTemplate = loadTemplate()
     const renderFn = await loadRender()
-    
+
     // Detect bots for logging
     const userAgent = req.headers['user-agent'] || ''
-    const isBot = /bot|crawler|spider|crawling/i.test(userAgent) || 
-                  /facebookexternalhit|twitterbot|linkedinbot|slackbot|telegrambot|whatsapp|discordbot/i.test(userAgent)
-    
+    const isBot = /bot|crawler|spider|crawling/i.test(userAgent) ||
+      /facebookexternalhit|twitterbot|linkedinbot|slackbot|telegrambot|whatsapp|discordbot/i.test(userAgent)
+
     console.log(`👤 Request from: ${isBot ? 'BOT' : 'USER'}`)
-    
+
     // Perform SSR
     try {
       console.log('\n🎨 Starting SSR rendering...')
-      
+
       const cookies = req.headers.cookie || ''
       console.log('Cookies present:', cookies ? 'Yes' : 'No')
-      
+
       const renderResult = await renderFn({ url, cookies })
       console.log('✅ SSR render complete')
       console.log('HTML length:', renderResult.html?.length || 0)
       console.log('Head present:', !!(renderResult.head))
-      
+
       const { html, head } = renderResult
-      
+
       const finalHtml = htmlTemplate
-        .replace('<!--ssr-head-->', 
-          (head?.title || '') + 
-          (head?.meta || '') + 
-          (head?.link || '') + 
+        .replace('<!--ssr-head-->',
+          (head?.title || '') +
+          (head?.meta || '') +
+          (head?.link || '') +
           (head?.script || '')
         )
         .replace('<!--ssr-outlet-->', html || '')
-      
+
+      // DEBUG: Check final HTML for script tags
+      console.log('\n🔍 Final HTML Script Check:')
+      console.log('Final has <script type="module">:', finalHtml.includes('<script type="module"'))
+      const finalScriptMatch = finalHtml.match(/<script[^>]*src="\/assets\/[^"]+\.js"[^>]*>/g)
+      console.log('Script tags in final:', finalScriptMatch ? finalScriptMatch.length : 0)
+
       // Verify replacement worked
       if (finalHtml.includes('<!--ssr-head-->') || finalHtml.includes('<!--ssr-outlet-->')) {
         console.warn('⚠️  WARNING: Placeholders still present after replacement!')
       } else {
         console.log('✅ Placeholders successfully replaced')
       }
-      
+
       res.setHeader('Content-Type', 'text/html; charset=utf-8')
       res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300')
       res.status(200).send(finalHtml)
-      
+
       console.log('✅ SSR successful for:', url)
       console.log('📤 Response sent, size:', finalHtml.length, 'bytes')
-      
+
     } catch (ssrError) {
       console.error('\n❌ SSR Render Error:', ssrError.message)
       console.error('Stack:', ssrError.stack)
-      
+
       // Fallback to static content
       console.log('🔄 Falling back to static content...')
       const fallback = getFallbackContent(url)
@@ -199,19 +211,19 @@ export default async function handler(req, res) {
           <meta name="robots" content="noindex">
         `)
         .replace('<!--ssr-outlet-->', fallback.content)
-      
+
       res.setHeader('Content-Type', 'text/html; charset=utf-8')
       res.setHeader('Cache-Control', 'no-cache')
       res.status(200).send(fallbackHtml)
-      
+
       console.log('⚠️  Served fallback for:', url)
     }
-    
+
   } catch (error) {
     console.error('\n❌❌❌ CRITICAL Handler Error')
     console.error('Message:', error.message)
     console.error('Stack:', error.stack)
-    
+
     // Ultimate fallback - basic HTML
     const fallback = getFallbackContent(req.url?.split('?')[0] || '/')
     const errorHtml = `
@@ -251,7 +263,7 @@ export default async function handler(req, res) {
         </body>
       </html>
     `
-    
+
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     res.status(500).send(errorHtml)
   }
