@@ -2,11 +2,16 @@
   "buildCommand": "cd frontend && npm run build",
   "installCommand": "cd frontend && npm install",
   "outputDirectory": "frontend/dist/client",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./frontend",
+  "framework": null,
   "functions": {
     "api/render.js": {
       "maxDuration": 20
     },
     "api/simple.js": {
+      "maxDuration": 10
+    },
+    "api/test.js": {
       "maxDuration": 10
     }
   },
