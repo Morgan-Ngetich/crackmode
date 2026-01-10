@@ -65,3 +65,5 @@ tsconfig.tsbuildinfo
 .tanstack/
 
 nginx.prod.conf
+.vercel
+.env*.local
