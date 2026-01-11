@@ -7,25 +7,28 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // Cache these at module level
 let templateCache = null
 let renderCache = null
+let assetsCache = null
 
 function loadTemplate() {
   if (templateCache) return templateCache
 
   console.log('🔍 Searching for template...')
 
-  // Based on test.js results, the correct path is:
-  const templatePath = path.join(__dirname, '../frontend/dist/client/index.html')
+  // Try SSR-specific template first
+  const ssrTemplatePath = path.join(__dirname, '../frontend/dist/client/index.ssr.html')
 
-  console.log('Loading template from:', templatePath)
-
-  if (!fs.existsSync(templatePath)) {
-    console.error('❌ Template not found at:', templatePath)
-    console.log('Available files in frontend:', fs.readdirSync(path.join(__dirname, '../frontend')))
-    throw new Error(`Template not found at: ${templatePath}`)
+  if (fs.existsSync(ssrTemplatePath)) {
+    console.log('✅ Using SSR template:', ssrTemplatePath)
+    templateCache = fs.readFileSync(ssrTemplatePath, 'utf-8')
+  } else {
+    // Fallback to regular template (won't work well but won't crash)
+    console.warn('⚠️  SSR template not found, using client template')
+    const fallbackPath = path.join(__dirname, '../frontend/dist/client/index.html')
+    templateCache = fs.readFileSync(fallbackPath, 'utf-8')
   }
 
-  templateCache = fs.readFileSync(templatePath, 'utf-8')
-  console.log('✅ Template loaded, size:', templateCache.length, 'bytes')
+  console.log('Template has ssr-outlet:', templateCache.includes('<!--ssr-outlet-->'))
+  console.log('Template length:', templateCache.length)
 
   return templateCache
 }
@@ -35,14 +38,12 @@ async function loadRender() {
 
   console.log('🔍 Loading server bundle...')
 
-  // Based on test.js results, the correct path is:
   const serverPath = path.join(__dirname, '../frontend/dist/server/entry-server.js')
 
   console.log('Loading server from:', serverPath)
 
   if (!fs.existsSync(serverPath)) {
     console.error('❌ Server bundle not found at:', serverPath)
-    console.log('Available files in frontend/dist:', fs.readdirSync(path.join(__dirname, '../frontend/dist')))
     throw new Error(`Server bundle not found at: ${serverPath}`)
   }
 
@@ -57,48 +58,85 @@ async function loadRender() {
   return renderCache
 }
 
+// Helper to read Vite manifest for asset URLs
+function getClientAssets() {
+  if (assetsCache) return assetsCache
+
+  const manifestPath = path.join(__dirname, '../frontend/dist/client/.vite/manifest.json')
+
+  if (!fs.existsSync(manifestPath)) {
+    console.warn('⚠️  No Vite manifest found, using fallback assets')
+    assetsCache = {
+      entry: '/assets/index-By93VWIg.js',
+      css: [],
+      preload: [
+        '/assets/vendor-react-CcKOZ5PQ.js',
+        '/assets/vendor-router-BBRXXhp5.js',
+        '/assets/vendor-ui-3Tm0xZ4s.js',
+        '/assets/vendor-state-COm_RIo9.js',
+        '/assets/vendor-other-CY1qFXbz.js',
+      ]
+    }
+    return assetsCache
+  }
+
+  try {
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'))
+    const entry = manifest['src/main.tsx']
+
+    if (!entry) {
+      throw new Error('No src/main.tsx entry in manifest')
+    }
+
+    assetsCache = {
+      entry: `/${entry.file}`,
+      css: entry.css?.map(f => `/${f}`) || [],
+      preload: entry.imports?.map(imp => {
+        const importEntry = manifest[imp]
+        return importEntry ? `/${importEntry.file}` : null
+      }).filter(Boolean) || []
+    }
+
+    console.log('✅ Loaded assets from manifest:', {
+      entry: assetsCache.entry,
+      cssCount: assetsCache.css.length,
+      preloadCount: assetsCache.preload.length
+    })
+
+    return assetsCache
+  } catch (err) {
+    console.error('⚠️  Failed to parse manifest:', err.message)
+    // Return fallback
+    assetsCache = {
+      entry: '/assets/index-By93VWIg.js',
+      css: [],
+      preload: []
+    }
+    return assetsCache
+  }
+}
+
 export default async function handler(req, res) {
-  console.log('ALL REQUEST INFO:', JSON.stringify({
-    url: req.url,
-    query: req.query,
-    headers: Object.keys(req.headers),
-    method: req.method
-  }, null, 2))
-
-
   console.log('\n' + '='.repeat(50))
   console.log('🚀 SSR Request received')
   console.log('URL:', req.url)
+  console.log('Method:', req.method)
   console.log('='.repeat(50))
 
-
-
-  // If someone requests a JS/CSS file, something is wrong
-  if (req.url.match(/\.(js|css|png|jpg|svg)$/)) {
-    console.error('⚠️ STATIC FILE REQUEST REACHED SSR HANDLER:', req.url)
+  // Block static file requests
+  if (req.url.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2)$/)) {
+    console.error('⚠️  STATIC FILE REQUEST REACHED SSR HANDLER:', req.url)
     return res.status(404).send('Static file should not reach SSR handler')
   }
-
-  // Declare these first to avoid initialization errors
-  let htmlTemplate = null
-  let renderFn = null
 
   try {
     const url = req.url?.split('?')[0] || '/'
 
-    // Load template and render function
+    // Load resources
     console.log('\n📦 Loading resources...')
-    htmlTemplate = loadTemplate()
-    renderFn = await loadRender()
-
-    // DEBUG: Check template for script tags
-    console.log('\n🔍 Template Script Check:')
-    console.log('Template has <script type="module">:', htmlTemplate.includes('<script type="module"'))
-    const scriptMatch = htmlTemplate.match(/<script[^>]*src="\/assets\/[^"]+\.js"[^>]*>/g)
-    console.log('Script tags found:', scriptMatch ? scriptMatch.length : 0)
-    if (scriptMatch) {
-      scriptMatch.forEach((tag, i) => console.log(`  Script ${i + 1}:`, tag))
-    }
+    const htmlTemplate = loadTemplate()
+    const renderFn = await loadRender()
+    const assets = getClientAssets()
 
     const userAgent = req.headers['user-agent'] || ''
     const isBot = /bot|crawler|spider|crawling/i.test(userAgent) ||
@@ -107,103 +145,81 @@ export default async function handler(req, res) {
     console.log(`👤 Request from: ${isBot ? 'BOT' : 'USER'}`)
 
     // Perform SSR
-    try {
-      console.log('\n🎨 Starting SSR rendering...')
+    console.log('\n🎨 Starting SSR rendering...')
 
-      const cookies = req.headers.cookie || ''
-      const renderResult = await renderFn({ url, cookies })
+    const cookies = req.headers.cookie || ''
+    const renderResult = await renderFn({ url, cookies })
 
-      console.log('✅ SSR render complete')
-      console.log('HTML length:', renderResult.html?.length || 0)
+    console.log('✅ SSR render complete')
+    console.log('   HTML length:', renderResult.html?.length || 0)
+    console.log('   Head title:', renderResult.head?.title?.substring(0, 50) || 'none')
 
-      const { html, head } = renderResult
+    const { html, head } = renderResult
 
-      const finalHtml = htmlTemplate
-        .replace('<!--ssr-head-->',
-          (head?.title || '') +
-          (head?.meta || '') +
-          (head?.link || '') +
-          (head?.script || '')
-        )
-        .replace('<!--ssr-outlet-->', html || '')
+    // Build head content
+    const headContent = [
+      head?.title || '',
+      head?.meta || '',
+      head?.link || '',
+      head?.script || '',
+      // Add CSS links
+      ...assets.css.map(href => `<link rel="stylesheet" href="${href}">`),
+      // Add preload links
+      ...assets.preload.map(href => `<link rel="modulepreload" crossorigin href="${href}">`),
+      // Add main script
+      `<script type="module" crossorigin src="${assets.entry}"></script>`,
+    ].filter(Boolean).join('\n')
 
-      // DEBUG: Check final HTML for script tags
-      console.log('\n🔍 Final HTML Script Check:')
-      console.log('Final has <script type="module">:', finalHtml.includes('<script type="module"'))
-      const finalScriptMatch = finalHtml.match(/<script[^>]*src="\/assets\/[^"]+\.js"[^>]*>/g)
-      console.log('Script tags in final:', finalScriptMatch ? finalScriptMatch.length : 0)
+    // Replace placeholders
+    let finalHtml = htmlTemplate
+      .replace('<!--ssr-head-->', headContent)
+      .replace('<!--ssr-outlet-->', html || '')
 
-      if (finalHtml.includes('<!--ssr-head-->') || finalHtml.includes('<!--ssr-outlet-->')) {
-        console.warn('⚠️  Placeholders still present!')
-      } else {
-        console.log('✅ Placeholders replaced')
-      }
-
-      res.setHeader('Content-Type', 'text/html; charset=utf-8')
-      res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300')
-      res.status(200).send(finalHtml)
-
-      console.log('✅ SSR successful for:', url)
-
-    } catch (ssrError) {
-      console.error('\n❌ SSR Render Error:', ssrError.message)
-      console.error('Stack:', ssrError.stack)
-
-      // Fallback - use the loaded template
-      const fallback = getFallbackContent(url)
-      const fallbackHtml = htmlTemplate
-        .replace('<!--ssr-head-->', `
-          <title>${fallback.title}</title>
-          <meta name="description" content="${fallback.description}">
-        `)
-        .replace('<!--ssr-outlet-->', fallback.content)
-
-      res.setHeader('Content-Type', 'text/html; charset=utf-8')
-      res.status(200).send(fallbackHtml)
-
-      console.log('⚠️  Served fallback')
+    // Verify replacement
+    if (finalHtml.includes('<!--ssr-head-->') || finalHtml.includes('<!--ssr-outlet-->')) {
+      console.error('❌ Placeholders still present after replacement!')
+      console.log('Template preview:', htmlTemplate.substring(0, 500))
+    } else {
+      console.log('✅ Placeholders replaced successfully')
     }
 
-  } catch (error) {
-    console.error('\n❌❌❌ CRITICAL Error:', error.message)
-    console.error('Stack:', error.stack)
-
-    // Ultimate fallback - don't rely on htmlTemplate
-    const fallback = getFallbackContent(req.url?.split('?')[0] || '/')
+    // Check for actual content
+    const hasContent = finalHtml.includes('<div') || finalHtml.includes('<main')
+    console.log('Has content in HTML:', hasContent)
+    console.log('Final HTML length:', finalHtml.length)
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
-    res.status(500).send(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>${fallback.title}</title>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1">
-        </head>
-        <body>
-          <div style="max-width: 800px; margin: 100px auto; padding: 20px; text-align: center;">
-            <h1>CrackMode</h1>
-            <h2>Master LeetCode & Algorithms</h2>
-            <div style="color: red; margin: 20px 0;">
-              <strong>Error:</strong> ${error.message.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
-            </div>
-          </div>
-        </body>
-      </html>
-    `)
-  }
-}
+    res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300')
+    res.status(200).send(finalHtml)
 
-function getFallbackContent(url) {
-  return {
-    title: 'CrackMode | Master LeetCode & Algorithms',
-    description: 'Master coding interviews with comprehensive LeetCode solutions',
-    content: `
-      <div style="max-width: 800px; margin: 100px auto; text-align: center; padding: 20px;">
-        <h1 style="font-size: 48px;">CrackMode</h1>
-        <h2 style="font-size: 24px; color: #666;">Master LeetCode & Algorithms</h2>
-        <p style="color: #888;">Loading...</p>
-      </div>
-    `
+    console.log('✅ SSR successful for:', url)
+
+  } catch (error) {
+    console.error('\n❌❌❌ SSR Error:', error.message)
+    console.error('Stack:', error.stack)
+
+    // Fallback HTML with client-side rendering
+    const assets = getClientAssets()
+    const fallbackHtml = `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/group.png">
+    <title>CrackMode | Master LeetCode & Algorithms</title>
+    <meta name="description" content="Master coding interviews with comprehensive LeetCode solutions">
+    ${assets.preload.map(href => `<link rel="modulepreload" crossorigin href="${href}">`).join('\n')}
+    <script type="module" crossorigin src="${assets.entry}"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>`.trim()
+
+    res.setHeader('Content-Type', 'text/html; charset=utf-8')
+    res.status(500).send(fallbackHtml)
+
+    console.log('⚠️  Served fallback HTML with client-side rendering')
   }
 }
