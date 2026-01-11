@@ -58,11 +58,21 @@ async function loadRender() {
 }
 
 export default async function handler(req, res) {
+  console.log('ALL REQUEST INFO:', JSON.stringify({
+    url: req.url,
+    query: req.query,
+    headers: Object.keys(req.headers),
+    method: req.method
+  }, null, 2))
+
+
   console.log('\n' + '='.repeat(50))
   console.log('🚀 SSR Request received')
   console.log('URL:', req.url)
   console.log('='.repeat(50))
-  
+
+
+
   // If someone requests a JS/CSS file, something is wrong
   if (req.url.match(/\.(js|css|png|jpg|svg)$/)) {
     console.error('⚠️ STATIC FILE REQUEST REACHED SSR HANDLER:', req.url)
