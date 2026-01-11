@@ -10,49 +10,49 @@ let renderCache = null
 
 function loadTemplate() {
   if (templateCache) return templateCache
-  
+
   console.log('🔍 Searching for template...')
-  
+
   // Based on test.js results, the correct path is:
   const templatePath = path.join(__dirname, '../frontend/dist/client/index.html')
-  
+
   console.log('Loading template from:', templatePath)
-  
+
   if (!fs.existsSync(templatePath)) {
     console.error('❌ Template not found at:', templatePath)
     console.log('Available files in frontend:', fs.readdirSync(path.join(__dirname, '../frontend')))
     throw new Error(`Template not found at: ${templatePath}`)
   }
-  
+
   templateCache = fs.readFileSync(templatePath, 'utf-8')
   console.log('✅ Template loaded, size:', templateCache.length, 'bytes')
-  
+
   return templateCache
 }
 
 async function loadRender() {
   if (renderCache) return renderCache
-  
+
   console.log('🔍 Loading server bundle...')
-  
+
   // Based on test.js results, the correct path is:
   const serverPath = path.join(__dirname, '../frontend/dist/server/entry-server.js')
-  
+
   console.log('Loading server from:', serverPath)
-  
+
   if (!fs.existsSync(serverPath)) {
     console.error('❌ Server bundle not found at:', serverPath)
     console.log('Available files in frontend/dist:', fs.readdirSync(path.join(__dirname, '../frontend/dist')))
     throw new Error(`Server bundle not found at: ${serverPath}`)
   }
-  
+
   const module = await import(serverPath)
   renderCache = module.render
-  
+
   if (!renderCache) {
     throw new Error('No render function exported from entry-server.js')
   }
-  
+
   console.log('✅ Render function loaded')
   return renderCache
 }
@@ -63,18 +63,24 @@ export default async function handler(req, res) {
   console.log('URL:', req.url)
   console.log('='.repeat(50))
   
+  // If someone requests a JS/CSS file, something is wrong
+  if (req.url.match(/\.(js|css|png|jpg|svg)$/)) {
+    console.error('⚠️ STATIC FILE REQUEST REACHED SSR HANDLER:', req.url)
+    return res.status(404).send('Static file should not reach SSR handler')
+  }
+
   // Declare these first to avoid initialization errors
   let htmlTemplate = null
   let renderFn = null
-  
+
   try {
     const url = req.url?.split('?')[0] || '/'
-    
+
     // Load template and render function
     console.log('\n📦 Loading resources...')
     htmlTemplate = loadTemplate()
     renderFn = await loadRender()
-    
+
     // DEBUG: Check template for script tags
     console.log('\n🔍 Template Script Check:')
     console.log('Template has <script type="module">:', htmlTemplate.includes('<script type="module"'))
@@ -83,56 +89,56 @@ export default async function handler(req, res) {
     if (scriptMatch) {
       scriptMatch.forEach((tag, i) => console.log(`  Script ${i + 1}:`, tag))
     }
-    
+
     const userAgent = req.headers['user-agent'] || ''
-    const isBot = /bot|crawler|spider|crawling/i.test(userAgent) || 
-                  /facebookexternalhit|twitterbot|linkedinbot|slackbot|telegrambot|whatsapp|discordbot/i.test(userAgent)
-    
+    const isBot = /bot|crawler|spider|crawling/i.test(userAgent) ||
+      /facebookexternalhit|twitterbot|linkedinbot|slackbot|telegrambot|whatsapp|discordbot/i.test(userAgent)
+
     console.log(`👤 Request from: ${isBot ? 'BOT' : 'USER'}`)
-    
+
     // Perform SSR
     try {
       console.log('\n🎨 Starting SSR rendering...')
-      
+
       const cookies = req.headers.cookie || ''
       const renderResult = await renderFn({ url, cookies })
-      
+
       console.log('✅ SSR render complete')
       console.log('HTML length:', renderResult.html?.length || 0)
-      
+
       const { html, head } = renderResult
-      
+
       const finalHtml = htmlTemplate
-        .replace('<!--ssr-head-->', 
-          (head?.title || '') + 
-          (head?.meta || '') + 
-          (head?.link || '') + 
+        .replace('<!--ssr-head-->',
+          (head?.title || '') +
+          (head?.meta || '') +
+          (head?.link || '') +
           (head?.script || '')
         )
         .replace('<!--ssr-outlet-->', html || '')
-      
+
       // DEBUG: Check final HTML for script tags
       console.log('\n🔍 Final HTML Script Check:')
       console.log('Final has <script type="module">:', finalHtml.includes('<script type="module"'))
       const finalScriptMatch = finalHtml.match(/<script[^>]*src="\/assets\/[^"]+\.js"[^>]*>/g)
       console.log('Script tags in final:', finalScriptMatch ? finalScriptMatch.length : 0)
-      
+
       if (finalHtml.includes('<!--ssr-head-->') || finalHtml.includes('<!--ssr-outlet-->')) {
         console.warn('⚠️  Placeholders still present!')
       } else {
         console.log('✅ Placeholders replaced')
       }
-      
+
       res.setHeader('Content-Type', 'text/html; charset=utf-8')
       res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300')
       res.status(200).send(finalHtml)
-      
+
       console.log('✅ SSR successful for:', url)
-      
+
     } catch (ssrError) {
       console.error('\n❌ SSR Render Error:', ssrError.message)
       console.error('Stack:', ssrError.stack)
-      
+
       // Fallback - use the loaded template
       const fallback = getFallbackContent(url)
       const fallbackHtml = htmlTemplate
@@ -141,20 +147,20 @@ export default async function handler(req, res) {
           <meta name="description" content="${fallback.description}">
         `)
         .replace('<!--ssr-outlet-->', fallback.content)
-      
+
       res.setHeader('Content-Type', 'text/html; charset=utf-8')
       res.status(200).send(fallbackHtml)
-      
+
       console.log('⚠️  Served fallback')
     }
-    
+
   } catch (error) {
     console.error('\n❌❌❌ CRITICAL Error:', error.message)
     console.error('Stack:', error.stack)
-    
+
     // Ultimate fallback - don't rely on htmlTemplate
     const fallback = getFallbackContent(req.url?.split('?')[0] || '/')
-    
+
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     res.status(500).send(`
       <!DOCTYPE html>
