@@ -6,12 +6,6 @@
   "functions": {
     "api/render.js": {
       "maxDuration": 20
-    },
-    "api/simple.js": {
-      "maxDuration": 10
-    },
-    "api/test.js": {
-      "maxDuration": 10
     }
   },
   "routes": [
@@ -19,24 +13,13 @@
       "src": "/assets/(.*)",
       "headers": {
         "cache-control": "public, max-age=31536000, immutable"
-      },
-      "continue": true
+      }
     },
     {
-      "src": "/api/simple",
-      "dest": "/api/simple"
-    },
-    {
-      "src": "/api/test",
-      "dest": "/api/test"
-    },
-    {
-      "src": "/api/debug",
-      "dest": "/api/debug"
-    },
-        {
-      "src": "/api/structure",
-      "dest": "/api/structure"
+      "src": "/.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|json)$",
+      "headers": {
+        "cache-control": "public, max-age=3600"
+      }
     },
     {
       "src": "/api/v1/(.*)",
