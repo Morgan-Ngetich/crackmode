@@ -1,5 +1,6 @@
 import { StrictMode } from 'react';
 import { renderToString } from 'react-dom/server';
+// Use named import directly
 import { HelmetProvider } from 'react-helmet-async';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ChakraProvider } from '@chakra-ui/react';
@@ -12,7 +13,6 @@ import {
   RouterProvider
 } from '@tanstack/react-router';
 import { routeTree } from '@/routeTree.gen';
-// ❌ REMOVED: import MDXComponents from '@/crackmode/components/MDXComponents';
 import themeSystem from '@/theme';
 
 interface RenderResult {
@@ -76,16 +76,11 @@ export async function render({ url, cookies }: RenderOptions): Promise<RenderRes
   // Preload all data for the route
   await router.load();
 
-  // ✅ Lazy load MDXComponents only if rendering a crackmode route
-  const isCrackmodeRoute = url.startsWith('/crackmode');
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
   let MDXComponents: any = {};
 
-  if (isCrackmodeRoute) {
-    // Dynamic import only for crackmode routes
-    const mdxModule = await import('@/components/common/MDXComponents');
-    MDXComponents = mdxModule.default;
-  }
+  const mdxModule = await import('@/components/common/MDXComponents');
+  MDXComponents = mdxModule.default;
 
   const html = renderToString(
     <StrictMode>
@@ -93,14 +88,9 @@ export async function render({ url, cookies }: RenderOptions): Promise<RenderRes
         <QueryClientProvider client={queryClient}>
           <ChakraProvider value={themeSystem}>
             <ColorModeProvider>
-              {/* ✅ Only provide MDXComponents if on crackmode route */}
-              {isCrackmodeRoute ? (
                 <MDXProvider components={MDXComponents}>
                   <RouterProvider router={router} />
                 </MDXProvider>
-              ) : (
-                <RouterProvider router={router} />
-              )}
             </ColorModeProvider>
           </ChakraProvider>
         </QueryClientProvider>
@@ -133,7 +123,6 @@ export async function render({ url, cookies }: RenderOptions): Promise<RenderRes
       }
   };
 }
-
 
 // Helper function to parse cookies
 function parseCookies(cookieHeader: string): Record<string, string> {

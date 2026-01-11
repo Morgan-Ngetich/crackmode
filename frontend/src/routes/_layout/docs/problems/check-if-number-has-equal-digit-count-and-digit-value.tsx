@@ -1,15 +1,12 @@
-import { Spinner } from "@chakra-ui/react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Suspense, lazy } from "react";
+import { lazy } from "react";
 
 // Lazy load the MDX component
-const LazyCheckIfNumberHasEqualDigitCountAndDigitValue= lazy(() => import("@/components/docs/problems/check-if-number-has-equal-digit-count-and-digit-value.mdx"));
+const LazyCheckIfNumberHasEqualDigitCountAndDigitValue = lazy(() => import("@/components/docs/problems/check-if-number-has-equal-digit-count-and-digit-value.mdx"));
 
 function CheckIfNumberHasEqualDigitCountAndDigitValue() {
   return (
-    <Suspense fallback={<Spinner />}>
-      <LazyCheckIfNumberHasEqualDigitCountAndDigitValue />
-    </Suspense>
+    <LazyCheckIfNumberHasEqualDigitCountAndDigitValue />
   );
 }
 

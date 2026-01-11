@@ -5,6 +5,12 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Skip check in CI environments (Vercel, GitHub Actions, etc.)
+if (process.env.CI || process.env.VERCEL || process.env.GITHUB_ACTIONS) {
+  console.log('✅ CI environment detected, skipping directory check.');
+  process.exit(0);
+}
+
 // Move one level up to check if current working directory is 'frontend'
 const cwd = process.cwd();
 const projectDirName = path.basename(cwd);

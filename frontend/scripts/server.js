@@ -4,141 +4,151 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const isProduction = process.env.RAILWAY_ENVIRONMENT === 'production'
-const PORT = process.env.PORT || 8080
+const isProduction = process.env.NODE_ENV === 'production'
+const PORT = process.env.PORT || 5174
 
-console.log('Starting server from:', __dirname)
-console.log('Production mode:', isProduction)
-
-// Fallback content generator
-function getFallbackContent(url) {
-    return {
-      title: 'CrackMode | Master LeetCode & Algorithms',
-      description: 'Master coding interviews with comprehensive LeetCode solutions and algorithm tutorials',
-      content: `
-        <div id="root">
-          <header style="text-align: center; padding: 2rem;">
-            <h1>CrackMode</h1>
-            <p>Master LeetCode & Algorithms</p>
-            <p>Your ultimate platform for coding interviews.</p>
-          </header>
-        </div>
-      `
-    }
-}
+console.log('🚀 Starting server...')
+console.log('📁 __dirname:', __dirname)
+console.log('🏗️  Mode:', isProduction ? 'PRODUCTION' : 'DEVELOPMENT')
 
 async function createServer() {
   const app = express()
-
   let vite
+
   if (!isProduction) {
-    // Only import vite in development
     const { createServer: createViteServer } = await import('vite')
     vite = await createViteServer({
       server: { middlewareMode: true },
-      appType: 'custom'
+      appType: 'custom',
+      root: path.resolve(__dirname, '..')
     })
     app.use(vite.middlewares)
+    console.log('✅ Vite dev server initialized')
   } else {
-    // Serve static files in production - nginx handles this anyway
-    console.log('Production mode: nginx will serve static files')
+    app.use('/assets', express.static(path.join(__dirname, '../dist/client/assets'), {
+      maxAge: '1y',
+      immutable: true
+    }))
+    console.log('✅ Static assets configured')
   }
 
-  // Handle all routes
-  app.use(/(.*)/, async (req, res) => {
-    try {
-      const url = req.originalUrl.split("?")[0]
-      console.log("SSR request for:", url)
+  // API proxy
+  app.use('/api/*', (req, res) => {
+    console.log('❌ API request (no backend configured):', req.originalUrl)
+    res.status(404).json({ error: 'API - configure proxy if needed' })
+  })
 
+  // SSR for all routes
+  app.use('*', async (req, res) => {
+    const url = req.originalUrl.split('?')[0]
+    console.log('\n🔄 SSR Request:', url)
+    
+    try {
       let template, render
 
       if (!isProduction) {
         // Dev mode
-        template = fs.readFileSync(path.resolve('index.html'), 'utf-8')
+        const templatePath = path.resolve(__dirname, '../index.html')
+        console.log('📄 Loading template from:', templatePath)
+        
+        if (!fs.existsSync(templatePath)) {
+          throw new Error(`Template not found at: ${templatePath}`)
+        }
+        
+        template = fs.readFileSync(templatePath, 'utf-8')
+        console.log('✅ Template loaded, length:', template.length)
+        
         template = await vite.transformIndexHtml(url, template)
-        render = (await vite.ssrLoadModule('/src/seo/entry-server.tsx')).render
+        console.log('✅ Template transformed by Vite')
+        
+        console.log('📦 Loading SSR module: /src/seo/entry-server.tsx')
+        const ssrModule = await vite.ssrLoadModule('/src/seo/entry-server.tsx')
+        console.log('✅ SSR module loaded, exports:', Object.keys(ssrModule))
+        
+        render = ssrModule.render
+        
+        if (!render) {
+          throw new Error('No render function exported from entry-server.tsx')
+        }
       } else {
         // Production mode
-        console.log('Loading production template and server...')
-
-        // Template from nginx html directory
-        template = fs.readFileSync('/usr/share/nginx/html/index.html', 'utf-8')
-
-        // Server entry - use the fixed relative path
-        const serverPath = path.resolve(__dirname, '../dist/server/entry-server.js')
-        console.log('Loading server from:', serverPath)
-
-        if (!fs.existsSync(serverPath)) {
-          throw new Error(`Server entry not found at: ${serverPath}`)
-        }
-
-        render = (await import(serverPath)).render
+        const templatePath = path.join(__dirname, '../dist/client/index.html')
+        console.log('📄 Loading template from:', templatePath)
+        
+        template = fs.readFileSync(templatePath, 'utf-8')
+        
+        const serverPath = path.join(__dirname, '../dist/server/entry-server.js')
+        console.log('⚙️  Loading server from:', serverPath)
+        
+        const serverModule = await import(serverPath)
+        render = serverModule.render
       }
 
-      // Check if this is a bot/crawler
-      const userAgent = req.get('User-Agent') || ''
-      const isBot = /bot|crawler|spider|crawling/i.test(userAgent) ||
-        /facebookexternalhit|twitterbot|linkedinbot|slackbot|telegrambot|whatsapp|discordbot/i.test(userAgent)
+      console.log('🎨 Calling render function...')
+      const renderResult = await render({
+        url,
+        cookies: req.headers.cookie || ''
+      })
+      
+      console.log('✅ Render complete, result keys:', Object.keys(renderResult))
+      console.log('   - html length:', renderResult.html?.length || 0)
+      console.log('   - head.title:', renderResult.head?.title?.substring(0, 50) || 'none')
+      console.log('   - head.meta length:', renderResult.head?.meta?.length || 0)
 
-      // Always do SSR in this setup since nginx routes bots to us
-      try {
-        console.log('Attempting SSR...')
-        // pass cookies to SSR render
-        const cookies = req.headers.cookie || ""
-        const { html, head } = await render({
-          url,
-          cookies
-        })
+      const { html, head } = renderResult
 
-        const finalHtml = template
-          .replace(`<!--app-head-->`, head.title + head.meta + head.link + head.script)
-          .replace(`<!--app-html-->`, html)
+      // Check if placeholders exist in template
+      const hasHeadPlaceholder = template.includes('<!--ssr-head-->')
+      const hasOutletPlaceholder = template.includes('<!--ssr-outlet-->')
+      
+      console.log('🔍 Template check:')
+      console.log('   - Has <!--ssr-head-->:', hasHeadPlaceholder)
+      console.log('   - Has <!--ssr-outlet-->:', hasOutletPlaceholder)
 
-        res.status(200).set({ 'Content-Type': 'text/html' }).end(finalHtml)
-        console.log('SSR successful for:', url)
-      } catch (ssrError) {
-        console.error('SSR Error:', ssrError)
-
-        // Fallback with route-specific content
-        const fallback = getFallbackContent(url)
-        const fallbackHtml = template
-          .replace(`<!--app-head-->`,
-            `<title>${fallback.title}</title>
-             <meta name="description" content="${fallback.description}">`)
-          .replace(`<!--app-html-->`, fallback.content)
-
-        res.status(200).set({ 'Content-Type': 'text/html' }).end(fallbackHtml)
-        console.log('Served fallback for:', url)
+      if (!hasHeadPlaceholder || !hasOutletPlaceholder) {
+        console.warn('⚠️  WARNING: Template missing SSR placeholders!')
       }
 
+      const finalHtml = template
+        .replace('<!--ssr-head-->', head.title + head.meta + head.link + head.script)
+        .replace('<!--ssr-outlet-->', html)
+
+      // Verify replacement happened
+      const stillHasPlaceholder = finalHtml.includes('<!--ssr-head-->') || finalHtml.includes('<!--ssr-outlet-->')
+      if (stillHasPlaceholder) {
+        console.error('❌ ERROR: Placeholders still present after replacement!')
+      } else {
+        console.log('✅ Placeholders successfully replaced')
+      }
+
+      res.status(200).set({ 'Content-Type': 'text/html' }).end(finalHtml)
+      console.log('✅ SSR successful for:', url)
+      
     } catch (e) {
-      console.error('Route handler error:', e)
-
-      // Ultimate fallback
-      const fallback = getFallbackContent(req.originalUrl.split("?")[0])
-      const errorHtml = `
+      if (vite) vite.ssrFixStacktrace(e)
+      console.error('\n❌ SSR ERROR for', url)
+      console.error('Error:', e.message)
+      console.error('Stack:', e.stack)
+      
+      res.status(500).send(`
         <!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>${fallback.title}</title>
-          <meta name="description" content="${fallback.description}">
-        </head>
-        <body>
-          ${fallback.content}
-          <script>console.error('Server error:', ${JSON.stringify(e.message)})</script>
-        </body>
+        <html>
+          <head><title>SSR Error</title></head>
+          <body>
+            <h1>SSR Error</h1>
+            <pre>${e.message}\n\n${e.stack}</pre>
+          </body>
         </html>
-      `
-
-      res.status(500).set({ 'Content-Type': 'text/html' }).end(errorHtml)
+      `)
     }
   })
 
   app.listen(PORT, () => {
-    console.log(`✅ Server running on http://localhost:${PORT}`)
+    console.log(`\n✅ Server running at http://localhost:${PORT}\n`)
   })
 }
 
-createServer().catch(console.error)
+createServer().catch(err => {
+  console.error('❌ Failed to start server:', err)
+  process.exit(1)
+})

@@ -41,11 +41,17 @@ const fuseOptions: IFuseOptions<SearchableDoc> = {
   fieldNormWeight: 1
 };
 
-// Query function to load search data
+// Query function to load search data from /searchData.json
 async function loadSearchData(): Promise<SearchableDoc[]> {
   try {
-    const searchData = await import('../../assets/searchData.json');
-    const documents = searchData.default || searchData;
+    // Fetch from public root (works in dev and prod)
+    const response = await fetch('/assets/searchData.json');
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch search data: ${response.statusText}`);
+    }
+    
+    const documents = await response.json();
     
     if (!Array.isArray(documents)) {
       throw new Error('Invalid search data format');
@@ -79,8 +85,8 @@ export function useDocsSearch(options: SearchOptions = {}) {
   } = useQuery({
     queryKey: ['searchData'],
     queryFn: loadSearchData,
-    staleTime: 1000 * 60 * 60, // 1 hour - search data doesn't change often
-    gcTime: 1000 * 60 * 60 * 24, // 24 hours cache time
+    staleTime: 1000 * 60 * 60, // 1 hour
+    gcTime: 1000 * 60 * 60 * 24, // 24 hours
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
@@ -110,8 +116,8 @@ export function useDocsSearch(options: SearchOptions = {}) {
       groupBySection
     }),
     enabled: !!debouncedQuery.trim() && searchableDocuments.length > 0,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    gcTime: 1000 * 60 * 10, // 10 minutes
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
   });
 
   // Get available metadata for filters
@@ -132,7 +138,7 @@ export function useDocsSearch(options: SearchOptions = {}) {
     return Array.from(levels).sort((a, b) => a - b);
   }, [searchableDocuments]);
 
-  // Search suggestions based on available content
+  // Search suggestions
   const suggestions = useMemo(() => {
     if (query.length < 2) return [];
     
@@ -166,14 +172,13 @@ export function useDocsSearch(options: SearchOptions = {}) {
     setQuery('');
     setDebouncedQuery('');
     setFilters({});
-    // Optionally clear search results cache
     queryClient.removeQueries({ 
       queryKey: ['searchResults'], 
       type: 'all' 
     });
   }, [queryClient]);
 
-  // Prefetch popular searches or sections
+  // Prefetch section
   const prefetchSection = useCallback((section: string) => {
     queryClient.prefetchQuery({
       queryKey: ['searchResults', '', { sections: [section] }, maxResults, includeContent, groupBySection],
@@ -185,12 +190,11 @@ export function useDocsSearch(options: SearchOptions = {}) {
         includeContent,
         groupBySection
       }),
-      staleTime: 1000 * 60 * 10, // 10 minutes
+      staleTime: 1000 * 60 * 10,
     });
   }, [queryClient, searchableDocuments, maxResults, includeContent, groupBySection]);
 
   return {
-    // Search state
     query,
     debouncedQuery,
     searchResults,
@@ -198,33 +202,29 @@ export function useDocsSearch(options: SearchOptions = {}) {
     isLoading,
     error: error || searchError,
     
-    // Filter state
     filters,
     availableSections,
     availableTags,
     availableHeadingLevels,
     
-    // Search actions
     updateQuery,
     updateFilters,
     clearFilters,
     clearSearch,
-    refetch, // Refetch search data
-    prefetchSection, // Prefetch section data
+    refetch,
+    prefetchSection,
     
-    // Results metadata
     hasResults: searchResults.length > 0,
     totalResults: searchResults.length,
     suggestions,
     
-    // Utility
     isEmpty: !query.trim() && Object.keys(filters).every(key => 
       !filters[key as keyof SearchFilters]?.length
     )
   };
 }
 
-// Search execution function (extracted for TanStack Query)
+// Search execution function
 async function performSearch({
   query,
   documents,
@@ -244,7 +244,6 @@ async function performSearch({
     return [];
   }
 
-  // Apply filters to documents
   let filteredDocuments = documents;
   
   if (filters.sections?.length) {
@@ -267,14 +266,12 @@ async function performSearch({
     );
   }
 
-  // Create Fuse instance and search
   const fuse = new Fuse(filteredDocuments, fuseOptions);
   const results = fuse.search(query, { limit: maxResults });
   
   const processedResults = results.map((result): SearchResult => {
     const doc = result.item;
     
-    // Create highlighted versions
     const highlightedTitle = highlightMatches(doc.title, result.matches, 'title');
     const highlightedExcerpt = highlightMatches(doc.excerpt, result.matches, 'excerpt');
     const highlightedContent = includeContent 
@@ -291,7 +288,6 @@ async function performSearch({
     };
   });
 
-  // Group by section if requested
   if (groupBySection) {
     return groupResultsBySection(processedResults);
   }
@@ -311,12 +307,9 @@ function highlightMatches(
   if (!match || !match.indices?.length) return text;
 
   let highlightedText = text;
-  
-  // Sort indices by start position (descending) to avoid offset issues
   const sortedIndices = [...match.indices].sort((a, b) => b[0] - a[0]);
 
   for (const [start, end] of sortedIndices) {
-    // Ensure indices are within bounds
     if (start >= text.length || end >= text.length) continue;
     
     const before = highlightedText.slice(0, start);
@@ -340,7 +333,6 @@ function groupResultsBySection(results: SearchResult[]) {
     return acc;
   }, {} as Record<string, SearchResult[]>);
 
-  // Convert to flat array with section headers
   const flattened: SearchResult[] = [];
   
   Object.keys(grouped)

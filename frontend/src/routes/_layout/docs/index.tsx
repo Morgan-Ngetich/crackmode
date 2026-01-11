@@ -1,13 +1,9 @@
 import IntroDoc from "@/components/docs/introduction.mdx";
-import { Spinner } from "@chakra-ui/react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Suspense } from "react";
 
 function DocsIndex() {
   return (
-    <Suspense fallback={<Spinner />}>
       <IntroDoc />
-    </Suspense>
   );
 }
 

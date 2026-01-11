@@ -1,15 +1,12 @@
-import { Spinner } from "@chakra-ui/react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Suspense, lazy } from "react";
+import { lazy } from "react";
 
 // Lazy load the MDX component
-const LazyContainsDuplicate= lazy(() => import("@/components/docs/problems/contains-duplicate.mdx"));
+const LazyContainsDuplicate = lazy(() => import("@/components/docs/problems/contains-duplicate.mdx"));
 
 function ContainsDuplicate() {
   return (
-    <Suspense fallback={<Spinner />}>
-      <LazyContainsDuplicate />
-    </Suspense>
+    <LazyContainsDuplicate />
   );
 }
 

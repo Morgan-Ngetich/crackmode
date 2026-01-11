@@ -1,40 +1,73 @@
 import { useEffect, useState } from "react";
 import type { HeadingData } from "@/client/types";
-import slugify from "slugify";
+import type { EnhancedSearchableDoc } from "@/client/types/search";
 
-export function useHeadings(): HeadingData[] {
+export function useHeadings(doc?: EnhancedSearchableDoc): HeadingData[] {
   const [headings, setHeadings] = useState<HeadingData[]>([]);
 
   useEffect(() => {
-    const elements = Array.from(
-      document.querySelectorAll("h2, h3, h4")
-    ) as HTMLElement[];
+    const syncHeadingsWithDOM = () => {
+      // Use doc headings as the source of truth initially
+      const sourceHeadings = doc?.headings || [];
+      
+      const elements = Array.from(
+        document.querySelectorAll("h2, h3, h4")
+      ) as HTMLElement[];
 
-    const idCountMap: Record<string, number> = {};
-
-    const mapped = elements.map((el) => {
-      let baseId = el.id || slugify(el.innerText, { lower: true, strict: true });
-
-      // Ensure unique ID
-      if (idCountMap[baseId]) {
-        idCountMap[baseId] += 1;
-        baseId = `${baseId}-${idCountMap[baseId]}`;
-      } else {
-        idCountMap[baseId] = 1;
+      if (elements.length === 0) {
+        // Fall back to doc headings
+        if (sourceHeadings.length > 0) {
+          setHeadings(sourceHeadings.map((heading, index) => ({
+            id: heading.id || `heading-${index}`,
+            text: heading.text,
+            level: heading.level || 2
+          })));
+        }
+        return;
       }
 
-      // Update the element's id in the DOM to match the unique ID
-      el.id = baseId;
+      const processedHeadings: HeadingData[] = [];
+      
+      elements.forEach((el, index) => {
+        // Try to find matching heading from doc
+        const matchingHeading = sourceHeadings[index];
+        
+        // Use doc heading ID if available, otherwise generate from text
+        let id = matchingHeading?.id;
+        
+        if (!id) {
+          // Try to get ID from DOM element
+          id = el.id || `heading-${index}`;
+          
+          // Ensure the DOM element has the ID
+          el.id = id;
+        } else {
+          // Ensure DOM element has the doc-provided ID
+          el.id = id;
+        }
 
-      return {
-        id: baseId,
-        text: el.innerText,
-        level: Number(el.tagName.replace("H", "")),
-      };
+        processedHeadings.push({
+          id,
+          text: el.innerText || el.textContent || matchingHeading?.text || "",
+          level: Number(el.tagName.replace("H", "")) || matchingHeading?.level || 2,
+        });
+      });
+
+      setHeadings(processedHeadings);
+    };
+
+    // Run initially
+    syncHeadingsWithDOM();
+
+    // Optional: Set up a MutationObserver to handle dynamic content
+    const observer = new MutationObserver(syncHeadingsWithDOM);
+    observer.observe(document.body, { 
+      childList: true, 
+      subtree: true 
     });
 
-    setHeadings(mapped);
-  }, []);
+    return () => observer.disconnect();
+  }, [doc]);
 
   return headings;
 }

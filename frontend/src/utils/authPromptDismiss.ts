@@ -6,11 +6,16 @@ interface DismissalRecord {
   timestamp: number;
 }
 
+// Check if we're in a browser environment
+const isBrowser = typeof window !== 'undefined';
+
 /**
  * Check if the auth prompt has been dismissed for a specific path
  * Dismissals expire after 24 hours
  */
 export function isPromptDismissed(pathname: string): boolean {
+  if (!isBrowser) return false;
+
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return false;
@@ -41,6 +46,8 @@ export function isPromptDismissed(pathname: string): boolean {
  * Set the auth prompt as dismissed for a specific path
  */
 export function setPromptDismissed(pathname: string): void {
+  if (!isBrowser) return;
+
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     const records: DismissalRecord[] = stored ? JSON.parse(stored) : [];
@@ -64,6 +71,8 @@ export function setPromptDismissed(pathname: string): void {
  * Clear dismissal for a specific path
  */
 export function clearPromptDismissal(pathname: string): void {
+  if (!isBrowser) return;
+
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return;
@@ -85,6 +94,8 @@ export function clearPromptDismissal(pathname: string): void {
  * Clear all expired dismissals
  */
 export function cleanupExpiredDismissals(): void {
+  if (!isBrowser) return;
+
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return;

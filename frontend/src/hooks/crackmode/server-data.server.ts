@@ -1,20 +1,43 @@
 import { type EnhancedSearchableDoc } from '@/client/types/search';
 import type { BreadcrumbItem, HeadingData } from '@/client/types/docs';
 import { sidebarConfig } from '@/config/sidebarConfig';
-import SearchData from '@/assets/searchData.json';
 import slugify from 'slugify';
+import fs from 'fs';
+import path from 'path';
+
+// Cache for server-side rendering
+let searchDataCache: EnhancedSearchableDoc[] | null = null;
+
+function getSearchData(): EnhancedSearchableDoc[] {
+  if (searchDataCache) {
+    return searchDataCache;
+  }
+
+  const searchDataPath = path.join(process.cwd(), 'public/assets/searchData.json');
+  
+  
+  if (!fs.existsSync(searchDataPath)) {
+    console.warn('⚠️ searchData.json not found at:', searchDataPath);
+    return [];
+  }
+
+  const rawData = fs.readFileSync(searchDataPath, 'utf-8');
+  searchDataCache = JSON.parse(rawData) as EnhancedSearchableDoc[];
+  
+  return searchDataCache;
+}
 
 // Server-side version of useDocumentFromPath
 export function getDocumentFromPath(pathname: string): EnhancedSearchableDoc | undefined {
+  const SearchData = getSearchData();
+  
   // Handle root path
   if (pathname === '/' || pathname === '/docs') {
-    return (SearchData as unknown as EnhancedSearchableDoc[]).find(item =>
-      item.url === '/docs'
-    );
+    return SearchData.find(item => item.url === '/docs');
   }
 
   // Find the document that matches the current path
-  const foundDoc = (SearchData as unknown as EnhancedSearchableDoc[]).find((item: EnhancedSearchableDoc) => {
+  const foundDoc = SearchData.find((item: EnhancedSearchableDoc) => {
     return item.url === pathname || pathname.endsWith(item.url);
   });
 
@@ -93,7 +116,6 @@ export function getBreadcrumbItems(path: string): {
     )
   );
 
-
   // For structured data, include the full path
   const structuredDataItems: BreadcrumbItem[] = [
     { title: 'CrackMode', url: '/', position: 1 },
@@ -109,26 +131,19 @@ export function getBreadcrumbItems(path: string): {
   };
 }
 
-
-
-
-// useHeadings:
 // Server-side version of useHeadings - Option 1: Pre-extracted headings
 function getHeadingsFromDoc(doc: EnhancedSearchableDoc | undefined): HeadingData[] {
   if (!doc || !doc.headings) return [];
   
-  // If your docs already have headings pre-extracted, use them
   return doc.headings.map((heading, index) => ({
     id: heading.id || `heading-${index}`,
     text: heading.text,
-    level: heading.level || 2 // Default to h2 if not specified
+    level: heading.level || 2
   }));
 }
 
-// Server-side version of useHeadings - Option 2: Parse HTML content (complex)
+// Server-side version of useHeadings - Option 2: Parse HTML content
 function extractHeadingsFromHtml(htmlContent: string): HeadingData[] {
-  // This is a simplified server-side HTML parser
-  // Note: This is complex and may not be 100% accurate
   const headingRegex = /<h([2-4])[^>]*>(.*?)<\/h\1>/gi;
   const headings: HeadingData[] = [];
   const idCountMap: Record<string, number> = {};
@@ -136,10 +151,9 @@ function extractHeadingsFromHtml(htmlContent: string): HeadingData[] {
   let match;
   while ((match = headingRegex.exec(htmlContent)) !== null) {
     const level = parseInt(match[1], 10);
-    const text = match[2].replace(/<[^>]*>/g, '').trim(); // Remove HTML tags
+    const text = match[2].replace(/<[^>]*>/g, '').trim();
     let baseId = slugify(text, { lower: true, strict: true });
     
-    // Ensure unique ID
     if (idCountMap[baseId]) {
       idCountMap[baseId] += 1;
       baseId = `${baseId}-${idCountMap[baseId]}`;
@@ -159,12 +173,10 @@ function extractHeadingsFromHtml(htmlContent: string): HeadingData[] {
 
 // Combined function that tries both approaches
 export function getHeadings(doc: EnhancedSearchableDoc | undefined, htmlContent?: string): HeadingData[] {
-  // First try pre-extracted headings
   if (doc?.headings?.length) {
     return getHeadingsFromDoc(doc);
   }
   
-  // Fallback to HTML parsing if content is provided
   if (htmlContent) {
     return extractHeadingsFromHtml(htmlContent);
   }

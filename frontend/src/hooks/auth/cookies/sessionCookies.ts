@@ -4,9 +4,13 @@ const SESSION_CACHE_KEY = "supabase_session_cache";
 const SESSION_COOKIE_KEY = "sb_session";
 const USER_METADATA_KEY = "user_metadata_cache";
 
+// Check if we're in a browser environment
+const isBrowser = typeof window !== 'undefined';
+
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function setAuthSession(session: any, userMetadata?: { is_mentor?: boolean; uuid?: string }): void {
-  if (!session) return;
+  if (!isBrowser || !session) return;
 
   try {
     // 1. Store full session in localStorage
@@ -48,7 +52,7 @@ export function setAuthSession(session: any, userMetadata?: { is_mentor?: boolea
     if (sessionStr.length > 3500) {
       const ultraMinimalSession = {
         access_token: session.access_token,
-        user: { 
+        user: {
           id: session.user?.id,
           user_metadata: {
             is_mentor: userMetadata?.is_mentor,
@@ -76,6 +80,7 @@ export function clearAuthSession(): void {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getCachedSession(): any {
+  if (!isBrowser) return;
   try {
     const cached = sessionStorage.getItem(SESSION_CACHE_KEY);
     if (cached) {
@@ -92,6 +97,7 @@ export function getCachedSession(): any {
 
 // Get cached user metadata for instant UI decisions
 export function getCachedUserMetadata(): { is_mentor?: boolean; uuid?: string } | null {
+  if (!isBrowser) return null;
   try {
     const cached = sessionStorage.getItem(USER_METADATA_KEY);
     if (cached) {
