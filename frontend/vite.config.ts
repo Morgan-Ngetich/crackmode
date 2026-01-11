@@ -4,7 +4,6 @@ import path from 'node:path'
 import { visualizer } from 'rollup-plugin-visualizer'
 import mdx from '@mdx-js/rollup'
 import remarkGfm from 'remark-gfm'
-import fs from 'fs'
 
 export default defineConfig((configEnv: ConfigEnv): UserConfig => {
   const { mode, isSsrBuild } = configEnv;
@@ -27,19 +26,6 @@ export default defineConfig((configEnv: ConfigEnv): UserConfig => {
         brotliSize: true,
         filename: 'dist/client/stats.html',
       }),
-      // Copy SSR template after client build
-      !isSsrBuild && {
-        name: 'copy-ssr-template',
-        closeBundle() {
-          const ssrTemplate = path.resolve(__dirname, 'index.ssr.html')
-          const destTemplate = path.resolve(__dirname, 'dist/client/index.ssr.html')
-
-          if (fs.existsSync(ssrTemplate)) {
-            fs.copyFileSync(ssrTemplate, destTemplate)
-            console.log('✅ Copied SSR template to dist/client/')
-          }
-        }
-      }
     ].filter(Boolean),
 
     resolve: {
