@@ -3,11 +3,6 @@
   "installCommand": "cd frontend && npm install",
   "outputDirectory": "frontend/dist/client",
   "framework": null,
-  "functions": {
-    "api/render.js": {
-      "maxDuration": 20
-    }
-  },
   "routes": [
     {
       "src": "/assets/(.*)",
@@ -16,10 +11,7 @@
       }
     },
     {
-      "src": "/.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|json)$",
-      "headers": {
-        "cache-control": "public, max-age=3600"
-      }
+      "handle": "filesystem"
     },
     {
       "src": "/api/v1/(.*)",
@@ -27,7 +19,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/api/render"
+      "dest": "/index.html"
     }
   ]
 }
