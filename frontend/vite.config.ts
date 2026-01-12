@@ -41,6 +41,13 @@ export default defineConfig((configEnv: ConfigEnv): UserConfig => {
       cssCodeSplit: true,
       chunkSizeWarningLimit: 500,
 
+      commonjsOptions: {
+        include: [/node_modules/],
+        extensions: ['.js', '.cjs'],
+        strictRequires: true,
+        transformMixedEsModules: true,
+      },
+
       ...(isSsrBuild ? {
         ssr: true,
         outDir: 'dist/server',
@@ -58,13 +65,18 @@ export default defineConfig((configEnv: ConfigEnv): UserConfig => {
           // ✅ Add this to exclude server files from client bundle
           external: (id) => {
             // Exclude .server.ts files from client bundle
-            if (id.includes('.server.ts') || id.includes('.server.tsx')) {
-              return true;
-            }
+            if (id.includes('.server.ts') || id.includes('.server.tsx')) return true;
+            if (id.includes('@types/')) return true;
             return false;
           },
           output: {
             manualChunks: (id) => {
+
+              // Put React in its own chunk
+              if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
+                return 'vendor-react'
+              }
+
               // Route-based splitting
               if (id.includes('/src/routes/') && id.includes('.lazy.tsx')) {
                 const routeMatch = id.match(/\/src\/routes\/(.+?)\/index\.lazy\.tsx/)
@@ -192,6 +204,7 @@ export default defineConfig((configEnv: ConfigEnv): UserConfig => {
 
     esbuild: {
       jsx: 'automatic',
+      jsxImportSource: 'react',
       drop: isProd ? ['console', 'debugger'] : [],
       target: 'es2020',
       logOverride: { 'this-is-undefined-in-esm': 'silent' },
