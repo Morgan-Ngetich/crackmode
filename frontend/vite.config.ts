@@ -36,7 +36,9 @@ export default defineConfig((configEnv: ConfigEnv): UserConfig => {
     },
 
     build: {
-      minify: isProd ? 'esbuild' : false,
+      // minify: isProd ? 'esbuild' : false,
+      minify: false,
+      
       target: 'es2020',
       cssCodeSplit: true,
       chunkSizeWarningLimit: 500,
