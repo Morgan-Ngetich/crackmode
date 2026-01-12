@@ -32,6 +32,7 @@ export default defineConfig((configEnv: ConfigEnv): UserConfig => {
       alias: {
         '@': path.resolve(__dirname, './src'),
       },
+      dedupe: ['react', 'react-dom', 'react/jsx-runtime'],
     },
 
     build: {
@@ -182,7 +183,11 @@ export default defineConfig((configEnv: ConfigEnv): UserConfig => {
         'recharts',
         'shiki',
       ],
-      force: isDev,
+      esbuildOptions: {
+        // Force React 18
+        jsx: 'automatic',
+      },
+      force: true // isDev,
     },
 
     esbuild: {
