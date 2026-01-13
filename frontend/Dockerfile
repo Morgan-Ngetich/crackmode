@@ -41,14 +41,16 @@ COPY --from=build /app/dist/server /app/dist/server
 COPY --from=build /app/package*.json ./
 COPY --from=build /app/scripts/server.js ./scripts/
 
-RUN npm install
+# Install production dependencies only
+RUN npm install --omit=dev
 
-# Copy both nginx configs
+# Copy nginx config
 COPY nginx.local.conf /etc/nginx/nginx.local.conf
 
 # Copy startup script
 COPY scripts/start-ssl.sh /scripts/start-ssl.sh
 RUN chmod +x /scripts/start-ssl.sh
 
-EXPOSE 80 433
+EXPOSE 80 443 8080
+
 ENTRYPOINT ["/scripts/start-ssl.sh"]

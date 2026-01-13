@@ -1,6 +1,4 @@
 services:
-
-  # FRONTEND SERVICE
   frontend:
     restart: always
     build:
@@ -11,11 +9,10 @@ services:
         VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
         VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
     container_name: frontend
+    # ✅ FIX 2: Remove 'expose' - use 'ports' in override file
+    # ✅ FIX 3: Remove conflicting port mapping (5173:5173)
     volumes:
       - uploads:/shared/uploads
-    expose:
-      - "8000"
-      - "5173:5173"
 
 volumes:
   uploads:
