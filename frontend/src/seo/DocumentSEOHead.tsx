@@ -29,10 +29,10 @@ const DocumentSEOHead: React.FC<DocumentSEOHeadProps> = ({
 
   // Remove all hooks that depend on browser APIs
   const doc = docProp;
-  const breadcrumbs = breadcrumbsProp || [];
 
   // Memoize all derived data including structured data
   const seoData = useMemo(() => {
+    const breadcrumbs = breadcrumbsProp || [];
     // SEO values
     const title = doc?.seo?.title || titleProp || `${doc?.title || 'Documentation'} | CrackMode`
     const description = doc?.seo?.description || descriptionProp || doc?.excerpt || 'Master LeetCode & Algorithms with CrackMode community'
@@ -120,7 +120,7 @@ const DocumentSEOHead: React.FC<DocumentSEOHeadProps> = ({
       breadcrumbData,
       websiteData
     }
-  }, [doc, titleProp, descriptionProp, breadcrumbs, siteName, baseUrl, currentPath])
+  }, [doc, titleProp, descriptionProp, breadcrumbsProp, siteName, baseUrl, currentPath])
 
   return (
     <Helmet prioritizeSeoTags>
