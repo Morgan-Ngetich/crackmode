@@ -1,13 +1,12 @@
 {
-  "buildCommand": "cd frontend && npm run build",
+  "buildCommand": "cd frontend && npm run build:vercel",
   "installCommand": "cd frontend && npm install",
   "outputDirectory": "frontend/dist/client",
   "framework": null,
   "functions": {
-    "api/render.js": {
+    "api/**/*.js": {
       "maxDuration": 10,
-      "memory": 1024,
-      "includeFiles": "frontend/dist/server/**"
+      "memory": 1024
     }
   },
   "routes": [
