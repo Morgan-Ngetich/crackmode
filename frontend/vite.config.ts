@@ -27,6 +27,7 @@ export default defineConfig((configEnv: ConfigEnv): UserConfig => {
     },
     
     build: {
+      manifest: isSsrBuild ? false : true,
       minify: isProd ? 'esbuild' : false,
       target: 'es2020',
       
