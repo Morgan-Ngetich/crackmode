@@ -45,8 +45,8 @@ export default defineConfig((configEnv: ConfigEnv): UserConfig => {
       } : {
         outDir: 'dist/client',
         rollupOptions: {
-          // Add explicit input for client build
-          input: './src/main.tsx',
+          // This will include main.tsx automatically via the script tag in index.html
+          input: './index.html',
         }
       }),
     },
