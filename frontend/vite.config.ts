@@ -45,8 +45,11 @@ export default defineConfig((configEnv: ConfigEnv): UserConfig => {
       } : {
         outDir: 'dist/client',
         rollupOptions: {
-          // This will include main.tsx automatically via the script tag in index.html
-          input: './index.html',
+          input: {
+            main: path.resolve(__dirname, 'index.html'),
+            // Explicitly add your entry point
+            app: path.resolve(__dirname, 'src/main.tsx'),
+          },
         }
       }),
     },
