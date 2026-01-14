@@ -77,11 +77,24 @@ function getClientAssets() {
 
   try {
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'))
-    const entry = manifest['src/main.tsx']
+    
+    // ✅ FIXED: Look for the actual client entry point
+    // Try common entry point names in order
+    const entryKey = Object.keys(manifest).find(key => 
+      key === 'src/main.tsx' || 
+      key === 'main.tsx' ||
+      key === 'src/entry-client.tsx' ||
+      key === 'entry-client.tsx' ||
+      key.endsWith('main.tsx')
+    )
 
-    if (!entry) {
-      throw new Error('No src/main.tsx entry in manifest')
+    if (!entryKey) {
+      console.error('❌ Available manifest keys:', Object.keys(manifest))
+      throw new Error('No client entry point found in manifest. Available keys: ' + Object.keys(manifest).join(', '))
     }
+
+    console.log('✅ Found entry key:', entryKey)
+    const entry = manifest[entryKey]
 
     assetsCache = {
       entry: `/${entry.file}`,

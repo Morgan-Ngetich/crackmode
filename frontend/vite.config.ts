@@ -44,7 +44,10 @@ export default defineConfig((configEnv: ConfigEnv): UserConfig => {
         }
       } : {
         outDir: 'dist/client',
-        // Don't use manualChunks for now - let Vite handle it
+        rollupOptions: {
+          // Add explicit input for client build
+          input: './src/main.tsx',
+        }
       }),
     },
     
