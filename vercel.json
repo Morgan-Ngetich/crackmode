@@ -1,17 +1,21 @@
 {
-  "buildCommand": "cd frontend && npm run build",
+  "buildCommand": "cd frontend && npm run build:vercel",
   "installCommand": "cd frontend && npm install",
   "outputDirectory": "frontend/dist/client",
   "framework": null,
+  "functions": {
+    "api/**/*.js": {
+      "maxDuration": 10,
+      "memory": 1024
+    }
+  },
   "routes": [
     {
       "src": "/assets/(.*)",
       "headers": {
         "cache-control": "public, max-age=31536000, immutable"
-      }
-    },
-    {
-      "handle": "filesystem"
+      },
+      "dest": "/assets/$1"
     },
     {
       "src": "/api/v1/(.*)",
@@ -19,7 +23,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/api/render"
     }
   ]
 }

@@ -1,12 +1,15 @@
 services:
   frontend:
+    # ✅ FIX 4: Add all necessary ports for dev
     ports:
-      - "80:80"  # This exposes nginx running on port 80 inside container to localhost:80
+      - "80:80"      # Nginx HTTP
+      - "443:443"    # Nginx HTTPS (if using SSL)
+      - "8080:8080"  # Node.js SSR server (for direct access if needed)
+      - "5173:5173"  # Vite dev server (if running dev mode)
     env_file:
       - .env
     environment:
-      - VITE_API_URL=${VITE_API_URL}  # Dev override
+      - VITE_API_URL=${VITE_API_URL}
       - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
       - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
-    volumes:
-      - ./frontend:/app  # For hot reload (e.g., npm run dev)
+      - NODE_ENV=development

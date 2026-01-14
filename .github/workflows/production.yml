@@ -14,13 +14,17 @@ concurrency:
 jobs:
   deploy-production:
     runs-on: ubuntu-latest
-    # CRITICAL: Only run if CI workflow succeeded (including security checks)
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    # CRITICAL: Only run if CI workflow succeeded AND it's from master branch
+    if: |
+      github.event.workflow_run.conclusion == 'success' && 
+      github.event.workflow_run.head_branch == 'master'
     environment:
       name: production
       url: https://crackmode.vercel.app
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Deploy to Vercel Production
         id: deploy

@@ -48,6 +48,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   const currentPath = isClient ? window.location.pathname : (serverCurrentPath || '/');
   const baseUrl = isClient ? window.location.origin : (serverBaseUrl || '');
 
+  console.log("docs", doc);
+  console.log("headings", headings);
+  console.log("breadcrumbs", breadcrumbs);
+  console.log("currentPath", currentPath);
+  console.log("baseUrl", baseUrl);
+  
   return (
     <Box h="100vh" display="flex" flexDirection="column">
       <DocumentSEOHead
