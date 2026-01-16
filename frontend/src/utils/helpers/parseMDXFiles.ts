@@ -8,7 +8,7 @@ import path from "path";
 export const parseMDXFiles = async (
   docsDirectory: string,
   // TODO: Update the url based on the vercel depolyed version.
-  baseUrl: string = "https://frontend-production-a85f.up.railway.app"
+  baseUrl: string = "https://crackmode.vercel.app"
 ): Promise<EnhancedSearchableDoc[]> => {
   const searchableData: EnhancedSearchableDoc[] = []
 
@@ -490,7 +490,7 @@ function generateJSONLD(title: string, description: string, url: string, frontma
       "name": "CrackMode",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://frontend-production-a85f.up.railway.app/group.png"
+        "url": "https://crackmode.vercel.app/group.png"
       }
     },
     "mainEntityOfPage": {
@@ -508,7 +508,7 @@ function generateJSONLD(title: string, description: string, url: string, frontma
 
 // Generate default OG image URL with improved description handling
 function generateDefaultOGImage(title: string, description?: string, section?: string): string {
-  const baseUrl = 'https://frontend-production-a85f.up.railway.app';
+  const baseUrl = 'https://crackmode.vercel.app';
   const params = new URLSearchParams();
 
   params.set("title", title.substring(0, 60));
