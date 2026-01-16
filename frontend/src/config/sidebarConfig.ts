@@ -68,12 +68,12 @@ export const sidebarConfig: DocSection[] = [
   {
     title: "System Design",
     links: [
-      { title: "Basics of System Design", href: "//docs/system-design/basics" },
-      { title: "Scalability & Load Balancing", href: "//docs/system-design/scalability" },
-      { title: "Databases & Storage", href: "//docs/system-design/databases" },
-      { title: "Caching Strategies", href: "//docs/system-design/caching" },
-      { title: "Message Queues & Events", href: "//docs/system-design/message-queues" },
-      { title: "Case Studies", href: "//docs/system-design/case-studies" }
+      { title: "Basics of System Design", href: "/docs/system-design/basics" },
+      { title: "Scalability & Load Balancing", href: "/docs/system-design/scalability" },
+      { title: "Databases & Storage", href: "/docs/system-design/databases" },
+      { title: "Caching Strategies", href: "/docs/system-design/caching" },
+      { title: "Message Queues & Events", href: "/docs/system-design/message-queues" },
+      { title: "Case Studies", href: "/docs/system-design/case-studies" }
     ]
   },
   {
