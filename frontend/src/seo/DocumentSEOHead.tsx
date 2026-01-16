@@ -24,7 +24,7 @@ const DocumentSEOHead: React.FC<DocumentSEOHeadProps> = ({
   twitterHandle = "@crackmode",
   // SSR props
   currentPath = typeof window !== 'undefined' ? window.location.pathname : '/',
-  baseUrl = typeof window !== 'undefined' ? window.location.origin : "https://frontend-production-a85f.up.railway.app"
+  baseUrl = typeof window !== 'undefined' ? window.location.origin : "https://crackmode.vercel.app",
 }) => {
 
   // Remove all hooks that depend on browser APIs

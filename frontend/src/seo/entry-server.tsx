@@ -1,6 +1,5 @@
 import { StrictMode } from 'react';
 import { renderToString } from 'react-dom/server';
-// Use named import directly
 import { HelmetProvider } from 'react-helmet-async';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ChakraProvider } from '@chakra-ui/react';
@@ -46,7 +45,7 @@ export async function render({ url, cookies }: RenderOptions): Promise<RenderRes
   const memoryHistory = createMemoryHistory({ initialEntries: [url] });
 
   // Parse cookies for auth context
-  let initialAuthState = null
+  let initialAuthState = null;
   if (cookies) {
     const sessionCookie = parseCookies(cookies)["sb_session"];
     if (sessionCookie) {
@@ -58,20 +57,27 @@ export async function render({ url, cookies }: RenderOptions): Promise<RenderRes
     }
   }
 
+  // Build the server context
+  const serverContext = {
+    isServer: true,
+    queryClient,
+    auth: initialAuthState,
+    req: {
+      url,
+      headers: {
+        cookie: cookies,
+        host: new URL(url, 'https://crackmode.vercel.app').host,
+        'x-forwarded-proto': url.startsWith('https') ? 'https' : 'http'
+      }
+    }
+  };
+
   const router = createRouter({
     routeTree,
     history: memoryHistory,
-    context: {
-      queryClient,
-      auth: initialAuthState,
-      req: {
-        url,
-        headers: {
-          cookie: cookies
-        }
-      }
-    }
-  });
+    context: serverContext
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any);
 
   // Preload all data for the route
   await router.load();
@@ -88,9 +94,9 @@ export async function render({ url, cookies }: RenderOptions): Promise<RenderRes
         <QueryClientProvider client={queryClient}>
           <ChakraProvider value={themeSystem}>
             <ColorModeProvider>
-                <MDXProvider components={MDXComponents}>
-                  <RouterProvider router={router} />
-                </MDXProvider>
+              <MDXProvider components={MDXComponents}>
+                <RouterProvider router={router} />
+              </MDXProvider>
             </ColorModeProvider>
           </ChakraProvider>
         </QueryClientProvider>
