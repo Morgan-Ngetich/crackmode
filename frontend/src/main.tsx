@@ -21,7 +21,8 @@ const router = createRouter({
   context: {
     queryClient,
   },
-});
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+} as any);
 
 const App = () => {
   // TODO: Re-enable session loading UI, on specific routes as needed

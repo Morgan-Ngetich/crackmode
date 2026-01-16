@@ -1,4 +1,4 @@
-import { defineConfig, type UserConfig, type ConfigEnv} from 'vite'
+import { defineConfig, type UserConfig, type ConfigEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'node:path'
 import mdx from "@mdx-js/rollup"
@@ -19,18 +19,18 @@ export default defineConfig((configEnv: ConfigEnv): UserConfig => {
       }),
       react(),
     ],
-    
+
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
       },
     },
-    
+
     build: {
       manifest: isSsrBuild ? false : true,
       minify: isProd ? 'esbuild' : false,
       target: 'es2020',
-      
+
       ...(isSsrBuild ? {
         ssr: true,
         outDir: 'dist/server',
@@ -40,25 +40,35 @@ export default defineConfig((configEnv: ConfigEnv): UserConfig => {
             format: 'esm',
             entryFileNames: 'entry-server.js',
           },
-          external: ['fs', 'path', 'url']
+          external: ['fs', 'path', 'url', 'node:fs', 'node:path', 'node:url']
         }
       } : {
         outDir: 'dist/client',
         rollupOptions: {
           input: {
             main: path.resolve(__dirname, 'index.html'),
-            // Explicitly add your entry point
             app: path.resolve(__dirname, 'src/main.tsx'),
           },
+          // For client build to exclude .server files
+          external: (id) => {
+            if (id.includes('.server.')) return true;
+            return false;
+          }
         }
       }),
     },
-    
+
     ssr: {
       noExternal: ['@tanstack/react-router', '@chakra-ui/react', 'react-helmet-async'],
-      external: ['fs', 'path', 'node:fs', 'node:path'],
+      // ✅ Only use strings here, not RegExp
+      external: ['fs', 'path', 'node:fs', 'node:path', 'node:url'],
     },
-    
+
+    optimizeDeps: {
+      // ✅ Moved outside of ssr block
+      exclude: ['@/hooks/crackmode/server-data.server']
+    },
+
     server: isDev ? {
       port: 5174,
       proxy: {
@@ -68,11 +78,11 @@ export default defineConfig((configEnv: ConfigEnv): UserConfig => {
         },
       },
     } : undefined,
-    
+
     esbuild: {
       jsx: 'automatic',
       logOverride: { 'this-is-undefined-in-esm': 'silent' },
-      drop: isProd ? ['console', 'debugger'] : [],
+      // drop: isProd ? ['console', 'debugger'] : [],
     },
   };
 });
