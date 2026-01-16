@@ -21,11 +21,11 @@ export async function loader({ location }: { location: { pathname: string } }) {
       /* @vite-ignore */
       '@/hooks/crackmode/server-data.server'
     );
-    
+
     const doc = getDocumentFromPath(location.pathname);
     const { structuredDataItems: breadcrumbs } = getBreadcrumbItems(location.pathname);
     const headings = getHeadings(doc);
-    
+
     return {
       doc,
       breadcrumbs,
@@ -63,4 +63,5 @@ function Layout() {
 export const Route = createFileRoute('/_layout')({
   component: Layout,
   loader,
+  loaderDeps: () => ({ runOnClient: false }),
 });
