@@ -13,16 +13,54 @@ function getSearchData(): EnhancedSearchableDoc[] {
     return searchDataCache;
   }
 
-  const searchDataPath = path.join(process.cwd(), 'public/assets/searchData.json');
+  // ✅ FIX: Support both Docker and Vercel environments
+  const isProduction = process.env.NODE_ENV === 'production';
+  const isVercel = process.env.VERCEL === '1';
   
+  let searchDataPath: string;
+  
+  if (isVercel) {
+    // Vercel: frontend/dist/client/assets/searchData.json
+    searchDataPath = path.join(process.cwd(), 'frontend/dist/client/assets/searchData.json');
+  } else if (isProduction) {
+    // Docker production: /usr/share/nginx/html/assets/searchData.json
+    searchDataPath = '/usr/share/nginx/html/assets/searchData.json';
+  } else {
+    // Development: public/assets/searchData.json
+    searchDataPath = path.join(process.cwd(), 'public/assets/searchData.json');
+  }
+  
+  console.log(`🔍 Environment: ${isVercel ? 'Vercel' : isProduction ? 'Docker Production' : 'Development'}`);
+  console.log(`🔍 Looking for searchData.json at: ${searchDataPath}`);
   
   if (!fs.existsSync(searchDataPath)) {
     console.warn('⚠️ searchData.json not found at:', searchDataPath);
+    
+    // Try alternative paths as fallback
+    const fallbackPaths = [
+      '/usr/share/nginx/html/assets/searchData.json',  // Docker
+      path.join(process.cwd(), 'frontend/dist/client/assets/searchData.json'),  // Vercel
+      path.join(process.cwd(), 'public/assets/searchData.json'),  // Dev
+      path.join(process.cwd(), 'dist/client/assets/searchData.json'),  // Alt build
+    ];
+    
+    for (const fallbackPath of fallbackPaths) {
+      if (fs.existsSync(fallbackPath)) {
+        console.log(`✅ Found searchData.json at fallback path: ${fallbackPath}`);
+        const rawData = fs.readFileSync(fallbackPath, 'utf-8');
+        searchDataCache = JSON.parse(rawData) as EnhancedSearchableDoc[];
+        return searchDataCache;
+      }
+    }
+    
+    console.error('❌ searchData.json not found in any known location');
+    console.error('Tried paths:', fallbackPaths);
     return [];
   }
 
   const rawData = fs.readFileSync(searchDataPath, 'utf-8');
   searchDataCache = JSON.parse(rawData) as EnhancedSearchableDoc[];
+  console.log(`✅ Loaded ${searchDataCache.length} documents from searchData.json`);
   
   return searchDataCache;
 }
@@ -30,6 +68,8 @@ function getSearchData(): EnhancedSearchableDoc[] {
 // Server-side version of useDocumentFromPath
 export function getDocumentFromPath(pathname: string): EnhancedSearchableDoc | undefined {
   const SearchData = getSearchData();
+  
+  console.log('docs', SearchData.find(item => item.url === pathname));
   
   // Handle root path
   if (pathname === '/' || pathname === '/docs') {

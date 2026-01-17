@@ -1,4 +1,3 @@
-// src/AppLayout.tsx
 import { Box, HStack } from '@chakra-ui/react';
 import { Outlet } from '@tanstack/react-router';
 import { useAuthPromptStore } from '@/hooks/auth/store/useAuthPromptStore';
@@ -79,7 +78,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
         >
           <Sidebar />
         </Box>
-        <DocsLayout headings={headings}>
+        <DocsLayout headings={headings} breadcrumbs={breadcrumbs}>
           <Outlet />
         </DocsLayout>
       </HStack>

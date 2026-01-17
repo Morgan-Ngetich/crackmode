@@ -1,11 +1,9 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import AppLayout from '../AppLayout';
 
-// Define the loader function with conditional dynamic import
 export async function loader({ location }: { location: { pathname: string } }) {
-  // Check if we're in a browser environment
+  // Only run on server
   if (typeof window !== 'undefined') {
-    // Client-side: return empty data
     return {
       doc: undefined,
       breadcrumbs: [],
@@ -15,10 +13,8 @@ export async function loader({ location }: { location: { pathname: string } }) {
     };
   }
 
-  // Server-side only: dynamic import
   try {
     const { getDocumentFromPath, getBreadcrumbItems, getHeadings } = await import(
-      /* @vite-ignore */
       '@/hooks/crackmode/server-data.server'
     );
 
@@ -63,5 +59,4 @@ function Layout() {
 export const Route = createFileRoute('/_layout')({
   component: Layout,
   loader,
-  loaderDeps: () => ({ runOnClient: false }),
 });

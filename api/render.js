@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-// ✅ Fix paths to work in Vercel's deployment structure
+// Paths to work in Vercel's deployment structure
 const clientPath = path.join(process.cwd(), 'frontend/dist/client')
 const serverPath = path.join(process.cwd(), 'frontend/dist/server')
 
@@ -24,17 +24,17 @@ function loadTemplate() {
   if (templateCache) return templateCache
 
   console.log('🔍 Loading template...')
-  
+
   // Try to find the template
   const templatePath = path.join(clientPath, 'index.html')
-  
+
   if (!fs.existsSync(templatePath)) {
     throw new Error(`Template not found at: ${templatePath}`)
   }
 
   templateCache = fs.readFileSync(templatePath, 'utf-8')
   console.log('✅ Template loaded, length:', templateCache.length)
-  
+
   return templateCache
 }
 
@@ -42,11 +42,11 @@ async function loadRender() {
   if (renderCache) return renderCache
 
   console.log('🔍 Loading server bundle...')
-  
+
   const entryServerPath = path.join(serverPath, 'entry-server.js')
-  
+
   console.log('Looking for server bundle at:', entryServerPath)
-  
+
   if (!fs.existsSync(entryServerPath)) {
     throw new Error(`Server bundle not found at: ${entryServerPath}`)
   }
@@ -77,8 +77,8 @@ function getClientAssets() {
 
   try {
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'))
-    
-    // ✅ FIXED: The entry is under 'index.html' key
+
+    // The entry is under 'index.html' key
     const entry = manifest['index.html']
 
     if (!entry) {
@@ -117,6 +117,9 @@ export default async function handler(req, res) {
 
   try {
     const url = req.url?.split('?')[0] || '/'
+    // Get actual host from request
+    const host = req.headers.host || req.headers['x-forwarded-host'] || 'crackmode.vercel.app'
+    const protocol = req.headers['x-forwarded-proto'] || 'https'
 
     // Load resources
     const htmlTemplate = loadTemplate()
@@ -124,9 +127,9 @@ export default async function handler(req, res) {
     const assets = getClientAssets()
 
     console.log('📦 Starting SSR render...')
-    
+
     const cookies = req.headers.cookie || ''
-    const renderResult = await renderFn({ url, cookies })
+    const renderResult = await renderFn({ url, cookies, host, protocol })
 
     console.log('✅ SSR complete')
     console.log('   HTML length:', renderResult.html?.length || 0)

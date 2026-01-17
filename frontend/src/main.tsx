@@ -1,7 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ChakraProvider } from '@chakra-ui/react';
-import { ColorModeScript } from '@chakra-ui/system';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { routeTree } from './routeTree.gen';
@@ -9,7 +8,6 @@ import { ColorModeProvider } from '@/components/ui/colormode/color-mode';
 import themeSystem from './theme';
 import { Toaster } from '@/components/ui/toaster';
 import { GlobalStyles } from './components/ui/GlobalStyles';
-// import { useSession } from './hooks/auth/useSession';
 import { MDXProvider } from '@mdx-js/react';
 import MDXComponents from '@/components/common/MDXComponents';
 import { HelmetProvider } from 'react-helmet-async';
@@ -47,7 +45,6 @@ const App = () => {
 
 const AppTree = () => (
   <StrictMode>
-    <ColorModeScript initialColorMode="system" />
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
         <ChakraProvider value={themeSystem}>
@@ -67,8 +64,7 @@ const AppTree = () => (
 // Check if we're in a browser environment
 if (typeof window !== 'undefined') {
   const container = document.getElementById("root")!;
-
-  // For no hydration, we just render the app without hydrating
-  // This means the client will start fresh without trying to reconcile with server HTML
+  
+  // Use createRoot (no hydration)
   createRoot(container).render(<AppTree />);
 }
