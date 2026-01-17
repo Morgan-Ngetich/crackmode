@@ -117,7 +117,7 @@ export default async function handler(req, res) {
 
   try {
     const url = req.url?.split('?')[0] || '/'
-    // Get actua host from request
+    // Get actual host from request
     const host = req.headers.host || req.headers['x-forwarded-host'] || 'crackmode.vercel.app'
     const protocol = req.headers['x-forwarded-proto'] || 'https'
 

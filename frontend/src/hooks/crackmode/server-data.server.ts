@@ -13,12 +13,24 @@ function getSearchData(): EnhancedSearchableDoc[] {
     return searchDataCache;
   }
 
+  // ✅ FIX: Support both Docker and Vercel environments
   const isProduction = process.env.NODE_ENV === 'production';
+  const isVercel = process.env.VERCEL === '1';
   
-  const searchDataPath = isProduction
-    ? '/usr/share/nginx/html/assets/searchData.json'  // Production Docker path
-    : path.join(process.cwd(), 'public/assets/searchData.json');  // Dev path
+  let searchDataPath: string;
   
+  if (isVercel) {
+    // Vercel: frontend/dist/client/assets/searchData.json
+    searchDataPath = path.join(process.cwd(), 'frontend/dist/client/assets/searchData.json');
+  } else if (isProduction) {
+    // Docker production: /usr/share/nginx/html/assets/searchData.json
+    searchDataPath = '/usr/share/nginx/html/assets/searchData.json';
+  } else {
+    // Development: public/assets/searchData.json
+    searchDataPath = path.join(process.cwd(), 'public/assets/searchData.json');
+  }
+  
+  console.log(`🔍 Environment: ${isVercel ? 'Vercel' : isProduction ? 'Docker Production' : 'Development'}`);
   console.log(`🔍 Looking for searchData.json at: ${searchDataPath}`);
   
   if (!fs.existsSync(searchDataPath)) {
@@ -26,9 +38,10 @@ function getSearchData(): EnhancedSearchableDoc[] {
     
     // Try alternative paths as fallback
     const fallbackPaths = [
-      '/usr/share/nginx/html/assets/searchData.json',
-      path.join(process.cwd(), 'public/assets/searchData.json'),
-      path.join(process.cwd(), 'dist/client/assets/searchData.json'),
+      '/usr/share/nginx/html/assets/searchData.json',  // Docker
+      path.join(process.cwd(), 'frontend/dist/client/assets/searchData.json'),  // Vercel
+      path.join(process.cwd(), 'public/assets/searchData.json'),  // Dev
+      path.join(process.cwd(), 'dist/client/assets/searchData.json'),  // Alt build
     ];
     
     for (const fallbackPath of fallbackPaths) {
@@ -41,6 +54,7 @@ function getSearchData(): EnhancedSearchableDoc[] {
     }
     
     console.error('❌ searchData.json not found in any known location');
+    console.error('Tried paths:', fallbackPaths);
     return [];
   }
 
