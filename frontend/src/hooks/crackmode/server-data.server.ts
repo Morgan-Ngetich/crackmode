@@ -13,16 +13,40 @@ function getSearchData(): EnhancedSearchableDoc[] {
     return searchDataCache;
   }
 
-  const searchDataPath = path.join(process.cwd(), 'public/assets/searchData.json');
+  const isProduction = process.env.NODE_ENV === 'production';
   
+  const searchDataPath = isProduction
+    ? '/usr/share/nginx/html/assets/searchData.json'  // Production Docker path
+    : path.join(process.cwd(), 'public/assets/searchData.json');  // Dev path
+  
+  console.log(`🔍 Looking for searchData.json at: ${searchDataPath}`);
   
   if (!fs.existsSync(searchDataPath)) {
     console.warn('⚠️ searchData.json not found at:', searchDataPath);
+    
+    // Try alternative paths as fallback
+    const fallbackPaths = [
+      '/usr/share/nginx/html/assets/searchData.json',
+      path.join(process.cwd(), 'public/assets/searchData.json'),
+      path.join(process.cwd(), 'dist/client/assets/searchData.json'),
+    ];
+    
+    for (const fallbackPath of fallbackPaths) {
+      if (fs.existsSync(fallbackPath)) {
+        console.log(`✅ Found searchData.json at fallback path: ${fallbackPath}`);
+        const rawData = fs.readFileSync(fallbackPath, 'utf-8');
+        searchDataCache = JSON.parse(rawData) as EnhancedSearchableDoc[];
+        return searchDataCache;
+      }
+    }
+    
+    console.error('❌ searchData.json not found in any known location');
     return [];
   }
 
   const rawData = fs.readFileSync(searchDataPath, 'utf-8');
   searchDataCache = JSON.parse(rawData) as EnhancedSearchableDoc[];
+  console.log(`✅ Loaded ${searchDataCache.length} documents from searchData.json`);
   
   return searchDataCache;
 }
@@ -30,6 +54,8 @@ function getSearchData(): EnhancedSearchableDoc[] {
 // Server-side version of useDocumentFromPath
 export function getDocumentFromPath(pathname: string): EnhancedSearchableDoc | undefined {
   const SearchData = getSearchData();
+  
+  console.log('docs', SearchData.find(item => item.url === pathname));
   
   // Handle root path
   if (pathname === '/' || pathname === '/docs') {
