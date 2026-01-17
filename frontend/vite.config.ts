@@ -60,12 +60,12 @@ export default defineConfig((configEnv: ConfigEnv): UserConfig => {
 
     ssr: {
       noExternal: ['@tanstack/react-router', '@chakra-ui/react', 'react-helmet-async'],
-      // ✅ Only use strings here, not RegExp
+      // Only use strings here, not RegExp
       external: ['fs', 'path', 'node:fs', 'node:path', 'node:url'],
     },
 
     optimizeDeps: {
-      // ✅ Moved outside of ssr block
+      // Moved outside of ssr block
       exclude: ['@/hooks/crackmode/server-data.server']
     },
 
