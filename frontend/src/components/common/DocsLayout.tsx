@@ -1,3 +1,4 @@
+// DocsLayout.tsx
 import { useState, useRef, useEffect } from "react"
 import {
   Box,
@@ -5,21 +6,18 @@ import {
   Flex,
 } from "@chakra-ui/react"
 import TableOfContents from "./TableOfContents"
-import type { HeadingData } from "@/client/types/docs"
+import type { HeadingData, BreadcrumbItem } from "@/client/types/docs"
 import { BreadcrumbRoot, BreadcrumbLink, BreadcrumbCurrentLink } from "@/components/ui"
-import { useBreadcrumbItems } from "@/hooks/crackmode/useBreadcrumbItems"
 
 interface DocsLayoutProps {
   children: React.ReactNode
   headings: HeadingData[]
+  breadcrumbs?: BreadcrumbItem[] // Add breadcrumbs prop
 }
 
-const DocsLayout = ({ children, headings }: DocsLayoutProps) => {
+const DocsLayout = ({ children, headings, breadcrumbs = [] }: DocsLayoutProps) => {
   const [scrolled, setScrolled] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
-
-  // Get breadcrumbs with structured data
-  const { displayItems } = useBreadcrumbItems()
 
   const handleScroll = () => {
     if (scrollRef.current) {
@@ -37,6 +35,11 @@ const DocsLayout = ({ children, headings }: DocsLayoutProps) => {
 
   const borderColor = { base: 'gray.200', _dark: 'gray.700' }
 
+  // Convert breadcrumbs to display format
+  const displayItems = breadcrumbs.map(item => ({
+    title: item.title,
+    url: item.url,
+  }))
 
   return (
     <Flex h="100vh" overflow="hidden">
@@ -79,7 +82,6 @@ const DocsLayout = ({ children, headings }: DocsLayoutProps) => {
           <Box pb={16}>{children}</Box>
         </Container>
       </Box>
-
 
       {/* Desktop TOC */}
       <Box
