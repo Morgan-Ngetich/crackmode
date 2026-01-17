@@ -1,18 +1,16 @@
-import { Box, Heading, Text, Button, VStack, HStack, Separator, Badge, SimpleGrid, Card, Icon, Avatar, Flex, Kbd, Code } from "@chakra-ui/react";
-import { FaCode, FaUsers, FaTrophy, FaRocket, FaFire, FaBrain, FaChartLine, FaSun, FaBullseye, FaBolt } from "react-icons/fa";
-import { Link } from "@tanstack/react-router"
-import { Progress } from "@/components/ui"
+import { Box, Heading, Text, Button, VStack, HStack, Separator, SimpleGrid, Icon } from "@chakra-ui/react";
+import { FaUsers, FaRocket, FaFire, FaBrain, FaChartLine, FaBullseye, FaBolt } from "react-icons/fa";
+import { Link } from "@tanstack/react-router";
 
 <Box position="relative" overflow="hidden">
-    <Box 
-      textAlign="center" 
-      position="relative" 
-      py={{base: 0, md: 10}} 
-    >
+  <Box 
+    textAlign="center" 
+    position="relative" 
+    py={{base: 0, md: 10}} 
+  >
     <Box position="relative">
       <Box
         bg="green.500" 
-        variant="solid" 
         fontSize="md" 
         px={4}
         w={{base: "3xs", md: "2xs"}}
@@ -21,9 +19,9 @@ import { Progress } from "@/components/ui"
         mb={6}
         boxShadow="0 0 20px rgba(72, 187, 120, 0.4)"
       >
-      <Text textAlign="center" mt="4" fontSize={{base: "sm", md: "md"}}>
-        🔥 CRACK MODE ACTIVE
-      </Text>
+        <Text textAlign="center" mt="4" fontSize={{base: "sm", md: "md"}}>
+          🔥 CRACK MODE ACTIVE
+        </Text>
       </Box>
 
       <Heading size={{base: "2xl", md: "4xl"}} mb={4} fontWeight="bold">
@@ -37,21 +35,21 @@ import { Progress } from "@/components/ui"
         lineHeight="tall"
         mb={8}
       >
-        The ultimate community for <Text as="span" color="orange.300" fontWeight="bold">crushing LeetCode</Text> and
-        <Text as="span" color="orange.300" fontWeight="bold"> mastering algorithms</Text>.
-        Join elite coders who don't just solve problems—they <Text as="span" color="green.500" fontWeight="bold">dominate</Text> them! 🚀
+        The ultimate community for <Box as="span" color="orange.300" fontWeight="bold">crushing LeetCode</Box> and
+        <Box as="span" color="orange.300" fontWeight="bold"> mastering algorithms</Box>.
+        Join elite coders who don't just solve problems—they <Box as="span" color="green.500" fontWeight="bold">dominate</Box> them! 🚀
       </Text>
 
       <VStack>
         <HStack gap={4} justify="center">
-        <Link to="leetcode75">        
-          <Button variant="solid" size="lg">
-            <HStack>
-              <FaRocket />
-              <Text fontSize={{base: "sm", md: "md"}}>Start Grinding</Text>
-            </HStack>
-          </Button>
-        </Link>
+          <Link to="leetcode75">        
+            <Button variant="solid" size="lg">
+              <HStack>
+                <FaRocket />
+                <Text fontSize={{base: "sm", md: "md"}}>Start Grinding</Text>
+              </HStack>
+            </Button>
+          </Link>
           <a href="https://chat.whatsapp.com/Biz5sc2ow3v8Mg2aId6yOH">
             <Button
               variant="outline"
@@ -68,116 +66,129 @@ import { Progress } from "@/components/ui"
         </HStack>
       </VStack>
     </Box>
-
   </Box>
 </Box>
 
 <Separator my={12} />
 
-
-# 🌟 What Makes CrackMode Different?
-
-CrackMode isn’t just another coding community — it’s a **movement**.  
-We believe consistent practice and accountability are the fastest ways to grow as a developer.  
-
-## Why We’re Different
-
-- **Community-Driven**  
-  Members push each other to solve **LeetCode problems** daily.  
-  Everyone is both a learner and a motivator.  
-
-- **Accountability First**  
-  Progress comes from **discipline**, not just motivation.  
-  The community ensures no one falls off track.  
-
-- **Practical Problem-Solving**  
-  Beyond streaks, we discuss **patterns, optimization, and real-world applications**.  
-
-- **Growth-Oriented**  
-  Perfect for FAANG prep or sharpening **DSA skills** with peers who keep you consistent.  
-
-## The CrackMode Mindset
-
-- Fail fast, learn faster.  
-- Celebrate progress, not perfection.  
-- One problem a day compounds into mastery.  
-
----
-
-
-<Box mt={12}/>
-# CrackMode Daily Grinding Schedule
-
-<Box 
-  bg="orange.50"
-  border="1px solid"
-  borderColor="orange.200"
-  borderRadius="lg"
-  p={4}
-  mb={8}
-  borderLeftWidth="4px"
-  borderLeftColor="orange.400"
->
-  <HStack mb={2}>
-    <Icon as={FaFire} color="orange.500" />
-    <Heading color="orange.700">Daily Grinding Sessions</Heading>
-  </HStack>
-  <Text fontSize="sm" color="orange.600">
-    We run **structured sessions every day** — join live or catch up with recordings anytime.
+<Box>
+  <Heading size="xl" mb={4}>🌟 What Makes CrackMode Different?</Heading>
+  
+  <Text mb={4}>
+    CrackMode isn't just another coding community — it's a <Box as="span" fontWeight="bold">movement</Box>.
+    We believe consistent practice and accountability are the fastest ways to grow as a developer.
   </Text>
+
+  <Heading size="lg" mt={6} mb={3}>Why We're Different</Heading>
+
+  <VStack align="stretch" gap={4} mb={6}>
+    <Box>
+      <Text fontWeight="bold" mb={1}>Community-Driven</Text>
+      <Text>
+        Members push each other to solve <Box as="span" fontWeight="bold">LeetCode problems</Box> daily.
+        Everyone is both a learner and a motivator.
+      </Text>
+    </Box>
+
+    <Box>
+      <Text fontWeight="bold" mb={1}>Accountability First</Text>
+      <Text>
+        Progress comes from <Box as="span" fontWeight="bold">discipline</Box>, not just motivation.
+        The community ensures no one falls off track.
+      </Text>
+    </Box>
+
+    <Box>
+      <Text fontWeight="bold" mb={1}>Practical Problem-Solving</Text>
+      <Text>
+        Beyond streaks, we discuss <Box as="span" fontWeight="bold">patterns, optimization, and real-world applications</Box>.
+      </Text>
+    </Box>
+
+    <Box>
+      <Text fontWeight="bold" mb={1}>Growth-Oriented</Text>
+      <Text>
+        Perfect for FAANG prep or sharpening <Box as="span" fontWeight="bold">DSA skills</Box> with peers who keep you consistent.
+      </Text>
+    </Box>
+  </VStack>
+
+  <Heading size="lg" mt={6} mb={3}>The CrackMode Mindset</Heading>
+
+  <VStack align="stretch" gap={2} mb={6}>
+    <Text>• Fail fast, learn faster.</Text>
+    <Text>• Celebrate progress, not perfection.</Text>
+    <Text>• One problem a day compounds into mastery.</Text>
+  </VStack>
 </Box>
 
-<VStack align="stretch" gap={4}>
+<Separator my={12} />
 
+<Box mt={12}>
+  <Heading size="xl" mb={6}>CrackMode Daily Grinding Schedule</Heading>
 
-  <ScheduleItem 
-    icon={FaBullseye} 
-    color="blue.400" 
-    title="Focused Deep Dives" 
-    desc="Hard problems with detailed walkthroughs"
-  />
+  <Box 
+    bg="orange.50"
+    border="1px solid"
+    borderColor="orange.200"
+    borderRadius="lg"
+    p={4}
+    mb={8}
+    borderLeftWidth="4px"
+    borderLeftColor="orange.400"
+  >
+    <HStack mb={2}>
+      <Icon as={FaFire} color="orange.500" />
+      <Heading size="md" color="orange.700">Daily Grinding Sessions</Heading>
+    </HStack>
+    <Text>
+      We run <Box as="span" fontWeight="bold">structured sessions every day</Box> — join live or catch up with recordings anytime.
+    </Text>
+  </Box>
 
-  <ScheduleItem 
-    icon={FaBolt} 
-    color="purple.400" 
-    title="Speed Rounds" 
-    desc="Contest-style rapid problem solving"
-  />
-
-  <ScheduleItem 
-    icon={FaBrain} 
-    color="teal.400" 
-    title="System Design Weekends" 
-    desc="Large-scale architecture discussions"
-  />
-
-  <ScheduleItem 
-    icon={FaChartLine} 
-    color="green.400" 
-    title="Weekly Progress Reviews" 
-    desc="Track your improvement and set goals"
-  />
-
-</VStack>
-
-
-
-<SimpleGrid columns={{ base: 1, md: 2 }} gap={6} my={8}>
-
-  {/* This Week's Themes */}
   <VStack align="stretch" gap={4}>
-    <Text fontWeight="bold" fontSize="lg">🎯 This Week's Themes</Text>
-    <ThemeItem label="Dynamic Programming" color="blue" desc="Master the classics" />
-    <ThemeItem label="Tree Traversals" color="green" desc="All variations covered" />
-    <ThemeItem label="Graph Algorithms" color="purple" desc="BFS, DFS, and beyond" />
+    <ScheduleItem 
+      icon={FaBullseye} 
+      color="blue.400" 
+      title="Focused Deep Dives" 
+      desc="Hard problems with detailed walkthroughs"
+    />
+
+    <ScheduleItem 
+      icon={FaBolt} 
+      color="purple.400" 
+      title="Speed Rounds" 
+      desc="Contest-style rapid problem solving"
+    />
+
+    <ScheduleItem 
+      icon={FaBrain} 
+      color="teal.400" 
+      title="System Design Weekends" 
+      desc="Large-scale architecture discussions"
+    />
+
+    <ScheduleItem 
+      icon={FaChartLine} 
+      color="green.400" 
+      title="Weekly Progress Reviews" 
+      desc="Track your improvement and set goals"
+    />
   </VStack>
 
-  {/* Community Progress */}
-  <VStack align="stretch" gap={4}>
-    <Text fontWeight="bold" fontSize="lg">📊 Community Progress</Text>
-    <ProgressStat label="Easy Problems" value={84.7} count="847/1000" color="green" />
-    <ProgressStat label="Medium Problems" value={61.7} count="1,234/2000" color="yellow" />
-    <ProgressStat label="Hard Problems" value={57} count="456/800" color="red" />
-  </VStack>
+  <SimpleGrid columns={{ base: 1, md: 2 }} gap={6} my={8}>
+    <VStack align="stretch" gap={4}>
+      <Text fontWeight="bold" fontSize="lg">🎯 This Week's Themes</Text>
+      <ThemeItem label="Dynamic Programming" color="blue" desc="Master the classics" />
+      <ThemeItem label="Tree Traversals" color="green" desc="All variations covered" />
+      <ThemeItem label="Graph Algorithms" color="purple" desc="BFS, DFS, and beyond" />
+    </VStack>
 
-</SimpleGrid>
+    <VStack align="stretch" gap={4}>
+      <Text fontWeight="bold" fontSize="lg">📊 Community Progress</Text>
+      <ProgressStat label="Easy Problems" value={84.7} count="847/1000" color="green" />
+      <ProgressStat label="Medium Problems" value={61.7} count="1,234/2000" color="yellow" />
+      <ProgressStat label="Hard Problems" value={57} count="456/800" color="red" />
+    </VStack>
+  </SimpleGrid>
+</Box>
