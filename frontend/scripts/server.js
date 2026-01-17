@@ -115,9 +115,13 @@ async function createServer() {
       try {
         console.log('🎨 Attempting SSR...')
         const cookies = req.headers.cookie || ""
+        const protocol = req.headers['x-forwarded-proto'] || 'http'
+        const host = req.headers.host || req.headers['x-forwarded-host'] || 'localhost:' + PORT
         const { html, head } = await render({
           url,
-          cookies
+          cookies,
+          host,
+          protocol
         })
 
         const finalHtml = template
@@ -140,7 +144,7 @@ async function createServer() {
         res.status(200).set({ 'Content-Type': 'text/html' }).end(fallbackHtml)
         console.log('⚠️  Served fallback for:', url)
       }
-
+      
     } catch (e) {
       console.error('❌ Route handler error:', e)
 

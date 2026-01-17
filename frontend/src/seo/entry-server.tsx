@@ -3,7 +3,6 @@ import { renderToString } from 'react-dom/server';
 import { HelmetProvider } from 'react-helmet-async';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ChakraProvider } from '@chakra-ui/react';
-import { ColorModeScript } from '@chakra-ui/system';
 import { ColorModeProvider } from '@/components/ui/colormode/color-mode';
 import { MDXProvider } from '@mdx-js/react';
 import {
@@ -27,9 +26,11 @@ interface RenderResult {
 interface RenderOptions {
   url: string;
   cookies?: string;
+  host?: string;
+  protocol?: string;
 }
 
-export async function render({ url, cookies }: RenderOptions): Promise<RenderResult> {
+export async function render({ url, cookies, host, protocol }: RenderOptions): Promise<RenderResult> {
   const helmetContext = {};
 
   const queryClient = new QueryClient({
@@ -57,6 +58,9 @@ export async function render({ url, cookies }: RenderOptions): Promise<RenderRes
     }
   }
 
+  const actualHost = host || 'crackmode.vercel.app';
+  const actualProtocol = protocol || 'https';
+
   // Build the server context
   const serverContext = {
     isServer: true,
@@ -66,8 +70,8 @@ export async function render({ url, cookies }: RenderOptions): Promise<RenderRes
       url,
       headers: {
         cookie: cookies,
-        host: new URL(url, 'https://crackmode.vercel.app').host,
-        'x-forwarded-proto': url.startsWith('https') ? 'https' : 'http'
+        host: actualHost,
+        'x-forwarded-proto': actualProtocol
       }
     }
   };
@@ -79,7 +83,7 @@ export async function render({ url, cookies }: RenderOptions): Promise<RenderRes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any);
 
-  // Preload all data for the route
+  // Preload all data for the route - this runs the loaders
   await router.load();
 
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -104,9 +108,6 @@ export async function render({ url, cookies }: RenderOptions): Promise<RenderRes
     </StrictMode>
   );
 
-  const colorModeScript = renderToString(
-    <ColorModeScript initialColorMode="system" />
-  );
 
   // Extract helmet data
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -119,13 +120,13 @@ export async function render({ url, cookies }: RenderOptions): Promise<RenderRes
         title: helmet.title.toString(),
         meta: helmet.meta.toString(),
         link: helmet.link.toString(),
-        script: helmet.script.toString() + colorModeScript,
+        script: helmet.script.toString(),
       }
       : {
         title: '',
         meta: '',
         link: '',
-        script: colorModeScript,
+        script: '',
       }
   };
 }

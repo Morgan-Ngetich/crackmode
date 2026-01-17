@@ -2,7 +2,7 @@
   {
     "id": "introduction",
     "title": "Introduction",
-    "content": "CRACK MODE ACTIVE  Welcome to CrackMode! The ultimate community for crushing LeetCode and mastering algorithms. Join elite coders who don t just solve problems they dominate them!    Start Grinding Join Community    What Makes CrackMode Different? CrackMode isn t just another coding community   it s a movement. We believe consistent practice and accountability are the fastest ways to grow as a developer. Why We re Different - Community-Driven Members push each other to solve LeetCode problems daily. Everyone is both a learner and a motivator. - Accountability First Progress comes from discipline, not just motivation. The community ensures no one falls off track. - Practical Problem-Solving Beyond streaks, we discuss patterns, optimization, and real-world applications. - Growth-Oriented Perfect for FAANG prep or sharpening DSA skills with peers who keep you consistent. The CrackMode Mindset - Fail fast, learn faster. - Celebrate progress, not perfection. - One problem a day compounds into mastery. --- CrackMode Daily Grinding Schedule Daily Grinding Sessions We run structured sessions every day   join live or catch up with recordings anytime.   This Week s Themes      This Week s Themes   Community Progress      Community Progress",
+    "content": "CRACK MODE ACTIVE  Welcome to CrackMode! The ultimate community for crushing LeetCode and mastering algorithms. Join elite coders who don t just solve problems they dominate them!    Start Grinding Join Community    What Makes CrackMode Different? CrackMode isn t just another coding community   it s a movement. We believe consistent practice and accountability are the fastest ways to grow as a developer. Why We re Different Community-Driven Members push each other to solve LeetCode problems daily. Everyone is both a learner and a motivator. Accountability First Progress comes from discipline, not just motivation. The community ensures no one falls off track. Practical Problem-Solving Beyond streaks, we discuss patterns, optimization, and real-world applications. Growth-Oriented Perfect for FAANG prep or sharpening DSA skills with peers who keep you consistent. The CrackMode Mindset   Fail fast, learn faster.   Celebrate progress, not perfection.   One problem a day compounds into mastery. CrackMode Daily Grinding Schedule Daily Grinding Sessions We run structured sessions every day   join live or catch up with recordings anytime.    This Week s Themes    Community Progress",
     "excerpt": "CRACK MODE ACTIVE Welcome to CrackMode! The ultimate community for crushing LeetCode and mastering algorithms.",
     "url": "/docs/introduction",
     "canonicalUrl": "https://crackmode.vercel.app/docs/introduction",
@@ -15,46 +15,25 @@
       "problem-solving",
       "pattern"
     ],
-    "headings": [
-      {
-        "level": 1,
-        "text": "🌟 What Makes CrackMode Different?",
-        "id": "what-makes-crackmode-different"
-      },
-      {
-        "level": 2,
-        "text": "Why We’re Different",
-        "id": "why-were-different"
-      },
-      {
-        "level": 2,
-        "text": "The CrackMode Mindset",
-        "id": "the-crackmode-mindset"
-      },
-      {
-        "level": 1,
-        "text": "CrackMode Daily Grinding Schedule",
-        "id": "crackmode-daily-grinding-schedule"
-      }
-    ],
+    "headings": [],
     "publishedAt": "2026-01-04T04:18:51.301Z",
-    "updatedAt": "2026-01-04T04:18:51.301Z",
+    "updatedAt": "2026-01-17T17:47:27.107Z",
     "author": "Morgan Ngetich",
     "readingTime": 1,
     "seo": {
       "title": "Introduction | Crackmode Documentation",
       "description": "CRACK MODE ACTIVE Welcome to CrackMode! The ultimate community for crushing LeetCode and mastering algorithms.",
-      "keywords": "introduction, leetcode, algorithm, optimization, coding, problem-solving, pattern, community, crackmode, grinding, progress",
+      "keywords": "introduction, leetcode, algorithm, optimization, coding, problem-solving, pattern, community, crackmode, grinding, solve",
       "robots": "index,follow",
-      "jsonLd": "{\"@context\":\"https://schema.org\",\"@type\":\"Article\",\"headline\":\"Introduction\",\"description\":\"CRACK MODE ACTIVE Welcome to CrackMode! The ultimate community for crushing LeetCode and mastering algorithms.\",\"url\":\"https://crackmode.vercel.app/docs/introduction\",\"datePublished\":\"2026-01-04T04:18:51.301Z\",\"dateModified\":\"2026-01-04T04:18:51.301Z\",\"author\":{\"@type\":\"Person\",\"name\":\"Morgan Ngetich\"},\"publisher\":{\"@type\":\"Organization\",\"name\":\"CrackMode\",\"logo\":{\"@type\":\"ImageObject\",\"url\":\"https://crackmode.vercel.app/group.png\"}},\"mainEntityOfPage\":{\"@type\":\"WebPage\",\"@id\":\"https://crackmode.vercel.app/docs/introduction\"},\"wordCount\":105,\"timeRequired\":\"PT1M\",\"inLanguage\":\"en-US\",\"isAccessibleForFree\":true}"
+      "jsonLd": "{\"@context\":\"https://schema.org\",\"@type\":\"Article\",\"headline\":\"Introduction\",\"description\":\"CRACK MODE ACTIVE Welcome to CrackMode! The ultimate community for crushing LeetCode and mastering algorithms.\",\"url\":\"https://crackmode.vercel.app/docs/introduction\",\"datePublished\":\"2026-01-04T04:18:51.301Z\",\"dateModified\":\"2026-01-17T17:47:27.107Z\",\"author\":{\"@type\":\"Person\",\"name\":\"Morgan Ngetich\"},\"publisher\":{\"@type\":\"Organization\",\"name\":\"CrackMode\",\"logo\":{\"@type\":\"ImageObject\",\"url\":\"https://crackmode.vercel.app/group.png\"}},\"mainEntityOfPage\":{\"@type\":\"WebPage\",\"@id\":\"https://crackmode.vercel.app/docs/introduction\"},\"wordCount\":105,\"timeRequired\":\"PT1M\",\"inLanguage\":\"en-US\",\"isAccessibleForFree\":true}"
     },
     "socialMedia": {
       "ogTitle": "Introduction | Crackmode Documentation",
-      "ogDescription": "The ultimate community for crushing LeetCode</Text> and mastering algorithms</Text>. Join elite coders who don't just solve problems—they dominate</Text> them!",
-      "ogImage": "https://crackmode.vercel.app/api/v1/og?title=Introduction&description=The+ultimate+community+for+crushing+LeetCode%3C%2FText%3E+and+mastering+algorithms%3C%2FText%3E.+Join+elite+coders+who+don%27t+just+so...&section=Documentation&theme=crackmode",
+      "ogDescription": "The ultimate community for crushing LeetCode</Box> and mastering algorithms</Box>. Join elite coders who don't just solve problems—they dominate</Box> them!",
+      "ogImage": "https://crackmode.vercel.app/api/v1/og?title=Introduction&description=The+ultimate+community+for+crushing+LeetCode%3C%2FBox%3E+and+mastering+algorithms%3C%2FBox%3E.+Join+elite+coders+who+don%27t+just+solv...&section=Documentation&theme=crackmode",
       "twitterTitle": "Introduction | Crackmode Documentation",
-      "twitterDescription": "The ultimate community for crushing LeetCode</Text> and mastering algorithms</Text>. Join elite coders who don't just solve problems—they dominate</Text> them!",
-      "twitterImage": "https://crackmode.vercel.app/api/v1/og?title=Introduction&description=The+ultimate+community+for+crushing+LeetCode%3C%2FText%3E+and+mastering+algorithms%3C%2FText%3E.+Join+elite+coders+who+don%27t+just+so...&section=Documentation&theme=crackmode"
+      "twitterDescription": "The ultimate community for crushing LeetCode</Box> and mastering algorithms</Box>. Join elite coders who don't just solve problems—they dominate</Box> them!",
+      "twitterImage": "https://crackmode.vercel.app/api/v1/og?title=Introduction&description=The+ultimate+community+for+crushing+LeetCode%3C%2FBox%3E+and+mastering+algorithms%3C%2FBox%3E.+Join+elite+coders+who+don%27t+just+solv...&section=Documentation&theme=crackmode"
     }
   },
   {
