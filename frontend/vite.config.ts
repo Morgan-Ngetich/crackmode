@@ -82,7 +82,7 @@ export default defineConfig((configEnv: ConfigEnv): UserConfig => {
     esbuild: {
       jsx: 'automatic',
       logOverride: { 'this-is-undefined-in-esm': 'silent' },
-      // drop: isProd ? ['console', 'debugger'] : [],
+      drop: isProd ? ['console', 'debugger'] : [],
     },
   };
 });
