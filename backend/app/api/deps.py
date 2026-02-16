@@ -29,8 +29,7 @@ def get_current_user(
 
     # Local override
     # "dev-admin" should'nt be set in the settings, as it's not needed within the prod variables.
-    # settings.ENVIRONMENT == "local" and
-    if token == "dev-admin":
+    if settings.ENVIRONMENT == "local" and token == "dev-admin":
         user = session.exec(select(User).where(User.email == settings.FIRST_SUPERUSER)).first()
         if not user:
             raise HTTPException(status_code=404, detail="Dev admin user not found")
