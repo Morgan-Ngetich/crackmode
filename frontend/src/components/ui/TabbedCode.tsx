@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Tabs, IconButton } from "@chakra-ui/react"
 import { CodeBlock } from "@chakra-ui/react"
-import { shikiAdapter } from "@/hooks/crackmode/shikiAdapter"
+import { shikiAdapter } from "@/hooks/crackmode/docs/shikiAdapter"
 
 interface TabbedCodeProps {
   files: {

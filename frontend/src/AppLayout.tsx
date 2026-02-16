@@ -1,15 +1,15 @@
 import { Box, HStack } from '@chakra-ui/react';
 import { Outlet } from '@tanstack/react-router';
-import { useAuthPromptStore } from '@/hooks/auth/store/useAuthPromptStore';
+import { useAuthPromptStore } from '@/hooks/store/useAuthPromptStore';
 import AuthPromptDialog from '@/components/auth/AuthPromptDialog';
-import { useAuthPromptController } from '@/hooks/auth/store/useAuthPromptController';
+import { useAuthPromptController } from '@/hooks/store/useAuthPromptController';
 import DocsLayout from "@/components/common/DocsLayout";
 import Sidebar from "@/components/common/Sidebar";
 import CrackModeHeader from "@/components/common/CrackModeHeader";
 import DocumentSEOHead from "@/seo/DocumentSEOHead";
-import { useDocumentFromPath } from "@/hooks/crackmode/useDocumentFromPath";
-import { useBreadcrumbItems } from "@/hooks/crackmode/useBreadcrumbItems";
-import { useHeadings } from "@/hooks/crackmode/useHeading";
+import { useDocumentFromPath } from "@/hooks/crackmode/docs/useDocumentFromPath";
+import { useBreadcrumbItems } from "@/hooks/crackmode/docs/useBreadcrumbItems";
+import { useHeadings } from "@/hooks/crackmode/docs/useHeading";
 import { type EnhancedSearchableDoc } from "@/client/types/search";
 import { type BreadcrumbItem, type HeadingData } from "@/client/types/docs";
 

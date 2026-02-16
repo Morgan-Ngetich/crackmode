@@ -1,5 +1,5 @@
 import { useAuth } from '@/hooks/auth/useAuth';
-import { useAuthPromptStore } from '@/hooks/auth/store/useAuthPromptStore';
+import { useAuthPromptStore } from '@/hooks/store/useAuthPromptStore';
 import { useMatches } from '@tanstack/react-router';
 import { isProtectedRoute } from '@/utils/routeGuards';
 import { useAuthQuery } from '@/hooks/auth/useAuthQuery';

@@ -5,12 +5,12 @@ import {
   Flex,
   Icon,
   Collapsible,
-  Box, // ✅ Add Box for styling
+  Box,
 } from "@chakra-ui/react"
-import { useRouter, Link } from "@tanstack/react-router" // ✅ Import Link from router
+import { useRouter, Link } from "@tanstack/react-router"
 import { sidebarConfig } from "@/config/sidebarConfig"
 import { FaChevronUp, FaChevronRight } from "react-icons/fa"
-import { useSidebarStore } from "@/hooks/crackmode/stores/sidebarStore"
+import { useSidebarStore } from "@/hooks/crackmode/docs/stores/sidebarStore"
 
 const Sidebar = () => {
   const router = useRouter()
