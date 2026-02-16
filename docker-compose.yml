@@ -1,4 +1,6 @@
 services:
+
+  # FRONTEND SERVICE
   frontend:
     restart: always
     build:
@@ -9,10 +11,144 @@ services:
         VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
         VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
     container_name: frontend
-    # ✅ FIX 2: Remove 'expose' - use 'ports' in override file
-    # ✅ FIX 3: Remove conflicting port mapping (5173:5173)
     volumes:
       - uploads:/shared/uploads
+    expose:
+      - "8000"
+      - "5173:5173"
+
+  # BACKEND SERVICE
+  backend:
+    image: "backend:latest"
+    command: "fastapi"
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend
+    volumes:
+      - uploads:/shared/uploads
+    env_file:
+      - .env
+    environment:
+      - DOMAIN=${DOMAIN}
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    expose:
+      - "8000"
+
+  # POSTGRES SERVICE
+  db:
+    image: postgres:15
+    container_name: db
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
+      - POSTGRES_USER=${POSTGRES_USER?Variable not set}
+      - POSTGRES_DB=${POSTGRES_DB?Variable not set}
+    ports:
+      - "5432:5432"
+    volumes:
+      - crakcmode_postgres_data:/var/lib/postgresql/data/pgdata
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3-management
+    restart: always
+    ports:
+      - "5672:5672"    # AMQP port
+      - "15672:15672"  # Management UI
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+      - rabbitmq-log:/var/log/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - default
+  
+  celery_worker_default:
+    container_name: celery_worker_default
+    image: "backend:latest"
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: "celery_worker"
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      celery_beat:
+        condition: service_started
+    env_file:
+      - .env
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+    volumes:
+      - uploads:/shared/uploads
+    networks:
+      - default
+ 
+  celery_worker_llm:
+    container_name: celery_worker_llm
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: "backend:latest"
+    command: "celery_worker --llm"
+    restart: on-failure
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+    volumes:
+      - uploads:/shared/uploads
+    networks:
+      - default
+      
+  celery_beat:
+    container_name: "celery_beat"
+    image: "backend:latest"
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: "celery_beat"
+    restart: always
+    depends_on:
+      - rabbitmq
+    env_file:
+      - .env
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+    volumes:
+      - uploads:/shared/uploads
+    networks:
+      - default
 
 volumes:
+  crakcmode_postgres_data:
+    external: true
   uploads:
+  rabbitmq-data:
+  rabbitmq-log:
