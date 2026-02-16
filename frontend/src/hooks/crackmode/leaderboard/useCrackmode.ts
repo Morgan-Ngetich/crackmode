@@ -22,9 +22,8 @@ export function useSetupCrackModeProfile() {
         status: 'success',
       });
 
-      // Invalidate related queries
-      queryClient.invalidateQueries({ queryKey: ['crackmode', 'profile'] });
-      queryClient.invalidateQueries({ queryKey: ['crackmode', 'leaderboard'] });
+      // Invalidate all queries
+      queryClient.invalidateQueries();
     },
     onError: (error: unknown) => {
       toast({
