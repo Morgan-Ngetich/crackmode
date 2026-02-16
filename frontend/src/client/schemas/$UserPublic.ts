@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export const $UserPublic = {
-    description: `Complete public user data with all relationships`,
+    description: `Minimal user info for nested responses`,
     properties: {
         id: {
             type: 'number',
@@ -29,7 +29,11 @@ export const $UserPublic = {
                 type: 'null',
             }],
         },
-        cover_image: {
+        role: {
+            type: 'string',
+            isRequired: true,
+        },
+        github_url: {
             type: 'any-of',
             contains: [{
                 type: 'string',
@@ -37,22 +41,66 @@ export const $UserPublic = {
                 type: 'null',
             }],
         },
-        is_superuser: {
-            type: 'boolean',
-            isRequired: true,
-        },
-        is_mentor: {
-            type: 'boolean',
-            isRequired: true,
-        },
-        is_mentee: {
-            type: 'boolean',
-            isRequired: true,
-        },
-        profile: {
+        twitter_url: {
             type: 'any-of',
             contains: [{
-                type: 'UserProfilePublic',
+                type: 'string',
+            }, {
+                type: 'null',
+            }],
+        },
+        linkedin_url: {
+            type: 'any-of',
+            contains: [{
+                type: 'string',
+            }, {
+                type: 'null',
+            }],
+        },
+        website_url: {
+            type: 'any-of',
+            contains: [{
+                type: 'string',
+            }, {
+                type: 'null',
+            }],
+        },
+        country: {
+            type: 'any-of',
+            contains: [{
+                type: 'string',
+            }, {
+                type: 'null',
+            }],
+        },
+        company: {
+            type: 'any-of',
+            contains: [{
+                type: 'string',
+            }, {
+                type: 'null',
+            }],
+        },
+        school: {
+            type: 'any-of',
+            contains: [{
+                type: 'string',
+            }, {
+                type: 'null',
+            }],
+        },
+        about: {
+            type: 'any-of',
+            contains: [{
+                type: 'string',
+            }, {
+                type: 'null',
+            }],
+        },
+        crackmode_profile: {
+            type: 'any-of',
+            contains: [{
+                type: 'CrackModeProfilePublic',
             }, {
                 type: 'null',
             }],
@@ -74,42 +122,6 @@ export const $UserPublic = {
             }, {
                 type: 'null',
             }],
-        },
-        roadmap_count: {
-            type: 'number',
-        },
-        active_goal_count: {
-            type: 'number',
-        },
-        boards: {
-            type: 'array',
-            contains: {
-                type: 'Board',
-            },
-        },
-        roadmaps: {
-            type: 'array',
-            contains: {
-                type: 'Roadmap',
-            },
-        },
-        goals: {
-            type: 'array',
-            contains: {
-                type: 'Goal',
-            },
-        },
-        assigned_cards: {
-            type: 'array',
-            contains: {
-                type: 'Card',
-            },
-        },
-        created_cards: {
-            type: 'array',
-            contains: {
-                type: 'Card',
-            },
         },
     },
 } as const;
