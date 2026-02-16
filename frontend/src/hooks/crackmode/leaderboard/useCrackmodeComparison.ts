@@ -4,7 +4,7 @@ import { toNativePromise } from '@/utils/toNativePromisse';
 import { useCrackModeProfile } from './useCrackmodeProfile';
 
 /**
- * 🎮 FIFA SYSTEM: Hook for getting division-specific leaderboard
+ * Hook for getting division-specific leaderboard
  * Rankings based on performance_score (weekly velocity)
  */
 export function useDivisionLeaderboard(division?: string) {
@@ -27,7 +27,7 @@ export function useDivisionLeaderboard(division?: string) {
 }
 
 /**
- * 🎮 FIFA SYSTEM: Hook for getting promotion/relegation status
+ * Hook for getting promotion/relegation status
  * Based on division_rank (performance_score ranking within division)
  */
 export function usePromotionStatus() {
@@ -64,7 +64,7 @@ export function usePromotionStatus() {
 }
 
 /**
- * 🎮 FIFA SYSTEM: Hook for getting division statistics
+ * Hook for getting division statistics
  */
 export function useDivisionStats(division?: string) {
   const { data: divisionData } = useDivisionLeaderboard(division);
@@ -103,7 +103,7 @@ export function useDivisionStats(division?: string) {
 }
 
 /**
- * 🎮 FIFA SYSTEM: Get all division summaries (for division cards)
+ * Get all division summaries (for division cards)
  * Fixed: Using useQueries instead of map with useQuery
  */
 export function useDivisionSummaries() {
