@@ -33,7 +33,7 @@ import { useSession } from '@/hooks/auth/useSession';
 import { useNavigate } from '@tanstack/react-router';
 import { useNavigateWithRedirect } from '@/hooks/auth/authState';
 
-type HeaderMode = 'docs' | 'leaderboard';
+type HeaderMode = 'home' | 'docs' | 'leaderboard';
 
 interface CrackModeHeaderProps {
   mode?: HeaderMode;
@@ -118,7 +118,7 @@ const CrackModeHeader: React.FC<CrackModeHeaderProps> = ({
         top="0"
         zIndex="100"
         transition="all 0.2s"
-        py={mode === "leaderboard" ? 1 : 0}
+        py={0}
       >
         {/* Main Header Row */}
         <Flex
@@ -127,16 +127,17 @@ const CrackModeHeader: React.FC<CrackModeHeaderProps> = ({
           align="center"
           minH="60px"
         >
-          {/* Mobile Menu Button */}
-          <IconButton
-            aria-label="Open menu"
-            display={{ base: "flex", md: "none" }}
-            variant="ghost"
-            onClick={() => setDrawerOpen(true)}
-            mr={2}
-          >
-            <IoMenu />
-          </IconButton>
+          {mode !== "home" && (
+            <IconButton
+              aria-label="Open menu"
+              display={{ base: "flex", md: "none" }}
+              variant="ghost"
+              onClick={() => setDrawerOpen(true)}
+              mr={2}
+            >
+              <IoMenu />
+            </IconButton>
+          )}
 
           {/* Logo/Branding + Mode Title */}
           <HStack gap={2} flex={{ base: "1", md: "0" }} justifySelf={'start'}>
@@ -150,21 +151,35 @@ const CrackModeHeader: React.FC<CrackModeHeaderProps> = ({
             >
               <Text color="teal.500">Crack</Text>
               <Text color="orange.400">Mode</Text>
+
+              {isMobile && mode !== "home" && (
+                <Box
+                  ml={1}
+                  mb={1}
+                  p={0}
+                >
+                  <Icon color={modeContent.iconColor} fontSize={"sm"}>
+                    {modeContent.icon}
+                  </Icon>
+                </Box>
+              )}
             </HStack>
 
             {/* Mode Title (Desktop) */}
-            <HStack gap={0} display={{ base: "none", md: "flex" }} mt="2">
-              <Icon fontSize="xs" color={modeContent.iconColor}>
-                {modeContent.icon}
-              </Icon>
-              <Heading size="xs" color={modeContent.iconColor}>
-                {modeContent.title}
-              </Heading>
-            </HStack>
+            {mode !== "home" && (
+              <HStack gap={0} display={{ base: "none", md: "flex" }} mt="2">
+                <Icon fontSize="xs" color={modeContent.iconColor}>
+                  {modeContent.icon}
+                </Icon>
+                <Heading size="xs" color={modeContent.iconColor}>
+                  {modeContent.title}
+                </Heading>
+              </HStack>
+            )}
           </HStack>
 
           {/* Desktop Search (Only for docs mode) */}
-          {modeContent.showSearch && typeof window !== "undefined" && showFullSearch && (
+          {mode !== "home" && modeContent.showSearch && typeof window !== "undefined" && showFullSearch && (
             <Box flex="1" maxW="600px" mx={6}>
               <DocsSearch
                 onNavigate={handleNavigation}
@@ -176,7 +191,7 @@ const CrackModeHeader: React.FC<CrackModeHeaderProps> = ({
           )}
 
           {/* Tablet Search Icon (Only for docs mode) */}
-          {modeContent.showSearch && typeof window !== "undefined" && !showFullSearch && !isMobile && (
+          {mode !== "home" && modeContent.showSearch && typeof window !== "undefined" && !showFullSearch && !isMobile && (
             <IconButton
               aria-label="Toggle Search"
               variant="ghost"
@@ -193,7 +208,7 @@ const CrackModeHeader: React.FC<CrackModeHeaderProps> = ({
           {/* User Menu & Controls */}
           <HStack gap={2}>
             {/* Mobile Search Icon (Only for docs mode) */}
-            {modeContent.showSearch && typeof window !== "undefined" && isMobile && (
+            {mode !== "home" && modeContent.showSearch && typeof window !== "undefined" && isMobile && (
               <IconButton
                 aria-label="Toggle Search"
                 variant="ghost"
@@ -205,7 +220,7 @@ const CrackModeHeader: React.FC<CrackModeHeaderProps> = ({
             )}
 
             {/* Calendar (Docs mode only) */}
-            {modeContent.showCalendar && (
+            {mode !== "home" && modeContent.showCalendar && (
               <>
                 <IconButton
                   variant="plain"
@@ -226,7 +241,7 @@ const CrackModeHeader: React.FC<CrackModeHeaderProps> = ({
             {!isMobile && modeContent.rightAction}
 
             {/* Color Mode Toggle */}
-            {!isMobile && <ColorModeButton size="sm" />}
+            {(!isMobile || mode !== "docs") && <ColorModeButton size="sm" />}
 
             {/* User Menu */}
             {isLoading ? (
