@@ -1,4 +1,4 @@
-import { Box, SimpleGrid, VStack, HStack, Text, Badge, Spinner, Icon, Progress } from '@chakra-ui/react';
+import { Box, SimpleGrid, VStack, HStack, Text, Badge, Skeleton, Icon, Progress } from '@chakra-ui/react';
 import { useNavigate } from '@tanstack/react-router';
 import { useDivisionSummaries } from '@/hooks/crackmode/leaderboard/useCrackmodeComparison';
 import { useCrackModeProfile } from '@/hooks/crackmode/leaderboard/useCrackmodeProfile';
@@ -112,7 +112,7 @@ export function DivisionCards() {
   };
 
   return (
-    <Box w="full" mt={{ base: "auto", md: 3 }} p={4}>
+    <Box w="full" mt={{ base: "auto", md: 3 }} px={4} py={{ base: 0, md: 4 }}>
       <VStack align="stretch" gap={6}>
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={6}>
           {DIVISIONS.map((div, index) => {
@@ -228,9 +228,47 @@ export function DivisionCards() {
                     </VStack>
                   </HStack>
 
+
                   {/* Stats or Motivation */}
                   {isLoading || divisionData?.isLoading ? (
-                    <Spinner size="sm" />
+                    <VStack align="stretch" gap={3}>
+                      {/* Player Count Skeleton */}
+                      <HStack justify="space-between">
+                        <Skeleton height="16px" width="60px" />
+                        <Skeleton height="20px" width="40px" />
+                      </HStack>
+
+                      {/* Motivation Section Skeleton */}
+                      <Box
+                        p={3}
+                        borderRadius="md"
+                        bg={{
+                          base: `${div.color}.100`,
+                          _dark: `${div.color}.900/20`,
+                        }}
+                        borderWidth={1}
+                        borderColor={{
+                          base: `${div.color}.300`,
+                          _dark: `${div.color}.700`,
+                        }}
+                      >
+                        <VStack align="stretch" gap={2}>
+                          <HStack gap={2} justify="space-between">
+                            <HStack flex={1}>
+                              <Skeleton height="16px" width="16px" borderRadius="md" />
+                              <Skeleton height="16px" width="120px" />
+                            </HStack>
+                            <Skeleton height="14px" width="60px" />
+                          </HStack>
+
+                          {/* Sublabel Skeleton */}
+                          <Skeleton height="12px" width="100px" />
+
+                          {/* Progress Bar Skeleton */}
+                          <Skeleton height="8px" width="100%" borderRadius="full" />
+                        </VStack>
+                      </Box>
+                    </VStack>
                   ) : (
                     <VStack align="stretch" gap={3}>
                       {/* Player Count */}
@@ -308,6 +346,7 @@ export function DivisionCards() {
                       </Box>
                     </VStack>
                   )}
+
                 </VStack>
               </Box>
             );
