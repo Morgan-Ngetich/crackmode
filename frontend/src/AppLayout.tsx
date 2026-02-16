@@ -61,7 +61,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
         currentPath={currentPath}
         baseUrl={baseUrl}
       />
-      <CrackModeHeader page="crackmode/docs" />
+      <CrackModeHeader mode="docs" />
       <HStack flex="1" align="start" gap={0} w="100%" overflow="hidden">
         <Box
           as="nav"
