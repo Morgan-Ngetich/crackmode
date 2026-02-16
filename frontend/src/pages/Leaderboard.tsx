@@ -69,7 +69,7 @@ export default function Leaderboard() {
   const shouldShowJoinCTA = !user || !hasProfile;
 
   return (
-    <Box minH="100vh" py={8} overflow="visible">
+    <Box minH="100vh" py={{base: 0, md: 8}} overflow="visible">
       <Container maxW="container.xl" overflow="visible">
         <VStack gap={6} align="stretch">
           {/* Hero CTA Card - Gaming Style */}
