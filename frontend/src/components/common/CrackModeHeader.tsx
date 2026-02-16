@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Flex,
@@ -15,77 +15,110 @@ import {
   Portal,
   useBreakpointValue,
   Collapsible,
-  useDisclosure
+  useDisclosure,
+  Heading,
+  Icon
 } from '@chakra-ui/react';
-import { IoMenu } from "react-icons/io5"
-import Sidebar from './Sidebar';
+import { IoMenu } from "react-icons/io5";
+import { FaChevronDown, FaSearch, FaTimes, FaCalendar, FaTrophy, FaBook } from 'react-icons/fa';
+import { IoSync } from "react-icons/io5";
 import { Avatar } from '@/components/ui/avatar';
-import { FaChevronDown, FaSearch, FaTimes } from 'react-icons/fa';
+import { ColorModeButton } from '@/components/ui';
+import Sidebar from './Sidebar';
+import LeaderboardSidebar from '@/components/leaderboard/LeaderboardSidebar';
+import { DocsSearch } from './DocsSearch';
+import ViewCalendar from "@/components/calendar/ViewCalendar";
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useSession } from '@/hooks/auth/useSession';
 import { useNavigate } from '@tanstack/react-router';
-import { ColorModeButton } from '@/components/ui';
 import { useNavigateWithRedirect } from '@/hooks/auth/authState';
-import { DocsSearch } from './DocsSearch';
-import { FaCalendar } from 'react-icons/fa6';
-import ViewCalendar from "@/components/calendar/ViewCalendar";
 
-interface HeaderProps {
-  page?: "crackmode/docs";
+type HeaderMode = 'docs' | 'leaderboard';
+
+interface CrackModeHeaderProps {
+  mode?: HeaderMode;
+  // Leaderboard-specific props
+  onSync?: () => void;
+  isSyncing?: boolean;
+  isMyProfile?: boolean;
 }
 
-const CrackModeHeader: React.FC<HeaderProps> = ({ page }) => {
+const CrackModeHeader: React.FC<CrackModeHeaderProps> = ({
+  mode = 'docs',
+  onSync,
+  isSyncing = false,
+  isMyProfile = false
+}) => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const { open: isSearchOpen, onToggle: toggleSearch, onClose: closeSearch } = useDisclosure();
 
   const { isLoggingOut, signOut } = useAuth();
-  const { user, isLoading } = useSession()
+  const { user, isLoading } = useSession();
   const navigate = useNavigate();
   const navigateWithRedirect = useNavigateWithRedirect();
-
-  // Color mode values
-  const crack = { base: 'green.500', _dark: 'green.400' }
-  const bgColor = { base: 'white', _dark: 'gray.900' }
-  const borderColor = { base: 'gray.200', _dark: 'gray.700' }
-
-  // Mobile drawer state
-  const [drawerOpen, setDrawerOpen] = useState(false);
-
-  // Mobile search state
-  const { open: isSearchOpen, onToggle: toggleSearch, onClose: closeSearch } = useDisclosure();
 
   // Responsive breakpoints
   const isMobile = useBreakpointValue({ base: true, md: false });
   const showFullSearch = useBreakpointValue({ base: false, lg: true });
 
-  useEffect(() => {
-    console.log('UserME:', user);
-    console.log('UserAvatar_url:', user?.user_metadata?.avatar_url);
-  }, [user]);
+  // Color mode values
+  const bgColor = { base: 'white', _dark: 'gray.900' };
+  const borderColor = { base: 'gray.200', _dark: 'gray.700' };
 
   const handleNavigation = (url: string) => {
     navigate({ to: url });
-    closeSearch(); // Close search on mobile after navigation
+    closeSearch();
   };
 
-  const handleRenderDialog = () => {
-    setIsCalendarOpen(true); // <-- toggle state instead of returning JSX
+  // Mode-specific content
+  const getModeContent = () => {
+    switch (mode) {
+      case 'leaderboard':
+        return {
+          icon: <FaTrophy />,
+          iconColor: 'yellow.400',
+          title: 'Leaderboard',
+          showCalendar: false,
+          showSearch: false,
+          rightAction: onSync && isMyProfile && (
+            <Button onClick={onSync} loading={isSyncing} loadingText="Syncing..." size="sm">
+              <Icon fontSize="sm" fontWeight={"bold"}>
+                <IoSync />
+              </Icon>
+              Sync Stats
+            </Button>
+          )
+        };
+      case 'docs':
+      default:
+        return {
+          icon: <FaBook />,
+          iconColor: 'teal.500',
+          title: 'Docs',
+          showCalendar: true,
+          showSearch: true,
+          searchPlaceholder: 'Search CrackMode docs...',
+          rightAction: null
+        };
+    }
   };
 
-  // const isMobile = useBreakpointValue({base: true, md: false})
-
+  const modeContent = getModeContent();
 
   return (
     <>
       <Box
         as="header"
         w="100%"
-        bg={{ base: 'white', _dark: 'gray.900' }}
+        bg={bgColor}
         borderBottom="1px solid"
         borderColor={borderColor}
         position="sticky"
         top="0"
         zIndex="100"
         transition="all 0.2s"
+        py={mode === "leaderboard" ? 1 : 0}
       >
         {/* Main Header Row */}
         <Flex
@@ -105,34 +138,45 @@ const CrackModeHeader: React.FC<HeaderProps> = ({ page }) => {
             <IoMenu />
           </IconButton>
 
-          {/* Logo/Branding */}
-          <HStack
-            fontSize={{ base: "lg", md: "xl", lg: "2xl" }}
-            fontWeight="bold"
-            letterSpacing="-0.5px"
-            cursor="pointer"
-            onClick={() => navigate({ to: "/" })}
-            gap={0}
-            flex={{ base: "1", md: "0" }}
-          >
-            <Text color="teal.500">Crack</Text>
-            <Text color="orange.400">Mode</Text>
+          {/* Logo/Branding + Mode Title */}
+          <HStack gap={2} flex={{ base: "1", md: "0" }} justifySelf={'start'}>
+            <HStack
+              fontSize={{ base: "lg", md: "xl", lg: "2xl" }}
+              fontWeight="bold"
+              letterSpacing="-0.5px"
+              cursor="pointer"
+              onClick={() => navigate({ to: "/" })}
+              gap={0}
+            >
+              <Text color="teal.500">Crack</Text>
+              <Text color="orange.400">Mode</Text>
+            </HStack>
+
+            {/* Mode Title (Desktop) */}
+            <HStack gap={0} display={{ base: "none", md: "flex" }} mt="2">
+              <Icon fontSize="xs" color={modeContent.iconColor}>
+                {modeContent.icon}
+              </Icon>
+              <Heading size="xs" color={modeContent.iconColor}>
+                {modeContent.title}
+              </Heading>
+            </HStack>
           </HStack>
 
-          {/* Desktop Search */}
-          {typeof window !== "undefined" && showFullSearch && (
+          {/* Desktop Search (Only for docs mode) */}
+          {modeContent.showSearch && typeof window !== "undefined" && showFullSearch && (
             <Box flex="1" maxW="600px" mx={6}>
               <DocsSearch
                 onNavigate={handleNavigation}
-                placeholder="Search Crackmode docs..."
+                placeholder={modeContent.searchPlaceholder!}
                 maxWidth="100%"
                 showFilters={true}
               />
             </Box>
           )}
 
-          {/* Tablet Search Icon */}
-          {typeof window !== "undefined" && !showFullSearch && !isMobile && (
+          {/* Tablet Search Icon (Only for docs mode) */}
+          {modeContent.showSearch && typeof window !== "undefined" && !showFullSearch && !isMobile && (
             <IconButton
               aria-label="Toggle Search"
               variant="ghost"
@@ -148,8 +192,8 @@ const CrackModeHeader: React.FC<HeaderProps> = ({ page }) => {
 
           {/* User Menu & Controls */}
           <HStack gap={2}>
-            {/* Mobile Search Icon */}
-            {typeof window !== "undefined" && isMobile && (
+            {/* Mobile Search Icon (Only for docs mode) */}
+            {modeContent.showSearch && typeof window !== "undefined" && isMobile && (
               <IconButton
                 aria-label="Toggle Search"
                 variant="ghost"
@@ -160,29 +204,29 @@ const CrackModeHeader: React.FC<HeaderProps> = ({ page }) => {
               </IconButton>
             )}
 
-            {page === "crackmode/docs" && (
+            {/* Calendar (Docs mode only) */}
+            {modeContent.showCalendar && (
               <>
                 <IconButton
                   variant="plain"
-                  onClick={handleRenderDialog}
+                  onClick={() => setIsCalendarOpen(true)}
                   aria-label="Open Calendar"
                 >
                   <FaCalendar />
                 </IconButton>
-                {(isMobile || page === "crackmode/docs") && (
-                  <ViewCalendar
-                    isOpen={isCalendarOpen}
-                    onClose={() => setIsCalendarOpen(false)}
-                    page="crackmode/docs"
-                  />
-                )}
+                <ViewCalendar
+                  isOpen={isCalendarOpen}
+                  onClose={() => setIsCalendarOpen(false)}
+                  page="crackmode/docs"
+                />
               </>
             )}
 
+            {/* Mode-specific right action (e.g., Sync button) */}
+            {!isMobile && modeContent.rightAction}
 
-            {!isMobile && (
-              < ColorModeButton size="sm" />
-            )}
+            {/* Color Mode Toggle */}
+            {!isMobile && <ColorModeButton size="sm" />}
 
             {/* User Menu */}
             {isLoading ? (
@@ -221,18 +265,14 @@ const CrackModeHeader: React.FC<HeaderProps> = ({ page }) => {
                     py={2}
                     minW="180px"
                   >
-                    {/* // TODO uncomment once the profile section and onboarding is up and straight */}
-                    {/* <Menu.Item
-                      value="profile"
-                      onSelect={() => navigate({ to: '/dashboard/profile' })}
-                      _hover={{ bg: { base: 'gray.100', _dark: 'gray.700' } }}
-                      disabled={isLoggingOut}
-                    >
-                      Profile
-                    </Menu.Item>
-
-                    <Menu.Separator /> */}
-
+                    {mode === 'leaderboard' && isMobile && modeContent.rightAction && (
+                      <Menu.Item value='sync_button'>
+                        {/* Mobile Sync Button (Leaderboard mode only) */}
+                        <Box>
+                          {modeContent.rightAction}
+                        </Box>
+                      </Menu.Item>
+                    )}
                     <Menu.Item
                       value="logout"
                       color="red.500"
@@ -269,26 +309,20 @@ const CrackModeHeader: React.FC<HeaderProps> = ({ page }) => {
           </HStack>
         </Flex>
 
-        {/* Mobile/Tablet Search Row */}
-        {!showFullSearch && (
+        {/* Mobile/Tablet Search Row (Docs mode only) */}
+        {modeContent.showSearch && !showFullSearch && (
           <Collapsible.Root open={isSearchOpen}>
             <Collapsible.Content>
-              <Box
-                px={{ base: 4, md: 6 }}
-                pb={1}
-                // borderTop="1px solid"
-                borderColor={borderColor}
-              >
+              <Box px={{ base: 4, md: 6 }} pb={3} borderColor={borderColor}>
                 <DocsSearch
                   onNavigate={handleNavigation}
-                  placeholder="Search Crackmode docs..."
+                  placeholder={modeContent.searchPlaceholder!}
                   maxWidth="100%"
                   showFilters={true}
                 />
               </Box>
             </Collapsible.Content>
           </Collapsible.Root>
-
         )}
       </Box>
 
@@ -302,11 +336,7 @@ const CrackModeHeader: React.FC<HeaderProps> = ({ page }) => {
           <Drawer.Backdrop />
           <Drawer.Positioner>
             <Drawer.Content>
-              <Drawer.Header
-                borderBottom="1px solid"
-                borderColor={borderColor}
-                bg={bgColor}
-              >
+              <Drawer.Header borderBottom="1px solid" borderColor={borderColor} bg={bgColor}>
                 <Drawer.Title>
                   <HStack justify="space-between" w="full">
                     <HStack
@@ -315,62 +345,23 @@ const CrackModeHeader: React.FC<HeaderProps> = ({ page }) => {
                       letterSpacing="-0.5px"
                       cursor="pointer"
                       onClick={() => {
-                        navigate({ to: '/docs' });
+                        navigate({ to: '/' });
                         setDrawerOpen(false);
                       }}
                       gap={0}
                     >
-                      <Text color={crack}>Crack</Text>
+                      <Text color="teal.500">Crack</Text>
                       <Text color="orange.400">Mode</Text>
                     </HStack>
-
-                    {/* User info in drawer header */}
-                    {/* {isLoading ? (
-                      <HStack gap={2}>
-                        <SkeletonCircle size="6" />
-                        <SkeletonText noOfLines={1} width="60px" />
-                      </HStack>
-                    ) : user ? (
-                      <HStack gap={2}>
-                        <Avatar size="sm" name={user.full_name} src={user.avatar_url} />
-                        <VStack gap={0} align="start">
-                          <Text fontSize="sm" fontWeight="medium" lineHeight="1">
-                            {user.full_name}
-                          </Text>
-                          <Button
-                            size="xs"
-                            color="red.500"
-                            onClick={() => {
-                              signOut();
-                              setDrawerOpen(false);
-                            }}
-                            disabled={isLoggingOut}
-                            p={0}
-                            h="auto"
-                          >
-                            {isLoggingOut ? "Logging out..." : "Logout"}
-                          </Button>
-                        </VStack>
-                      </HStack>
-                    ) : (
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          navigateWithRedirect('/login');
-                          setDrawerOpen(false);
-                        }}
-                      >
-                        Login
-                      </Button>
-                    )} */}
-                    <ColorModeButton variant={"surface"} />
+                    <ColorModeButton variant="surface" />
                   </HStack>
                 </Drawer.Title>
                 <Drawer.CloseTrigger />
               </Drawer.Header>
 
               <Drawer.Body p={0}>
-                <Sidebar />
+                {/* Show appropriate sidebar based on mode */}
+                {mode === 'leaderboard' ? <LeaderboardSidebar /> : <Sidebar />}
               </Drawer.Body>
             </Drawer.Content>
           </Drawer.Positioner>
