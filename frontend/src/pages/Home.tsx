@@ -118,7 +118,7 @@ const Home = () => {
                     </Text>
                   </HStack>
                   <Text fontSize="xs" color="fg.muted">
-                    LeetCode 75 + System Design with detailed explanations. From brute force to optimized.
+                    LeetCode 75 + System Design in detailed explanation. From brute force to optimized.
                   </Text>
                 </Box>
 
@@ -281,7 +281,6 @@ const Home = () => {
                   <Box
                     animation="fadeIn 0.5s"
                     w="full"
-                    maxW="500px"
                   >
                     <ViewCalendar />
                   </Box>
