@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { supabase } from './supabase/supabaseClient';
+import { supabase } from '../supabase/supabaseClient';
 import { OpenAPI, UsersService } from '@/client';
 import { useNavigate, useRouterState } from '@tanstack/react-router';
 import type { GoogleUserInfo, SupabaseUser } from './types';
+import { safeSessionStorage } from '@/utils/storage';
 
 export async function isLoggedIn() {
   const {
@@ -11,7 +12,6 @@ export async function isLoggedIn() {
 
   return Boolean(session?.user);
 }
-
 
 /* This hook is used *after login or signup* to redirect the user
   back to the page they originally intended to visit.
@@ -22,22 +22,25 @@ export function useCleanRedirect(paramKey = 'redirectTo') {
   const routerState = useRouterState();
 
   return () => {
-    const search = routerState.location.search;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const search = routerState.location.search as Record<string, any>;
     const redirectTo = search[paramKey] as string | undefined;
 
-    if (redirectTo) {
-      // Remove the redirectTo param from search
-      const { [paramKey]: _discard, ...rest } = search;
-      void _discard; // <-- just reference it to silence unused var warning
+    // Check if the user came from /crackmode
+    const cameFromCrackmode = document.referrer.includes('/crackmode') ||
+      routerState.location.pathname.includes('/crackmode');
 
+    const fallbackUrl = cameFromCrackmode ? '/crackmode' : '/';
+
+    if (redirectTo) {
       navigate({
-        to: redirectTo,
-        search: rest,      // keep other params except redirectTo
-        replace: true,     // replace current history entry
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        to: redirectTo as any,
+        replace: true,
       });
     } else {
-      // No redirect param, use fallback based on where they came from
-      navigate({ to: "/", replace: true });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      navigate({ to: fallbackUrl as any, replace: true });
     }
   };
 }
@@ -52,12 +55,23 @@ export function useNavigateWithRedirect() {
   const routerState = useRouterState();
 
   return (path: string, redirectTarget?: string) => {
+    console.log("redirectTarget", redirectTarget)
     const redirectToState = redirectTarget || routerState.location.pathname;
+    console.log("redirectToState", redirectToState)
+
+    // Parse the path to separate pathname and search params
+    const [pathname, searchString] = path.split('?');
+    const searchParams = searchString
+      ? Object.fromEntries(new URLSearchParams(searchString))
+      : {};
 
     navigate({
-      to: path,
-      search: { redirectTo: redirectToState },
-      replace: true, // avoids polluting browser history
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      to: pathname as any,
+      // Merge the path's search params with redirectTo
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      search: { ...searchParams, redirectTo: redirectToState } as any,
+      replace: true,
     });
   };
 }
@@ -114,13 +128,13 @@ export function useGoogleUser(): GoogleUserInfo | null {
   const [googleUser, setGoogleUser] = useState<GoogleUserInfo | null>(null);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem(LOCAL_STORAGE_KEY);
+    const stored = safeSessionStorage.getItem(LOCAL_STORAGE_KEY);
     if (stored) {
       try {
         const parsed = JSON.parse(stored) as GoogleUserInfo;
         setGoogleUser(parsed);
       } catch {
-        sessionStorage.removeItem(LOCAL_STORAGE_KEY);
+        safeSessionStorage.removeItem(LOCAL_STORAGE_KEY);
         setGoogleUser(null);
       }
     }
