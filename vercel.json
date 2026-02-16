@@ -19,7 +19,7 @@
     },
     {
       "src": "/api/v1/(.*)",
-      "dest": "https://backend-production-3e33.up.railway.app/api/v1/$1"
+      "dest": "https://backend-production-d53dc.up.railway.app/api/v1/$1"
     },
     {
       "src": "/(.*)",
