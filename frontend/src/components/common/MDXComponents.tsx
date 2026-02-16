@@ -9,7 +9,7 @@ import {
 import type { MDXComponents } from "mdx/types"
 import type { ComponentProps } from "react"
 import { ScheduleItem, ProgressStat, ThemeItem, TabbedCode } from "@/components/ui"
-import { shikiAdapter } from "@/hooks/crackmode/shikiAdapter"
+import { shikiAdapter } from "@/hooks/crackmode/docs/shikiAdapter"
 
 const components: MDXComponents = {
   h1: (props: ComponentProps<"h1">) => (

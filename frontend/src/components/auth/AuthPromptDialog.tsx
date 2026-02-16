@@ -8,7 +8,7 @@ import {
 import { useLocation } from '@tanstack/react-router';
 import { useNavigateWithRedirect } from '@/hooks/auth/authState';
 import { setPromptDismissed } from '@/utils/authPromptDismiss';
-import { useAuthPromptStore } from '@/hooks/auth/store/useAuthPromptStore';
+import { useAuthPromptStore } from '@/hooks/store/useAuthPromptStore';
 
 interface AuthPromptDialogProps {
   open: boolean;

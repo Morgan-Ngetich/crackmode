@@ -15,7 +15,7 @@ export async function loader({ location }: { location: { pathname: string } }) {
 
   try {
     const { getDocumentFromPath, getBreadcrumbItems, getHeadings } = await import(
-      '@/hooks/crackmode/server-data.server'
+      '@/hooks/crackmode/docs/server-data.server'
     );
 
     const doc = getDocumentFromPath(location.pathname);

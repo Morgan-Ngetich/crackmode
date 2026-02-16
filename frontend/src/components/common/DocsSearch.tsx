@@ -19,7 +19,7 @@ import {
   // FaChevronUp
 } from "react-icons/fa"
 import { useRef, useState, useEffect } from "react"
-import { useDocsSearch, type SearchResult } from "@/hooks/crackmode/useDocsSearch"
+import { useDocsSearch, type SearchResult } from "@/hooks/crackmode/docs/useDocsSearch"
 
 interface DocsSearchProps {
   onNavigate?: (url: string) => void

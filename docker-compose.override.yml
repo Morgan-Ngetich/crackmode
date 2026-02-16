@@ -1,6 +1,6 @@
 services:
   frontend:
-    # ✅ FIX 4: Add all necessary ports for dev
+    # FIX 4: Add all necessary ports for dev
     ports:
       - "80:80"      # Nginx HTTP
       - "443:443"    # Nginx HTTPS (if using SSL)
@@ -13,3 +13,16 @@ services:
       - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
       - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
       - NODE_ENV=development
+
+  backend:
+    build:
+      args:
+        INSTALL_DEV: "true"
+    environment:
+      - DOMAIN=localhost
+    volumes:
+      - ./backend:/app  # For hot reload (e.g., uvicorn --reload)
+
+  db:
+    ports:
+      - "5433:5432"  # override to avoid clashing local PG

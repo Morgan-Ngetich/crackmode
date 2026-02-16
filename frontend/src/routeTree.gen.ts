@@ -12,12 +12,17 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as LeetcodeSetupRouteImport } from './routes/leetcode-setup'
+import { Route as LeaderboardRouteImport } from './routes/_leaderboard'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
+import { Route as LeaderboardLeaderboardIndexRouteImport } from './routes/_leaderboard/leaderboard/index'
 import { Route as LayoutDocsIndexRouteImport } from './routes/_layout/docs/index'
+import { Route as LeaderboardLeaderboardDivisionsIndexRouteImport } from './routes/_leaderboard/leaderboard/divisions/index'
 import { Route as LayoutDocsLeetcode75IndexRouteImport } from './routes/_layout/docs/leetcode75/index'
 import { Route as LayoutDocsIntroductionIndexRouteImport } from './routes/_layout/docs/introduction/index'
+import { Route as LeaderboardLeaderboardDivisionsDivisionRouteImport } from './routes/_leaderboard/leaderboard/divisions/$division'
 import { Route as LayoutDocsProblemsValidParenthesesRouteImport } from './routes/_layout/docs/problems/valid-parentheses'
 import { Route as LayoutDocsProblemsUniqueNumberOfOccurrencesRouteImport } from './routes/_layout/docs/problems/unique-number-of-occurrences'
 import { Route as LayoutDocsProblemsTwoSumRouteImport } from './routes/_layout/docs/problems/two-sum'
@@ -63,6 +68,15 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LeetcodeSetupRoute = LeetcodeSetupRouteImport.update({
+  id: '/leetcode-setup',
+  path: '/leetcode-setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/_leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LayoutRoute = LayoutRouteImport.update({
   id: '/_layout',
   getParentRoute: () => rootRouteImport,
@@ -77,11 +91,23 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
   path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LeaderboardLeaderboardIndexRoute =
+  LeaderboardLeaderboardIndexRouteImport.update({
+    id: '/leaderboard/',
+    path: '/leaderboard/',
+    getParentRoute: () => LeaderboardRoute,
+  } as any)
 const LayoutDocsIndexRoute = LayoutDocsIndexRouteImport.update({
   id: '/docs/',
   path: '/docs/',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LeaderboardLeaderboardDivisionsIndexRoute =
+  LeaderboardLeaderboardDivisionsIndexRouteImport.update({
+    id: '/leaderboard/divisions/',
+    path: '/leaderboard/divisions/',
+    getParentRoute: () => LeaderboardRoute,
+  } as any)
 const LayoutDocsLeetcode75IndexRoute =
   LayoutDocsLeetcode75IndexRouteImport.update({
     id: '/docs/leetcode75/',
@@ -93,6 +119,12 @@ const LayoutDocsIntroductionIndexRoute =
     id: '/docs/introduction/',
     path: '/docs/introduction/',
     getParentRoute: () => LayoutRoute,
+  } as any)
+const LeaderboardLeaderboardDivisionsDivisionRoute =
+  LeaderboardLeaderboardDivisionsDivisionRouteImport.update({
+    id: '/leaderboard/divisions/$division',
+    path: '/leaderboard/divisions/$division',
+    getParentRoute: () => LeaderboardRoute,
   } as any)
 const LayoutDocsProblemsValidParenthesesRoute =
   LayoutDocsProblemsValidParenthesesRouteImport.update({
@@ -275,11 +307,13 @@ const LayoutDocsLeetcode75ArraysStringsGcdOfStringsRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/leetcode-setup': typeof LeetcodeSetupRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/verify-email': typeof VerifyEmailRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/docs': typeof LayoutDocsIndexRoute
+  '/leaderboard': typeof LeaderboardLeaderboardIndexRoute
   '/docs/problems/asteroid-collision': typeof LayoutDocsProblemsAsteroidCollisionRoute
   '/docs/problems/best-time-to-buy-and-sell-stock': typeof LayoutDocsProblemsBestTimeToBuyAndSellStockRoute
   '/docs/problems/check-if-number-has-equal-digit-count-and-digit-value': typeof LayoutDocsProblemsCheckIfNumberHasEqualDigitCountAndDigitValueRoute
@@ -301,8 +335,10 @@ export interface FileRoutesByFullPath {
   '/docs/problems/two-sum': typeof LayoutDocsProblemsTwoSumRoute
   '/docs/problems/unique-number-of-occurrences': typeof LayoutDocsProblemsUniqueNumberOfOccurrencesRoute
   '/docs/problems/valid-parentheses': typeof LayoutDocsProblemsValidParenthesesRoute
+  '/leaderboard/divisions/$division': typeof LeaderboardLeaderboardDivisionsDivisionRoute
   '/docs/introduction': typeof LayoutDocsIntroductionIndexRoute
   '/docs/leetcode75': typeof LayoutDocsLeetcode75IndexRoute
+  '/leaderboard/divisions': typeof LeaderboardLeaderboardDivisionsIndexRoute
   '/docs/leetcode75/arrays-strings/gcd-of-strings': typeof LayoutDocsLeetcode75ArraysStringsGcdOfStringsRoute
   '/docs/leetcode75/arrays-strings/increasing-triplet-subsequence': typeof LayoutDocsLeetcode75ArraysStringsIncreasingTripletSubsequenceRoute
   '/docs/leetcode75/arrays-strings/introduction': typeof LayoutDocsLeetcode75ArraysStringsIntroductionRoute
@@ -314,11 +350,13 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/leetcode-setup': typeof LeetcodeSetupRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/verify-email': typeof VerifyEmailRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/docs': typeof LayoutDocsIndexRoute
+  '/leaderboard': typeof LeaderboardLeaderboardIndexRoute
   '/docs/problems/asteroid-collision': typeof LayoutDocsProblemsAsteroidCollisionRoute
   '/docs/problems/best-time-to-buy-and-sell-stock': typeof LayoutDocsProblemsBestTimeToBuyAndSellStockRoute
   '/docs/problems/check-if-number-has-equal-digit-count-and-digit-value': typeof LayoutDocsProblemsCheckIfNumberHasEqualDigitCountAndDigitValueRoute
@@ -340,8 +378,10 @@ export interface FileRoutesByTo {
   '/docs/problems/two-sum': typeof LayoutDocsProblemsTwoSumRoute
   '/docs/problems/unique-number-of-occurrences': typeof LayoutDocsProblemsUniqueNumberOfOccurrencesRoute
   '/docs/problems/valid-parentheses': typeof LayoutDocsProblemsValidParenthesesRoute
+  '/leaderboard/divisions/$division': typeof LeaderboardLeaderboardDivisionsDivisionRoute
   '/docs/introduction': typeof LayoutDocsIntroductionIndexRoute
   '/docs/leetcode75': typeof LayoutDocsLeetcode75IndexRoute
+  '/leaderboard/divisions': typeof LeaderboardLeaderboardDivisionsIndexRoute
   '/docs/leetcode75/arrays-strings/gcd-of-strings': typeof LayoutDocsLeetcode75ArraysStringsGcdOfStringsRoute
   '/docs/leetcode75/arrays-strings/increasing-triplet-subsequence': typeof LayoutDocsLeetcode75ArraysStringsIncreasingTripletSubsequenceRoute
   '/docs/leetcode75/arrays-strings/introduction': typeof LayoutDocsLeetcode75ArraysStringsIntroductionRoute
@@ -355,11 +395,14 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_layout': typeof LayoutRouteWithChildren
+  '/_leaderboard': typeof LeaderboardRouteWithChildren
+  '/leetcode-setup': typeof LeetcodeSetupRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/verify-email': typeof VerifyEmailRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/_layout/docs/': typeof LayoutDocsIndexRoute
+  '/_leaderboard/leaderboard/': typeof LeaderboardLeaderboardIndexRoute
   '/_layout/docs/problems/asteroid-collision': typeof LayoutDocsProblemsAsteroidCollisionRoute
   '/_layout/docs/problems/best-time-to-buy-and-sell-stock': typeof LayoutDocsProblemsBestTimeToBuyAndSellStockRoute
   '/_layout/docs/problems/check-if-number-has-equal-digit-count-and-digit-value': typeof LayoutDocsProblemsCheckIfNumberHasEqualDigitCountAndDigitValueRoute
@@ -381,8 +424,10 @@ export interface FileRoutesById {
   '/_layout/docs/problems/two-sum': typeof LayoutDocsProblemsTwoSumRoute
   '/_layout/docs/problems/unique-number-of-occurrences': typeof LayoutDocsProblemsUniqueNumberOfOccurrencesRoute
   '/_layout/docs/problems/valid-parentheses': typeof LayoutDocsProblemsValidParenthesesRoute
+  '/_leaderboard/leaderboard/divisions/$division': typeof LeaderboardLeaderboardDivisionsDivisionRoute
   '/_layout/docs/introduction/': typeof LayoutDocsIntroductionIndexRoute
   '/_layout/docs/leetcode75/': typeof LayoutDocsLeetcode75IndexRoute
+  '/_leaderboard/leaderboard/divisions/': typeof LeaderboardLeaderboardDivisionsIndexRoute
   '/_layout/docs/leetcode75/arrays-strings/gcd-of-strings': typeof LayoutDocsLeetcode75ArraysStringsGcdOfStringsRoute
   '/_layout/docs/leetcode75/arrays-strings/increasing-triplet-subsequence': typeof LayoutDocsLeetcode75ArraysStringsIncreasingTripletSubsequenceRoute
   '/_layout/docs/leetcode75/arrays-strings/introduction': typeof LayoutDocsLeetcode75ArraysStringsIntroductionRoute
@@ -396,11 +441,13 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/leetcode-setup'
     | '/login'
     | '/signup'
     | '/verify-email'
     | '/auth/callback'
     | '/docs'
+    | '/leaderboard'
     | '/docs/problems/asteroid-collision'
     | '/docs/problems/best-time-to-buy-and-sell-stock'
     | '/docs/problems/check-if-number-has-equal-digit-count-and-digit-value'
@@ -422,8 +469,10 @@ export interface FileRouteTypes {
     | '/docs/problems/two-sum'
     | '/docs/problems/unique-number-of-occurrences'
     | '/docs/problems/valid-parentheses'
+    | '/leaderboard/divisions/$division'
     | '/docs/introduction'
     | '/docs/leetcode75'
+    | '/leaderboard/divisions'
     | '/docs/leetcode75/arrays-strings/gcd-of-strings'
     | '/docs/leetcode75/arrays-strings/increasing-triplet-subsequence'
     | '/docs/leetcode75/arrays-strings/introduction'
@@ -435,11 +484,13 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/leetcode-setup'
     | '/login'
     | '/signup'
     | '/verify-email'
     | '/auth/callback'
     | '/docs'
+    | '/leaderboard'
     | '/docs/problems/asteroid-collision'
     | '/docs/problems/best-time-to-buy-and-sell-stock'
     | '/docs/problems/check-if-number-has-equal-digit-count-and-digit-value'
@@ -461,8 +512,10 @@ export interface FileRouteTypes {
     | '/docs/problems/two-sum'
     | '/docs/problems/unique-number-of-occurrences'
     | '/docs/problems/valid-parentheses'
+    | '/leaderboard/divisions/$division'
     | '/docs/introduction'
     | '/docs/leetcode75'
+    | '/leaderboard/divisions'
     | '/docs/leetcode75/arrays-strings/gcd-of-strings'
     | '/docs/leetcode75/arrays-strings/increasing-triplet-subsequence'
     | '/docs/leetcode75/arrays-strings/introduction'
@@ -475,11 +528,14 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_layout'
+    | '/_leaderboard'
+    | '/leetcode-setup'
     | '/login'
     | '/signup'
     | '/verify-email'
     | '/auth/callback'
     | '/_layout/docs/'
+    | '/_leaderboard/leaderboard/'
     | '/_layout/docs/problems/asteroid-collision'
     | '/_layout/docs/problems/best-time-to-buy-and-sell-stock'
     | '/_layout/docs/problems/check-if-number-has-equal-digit-count-and-digit-value'
@@ -501,8 +557,10 @@ export interface FileRouteTypes {
     | '/_layout/docs/problems/two-sum'
     | '/_layout/docs/problems/unique-number-of-occurrences'
     | '/_layout/docs/problems/valid-parentheses'
+    | '/_leaderboard/leaderboard/divisions/$division'
     | '/_layout/docs/introduction/'
     | '/_layout/docs/leetcode75/'
+    | '/_leaderboard/leaderboard/divisions/'
     | '/_layout/docs/leetcode75/arrays-strings/gcd-of-strings'
     | '/_layout/docs/leetcode75/arrays-strings/increasing-triplet-subsequence'
     | '/_layout/docs/leetcode75/arrays-strings/introduction'
@@ -516,6 +574,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LayoutRoute: typeof LayoutRouteWithChildren
+  LeaderboardRoute: typeof LeaderboardRouteWithChildren
+  LeetcodeSetupRoute: typeof LeetcodeSetupRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
@@ -545,6 +605,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/leetcode-setup': {
+      id: '/leetcode-setup'
+      path: '/leetcode-setup'
+      fullPath: '/leetcode-setup'
+      preLoaderRoute: typeof LeetcodeSetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_leaderboard': {
+      id: '/_leaderboard'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_layout': {
       id: '/_layout'
       path: ''
@@ -566,12 +640,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_leaderboard/leaderboard/': {
+      id: '/_leaderboard/leaderboard/'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardLeaderboardIndexRouteImport
+      parentRoute: typeof LeaderboardRoute
+    }
     '/_layout/docs/': {
       id: '/_layout/docs/'
       path: '/docs'
       fullPath: '/docs'
       preLoaderRoute: typeof LayoutDocsIndexRouteImport
       parentRoute: typeof LayoutRoute
+    }
+    '/_leaderboard/leaderboard/divisions/': {
+      id: '/_leaderboard/leaderboard/divisions/'
+      path: '/leaderboard/divisions'
+      fullPath: '/leaderboard/divisions'
+      preLoaderRoute: typeof LeaderboardLeaderboardDivisionsIndexRouteImport
+      parentRoute: typeof LeaderboardRoute
     }
     '/_layout/docs/leetcode75/': {
       id: '/_layout/docs/leetcode75/'
@@ -586,6 +674,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/docs/introduction'
       preLoaderRoute: typeof LayoutDocsIntroductionIndexRouteImport
       parentRoute: typeof LayoutRoute
+    }
+    '/_leaderboard/leaderboard/divisions/$division': {
+      id: '/_leaderboard/leaderboard/divisions/$division'
+      path: '/leaderboard/divisions/$division'
+      fullPath: '/leaderboard/divisions/$division'
+      preLoaderRoute: typeof LeaderboardLeaderboardDivisionsDivisionRouteImport
+      parentRoute: typeof LeaderboardRoute
     }
     '/_layout/docs/problems/valid-parentheses': {
       id: '/_layout/docs/problems/valid-parentheses'
@@ -891,9 +986,29 @@ const LayoutRouteChildren: LayoutRouteChildren = {
 const LayoutRouteWithChildren =
   LayoutRoute._addFileChildren(LayoutRouteChildren)
 
+interface LeaderboardRouteChildren {
+  LeaderboardLeaderboardIndexRoute: typeof LeaderboardLeaderboardIndexRoute
+  LeaderboardLeaderboardDivisionsDivisionRoute: typeof LeaderboardLeaderboardDivisionsDivisionRoute
+  LeaderboardLeaderboardDivisionsIndexRoute: typeof LeaderboardLeaderboardDivisionsIndexRoute
+}
+
+const LeaderboardRouteChildren: LeaderboardRouteChildren = {
+  LeaderboardLeaderboardIndexRoute: LeaderboardLeaderboardIndexRoute,
+  LeaderboardLeaderboardDivisionsDivisionRoute:
+    LeaderboardLeaderboardDivisionsDivisionRoute,
+  LeaderboardLeaderboardDivisionsIndexRoute:
+    LeaderboardLeaderboardDivisionsIndexRoute,
+}
+
+const LeaderboardRouteWithChildren = LeaderboardRoute._addFileChildren(
+  LeaderboardRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LayoutRoute: LayoutRouteWithChildren,
+  LeaderboardRoute: LeaderboardRouteWithChildren,
+  LeetcodeSetupRoute: LeetcodeSetupRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
   VerifyEmailRoute: VerifyEmailRoute,

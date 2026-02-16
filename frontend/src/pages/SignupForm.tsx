@@ -14,7 +14,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '@/hooks/auth/useAuth';
 import useToaster from '@/hooks/public/useToaster';
-import { Link } from '@tanstack/react-router';
+import { Link, useSearch } from '@tanstack/react-router';
 import { PasswordInput, PasswordStrengthMeter } from '@/components/ui/password-input';
 import { calculatePasswordStrength } from '@/utils/password';
 import { isValidEmail } from '@/utils/validator';
@@ -30,6 +30,9 @@ type SignUpFormData = {
 
 const SignupForm = () => {
   const { signUp, signInWithGoogle } = useAuth();
+  const search = useSearch({ from: "/signup"})
+  const redirectTo = search.redirectTo
+
   const {
     register,
     handleSubmit,
@@ -212,7 +215,11 @@ const SignupForm = () => {
 
             <Text mt={3} fontSize="sm" textAlign="center">
               Already signed up?{' '}
-              <Link to="/login">
+              <Link 
+                to="/login"
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                search={{ redirectTo} as any}
+              >
                 <Text
                   as="span"
                   fontWeight="medium"

@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
-import { supabase } from './supabase/supabaseClient';
+import { supabase } from '../supabase/supabaseClient';
 import { type Session } from '@supabase/supabase-js';
 import { getCookie, deleteCookie } from '@/hooks/auth/cookies/cookies';
 import { setAuthSession, clearAuthSession, getCachedSession, getCachedUserMetadata } from '@/hooks/auth/cookies/sessionCookies';
 import { useQueryClient } from '@tanstack/react-query';
 import type { fetchCurrentUser } from '@/hooks/auth/useAuthQuery'; // Import the type
-
-const isBrowser = typeof window !== 'undefined';
+import { safeSessionStorage } from '@/utils/storage';
 
 const SESSION_COOKIE_KEY = 'sb_session';
 const GOOGLE_USER_KEY = 'googleUser';
@@ -28,11 +27,6 @@ function isValidSession(session: any): session is Session {
 
 export function useSessionState() {
   const [session, setSession] = useState<Session | null | undefined>(() => {
-
-    if (!isBrowser) {
-      return null;
-    }
-
     // 1. Return global cache immediately if available
     if (globalSessionCache !== undefined) {
       return globalSessionCache;
@@ -77,7 +71,7 @@ export function useSessionState() {
 
     // 4. Quick check: if no Google user, likely not authenticated
     if (typeof window !== "undefined") {
-      const googleUser = sessionStorage.getItem(GOOGLE_USER_KEY);
+      const googleUser = safeSessionStorage.getItem(GOOGLE_USER_KEY);
       if (!googleUser) {
         globalSessionCache = null;
         globalUserMetadataCache = null;

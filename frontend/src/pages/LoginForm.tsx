@@ -14,7 +14,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '@/hooks/auth/useAuth';
 import useToaster from '@/hooks/public/useToaster';
-import { Link } from '@tanstack/react-router';
+import { Link, useSearch } from '@tanstack/react-router';
 import { PasswordInput } from '@/components/ui/password-input';
 import { isValidEmail } from '@/utils/validator';
 import { useCleanRedirect } from '@/hooks/auth/authState';
@@ -29,6 +29,8 @@ type LoginFormData = {
 
 const LoginForm = () => {
   const { signIn, signInWithGoogle } = useAuth();
+  const search = useSearch({ from: "/login" })
+  const redirectTo = search.redirectTo
 
   const {
     register,
@@ -40,7 +42,6 @@ const LoginForm = () => {
   // const navigate = useNavigate();
   const redirect = useCleanRedirect()
   const googleUser = useGoogleUser()
-  console.log("googleUser", googleUser)
 
   const onSubmit = async ({ email, password }: LoginFormData) => {
     const { error } = await signIn(email, password);
@@ -84,7 +85,7 @@ const LoginForm = () => {
         <Heading
           size="lg"
           mb={6}
-          textAlign="center"          
+          textAlign="center"
         >
           Log In
         </Heading>
@@ -134,7 +135,7 @@ const LoginForm = () => {
 
             <Separator my={2} />
 
-            <Text textAlign="center"  fontSize="xs">
+            <Text textAlign="center" fontSize="xs">
               or
             </Text>
 
@@ -191,9 +192,13 @@ const LoginForm = () => {
             </Flex>
 
 
-            <Text  mt={3} fontSize="sm" textAlign="center">
+            <Text mt={3} fontSize="sm" textAlign="center">
               Not registered yet?{' '}
-              <Link to="/signup">
+              <Link
+                to="/signup"
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                search={{ redirectTo } as any}
+              >
                 <Text
                   as="span"
                   fontWeight="medium"

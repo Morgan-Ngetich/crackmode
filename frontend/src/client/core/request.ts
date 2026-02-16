@@ -152,8 +152,6 @@ export const getHeaders = async (config: OpenAPIConfig, options: ApiRequestOptio
         resolve(options, config.HEADERS),
     ]);
 
-    // console.log("Resolved Token:", token);
-
     const formHeaders = typeof formData?.getHeaders === 'function' && formData?.getHeaders() || {}
 
     const headers = Object.entries({
@@ -188,8 +186,6 @@ export const getHeaders = async (config: OpenAPIConfig, options: ApiRequestOptio
             headers['Content-Type'] = 'application/json';
         }
     }
-
-    // console.log("Final Headers:", headers); 
 
     return headers;
 };

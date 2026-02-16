@@ -66,7 +66,7 @@ export default defineConfig((configEnv: ConfigEnv): UserConfig => {
 
     optimizeDeps: {
       // Moved outside of ssr block
-      exclude: ['@/hooks/crackmode/server-data.server']
+      exclude: ['@/hooks/crackmode/docs/server-data.server']
     },
 
     server: isDev ? {
