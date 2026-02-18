@@ -187,7 +187,7 @@ class LeetCodeService:
         
         for submission in recent:
             # Check timestamp
-            submit_time = submission.get("timestamp", 0)
+            submit_time = float(submission.get("timestamp", 0))
             if submit_time < week_ago:
                 continue
             
@@ -238,7 +238,7 @@ class LeetCodeService:
         seen_problems = set()
         
         for submission in recent:
-            submit_time = submission.get("timestamp", 0)
+            submit_time = float(submission.get("timestamp", 0))
             if submit_time < month_ago:
                 continue
             

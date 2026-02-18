@@ -33,7 +33,7 @@ def custom_openapi():
 
 app.openapi = custom_openapi
 
-# Allow CORS for all origins
+# Allow CORS for origins
 if settings.ENVIRONMENT == "local":
     origins = [
         "http://localhost",
@@ -44,7 +44,9 @@ if settings.ENVIRONMENT == "local":
 else:
     origins = [
         "https://frontend-production-a85f.up.railway.app",
-        "https://backend-production-3e33.up.railway.app"
+        "https://backend-production-3e33.up.railway.app",
+        "https://staging-crackmode.vercel.app",
+        "https://crackmode.vercel.app/"
     ]
 
 app.add_middleware(
