@@ -14,22 +14,13 @@ This ensures: "Keep grinding or get relegated"
 from app.models import CrackModeProfile
 
 
+# scoring.py
+
 def calculate_performance_score(
     profile: CrackModeProfile,
     weekly_stats: dict,
     monthly_stats: dict,
 ) -> int:
-    """
-    Calculate FIFA-style performance score
-    
-    Args:
-        profile: User's CrackMode profile
-        weekly_stats: Dict with {easy, medium, hard, total} for last 7 days
-        monthly_stats: Dict with {easy, medium, hard, total} for last 30 days
-    
-    Returns:
-        Performance score (determines division placement)
-    """
     
     # ===== 60% WEIGHT: THIS WEEK'S GRIND =====
     weekly_points = (
@@ -37,32 +28,38 @@ def calculate_performance_score(
         weekly_stats.get("medium", 0) * 3 +
         weekly_stats.get("hard", 0) * 5
     ) * 0.6
-    
-    # ===== 30% WEIGHT: THIS MONTH'S AVERAGE PER WEEK =====
+
+    # ===== 30% WEIGHT: MONTHLY AVERAGE PER WEEK =====
     monthly_total_points = (
         monthly_stats.get("easy", 0) * 1 +
         monthly_stats.get("medium", 0) * 3 +
         monthly_stats.get("hard", 0) * 5
     )
-    monthly_avg_weekly = (monthly_total_points / 4) * 0.3  # Divide by 4 weeks
-    
-    # ===== 10% WEIGHT: ALL-TIME LEGACY BONUS (CAPPED AT 100) =====
+    monthly_avg_weekly = (monthly_total_points / 4) * 0.3
+
+    # ===== 10% WEIGHT: LEGACY BONUS =====
     legacy_bonus = min(profile.total_score * 0.001, 100)
-    
-    # ===== BASE SCORE =====
+
     base_score = weekly_points + monthly_avg_weekly + legacy_bonus
-    
-    # ===== STREAK MULTIPLIER (Reward daily consistency) =====
-    # +2% per day of streak, capped at 60% bonus (30-day streak)
+
+    # ===== STREAK MULTIPLIER =====
     streak_multiplier = 1.0 + min(profile.current_streak * 0.02, 0.6)
+
+    # ===== INACTIVITY PENALTY (GRADUATED, not binary) =====
+    # Instead of a hard 50% cliff, penalty scales with how inactive they are
+    weekly_total = weekly_stats.get("total", 0)
     
-    # ===== INACTIVITY PENALTY =====
-    # If weekly_total is 0, apply 50% penalty to performance score
-    activity_multiplier = 1.0 if weekly_stats.get("total", 0) > 0 else 0.5
-    
-    # ===== FINAL SCORE =====
+    if weekly_total == 0:
+        activity_multiplier = 0.5       # Zero activity — harsh but fair
+    elif weekly_total < 3:
+        activity_multiplier = 0.75      # Very low — warning territory  
+    elif weekly_total < 5:
+        activity_multiplier = 0.90      # Mild dip
+    else:
+        activity_multiplier = 1.0       # Healthy — no penalty
+
     final_score = base_score * streak_multiplier * activity_multiplier
-    
+
     return int(final_score)
 
 
@@ -85,18 +82,21 @@ def get_division_thresholds() -> dict:
     }
 
 
-def determine_division_by_score(performance_score: int) -> str:
+# scoring.py
+
+def determine_division_by_score(performance_score: int, current_division: str = None) -> str:
     """
-    Determine division based on performance score
+    Determine division based on performance score.
     
-    Args:
-        performance_score: User's calculated performance score
-    
-    Returns:
-        Division name (Bronze, Silver, Gold, Platinum, Diamond)
+    If current_division is provided, applies a relegation buffer (hysteresis):
+    - You must fall 20% BELOW the division floor to get relegated
+    - You must reach the FULL threshold to get promoted
+    - This prevents yo-yo divisions from minor score fluctuations
     """
     thresholds = get_division_thresholds()
+    order = ["Bronze", "Silver", "Gold", "Platinum", "Diamond"]
     
+    # ===== PROMOTION: Must hit full threshold (no leniency) =====
     if performance_score >= thresholds["Diamond"]:
         return "Diamond"
     elif performance_score >= thresholds["Platinum"]:
@@ -106,7 +106,29 @@ def determine_division_by_score(performance_score: int) -> str:
     elif performance_score >= thresholds["Silver"]:
         return "Silver"
     else:
+        promoted_division = "Bronze"
+    
+    # If no current division provided, return raw result (e.g. on setup)
+    if not current_division:
+        return promoted_division
+    
+    # ===== RELEGATION: Must fall 20% below current floor =====
+    # Example: Gold floor is 40. You must drop below 32 (40 * 0.8) to be relegated.
+    # This gives a "safe zone" inside each division.
+    current_index = order.index(current_division)
+    
+    if current_index == 0:  # Already Bronze, can't relegate further
         return "Bronze"
+    
+    current_floor = thresholds[current_division]
+    relegation_threshold = current_floor * 0.8  # 20% buffer below floor
+    
+    if performance_score >= relegation_threshold:
+        # Still within safe zone — stay in current division
+        return current_division
+    
+    # Fell through the buffer — relegate one division
+    return order[current_index - 1]
 
 
 def calculate_weekly_velocity(profile: CrackModeProfile) -> float:
@@ -128,15 +150,24 @@ def is_user_inactive(profile: CrackModeProfile) -> bool:
 
 
 def get_relegation_warning(profile: CrackModeProfile) -> str | None:
-    """
-    Get warning message if user is at risk of relegation
+    thresholds = get_division_thresholds()
+    order = ["Bronze", "Silver", "Gold", "Platinum", "Diamond"]
     
-    Returns warning message or None
-    """
-    if is_user_inactive(profile):
-        return "⚠️ Inactive! Solve problems this week to avoid relegation."
+    if profile.division == "Bronze":
+        return None  # Can't go lower
     
-    if profile.weekly_total < 3:
-        return "⚠️ Low activity! Grind more to maintain your division."
+    current_floor = thresholds[profile.division]
+    relegation_threshold = current_floor * 0.8
+    
+    if profile.performance_score < current_floor:
+        points_to_safety = int(current_floor - profile.performance_score)
+        points_to_drop = int(profile.performance_score - relegation_threshold)
+        
+        if points_to_drop <= 0:
+            return f"🔴 Relegation imminent! Solve problems NOW to stay in {profile.division}."
+        elif points_to_drop < 10:
+            return f"🟠 Danger zone! {points_to_drop} pts from relegation. Keep grinding!"
+        else:
+            return f"🟡 Below {profile.division} floor. {points_to_safety} pts to reclaim your standing."
     
     return None

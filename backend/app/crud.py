@@ -404,7 +404,7 @@ def update_crackmode_stats_with_velocity(
     monthly_stats: dict,
 ) -> CrackModeProfile:
     """
-    🎮 FIFA SYSTEM: Update profile with all-time + weekly/monthly velocity stats
+    Update profile with all-time + weekly/monthly velocity stats
     
     Args:
         session: DB session
@@ -485,67 +485,86 @@ def update_crackmode_stats_with_velocity(
     return profile
 
 
+# def update_division_rankings(session: Session):
+#     """
+#     Recalculate division rankings based on performance_score
+
+#     How it works:
+#     1. For each division, rank users by performance_score
+#     2. Top 20% get promoted (except Diamond)
+#     3. Bottom 20% get relegated (except Bronze)
+#     4. Middle 60% stay
+#     """
+    
+#     divisions = ["Bronze", "Silver", "Gold", "Platinum", "Diamond"]
+
+#     for i, division in enumerate(divisions):
+#         # Get all profiles in this division, sorted by performance_score
+#         profiles = list(session.exec(
+#             select(CrackModeProfile)
+#             .where(CrackModeProfile.division == division)
+#             .order_by(CrackModeProfile.performance_score.desc())
+#         ).all())
+        
+#         if not profiles:
+#             continue
+        
+#         total = len(profiles)
+#         promote_count = int(total * 0.2)  # Top 20%
+#         relegate_count = int(total * 0.2)  # Bottom 20%
+        
+#         # ===== PROMOTE TOP 20% (except Diamond) =====
+#         if i < len(divisions) - 1:  # Not Diamond
+#             for profile in profiles[:promote_count]:
+#                 old_division = profile.division
+#                 profile.division = divisions[i + 1]
+#                 print(f"  ⬆️ {profile.leetcode_username}: {old_division} → {profile.division}")
+        
+#         # ===== RELEGATE BOTTOM 20% (except Bronze) =====
+#         if i > 0:  # Not Bronze
+#             for profile in profiles[-relegate_count:]:
+#                 old_division = profile.division
+#                 profile.division = divisions[i - 1]
+#                 print(f"  ⬇️ {profile.leetcode_username}: {old_division} → {profile.division}")
+        
+#         # ===== UPDATE DIVISION RANKS =====
+#         # Re-fetch after promotions/relegations
+#         div_profiles = list(session.exec(
+#             select(CrackModeProfile)
+#             .where(CrackModeProfile.division == division)
+#             .order_by(CrackModeProfile.performance_score.desc())
+#         ).all())
+        
+#         for rank, profile in enumerate(div_profiles, start=1):
+#             profile.division_rank = rank
+    
+#     session.commit()
+#     print("✅ Weekly division update complete!")
+
+# crud.py
+
 def update_division_rankings(session: Session):
     """
-    Recalculate division rankings based on performance_score
+    🎮 Update division ranks WITHIN each division based on performance_score.
     
-    This is run WEEKLY to promote/relegate users
-    
-    How it works:
-    1. For each division, rank users by performance_score
-    2. Top 20% get promoted (except Diamond)
-    3. Bottom 20% get relegated (except Bronze)
-    4. Middle 60% stay
+    NOTE: Division PLACEMENT is handled in real-time during sync via 
+    scoring.determine_division_by_score(). This function only updates
+    the division_rank (position within a division), NOT which division 
+    a user belongs to.
     """
-    
     divisions = ["Bronze", "Silver", "Gold", "Platinum", "Diamond"]
-    
-    print("🎮 Starting weekly division update...")
-    
-    for i, division in enumerate(divisions):
-        # Get all profiles in this division, sorted by performance_score
+
+    for division in divisions:
         profiles = list(session.exec(
             select(CrackModeProfile)
             .where(CrackModeProfile.division == division)
             .order_by(CrackModeProfile.performance_score.desc())
         ).all())
-        
-        if not profiles:
-            continue
-        
-        total = len(profiles)
-        promote_count = int(total * 0.2)  # Top 20%
-        relegate_count = int(total * 0.2)  # Bottom 20%
-        
-        print(f"📊 {division}: {total} players (Promote: {promote_count}, Relegate: {relegate_count})")
-        
-        # ===== PROMOTE TOP 20% (except Diamond) =====
-        if i < len(divisions) - 1:  # Not Diamond
-            for profile in profiles[:promote_count]:
-                old_division = profile.division
-                profile.division = divisions[i + 1]
-                print(f"  ⬆️ {profile.leetcode_username}: {old_division} → {profile.division}")
-        
-        # ===== RELEGATE BOTTOM 20% (except Bronze) =====
-        if i > 0:  # Not Bronze
-            for profile in profiles[-relegate_count:]:
-                old_division = profile.division
-                profile.division = divisions[i - 1]
-                print(f"  ⬇️ {profile.leetcode_username}: {old_division} → {profile.division}")
-        
-        # ===== UPDATE DIVISION RANKS =====
-        # Re-fetch after promotions/relegations
-        div_profiles = list(session.exec(
-            select(CrackModeProfile)
-            .where(CrackModeProfile.division == division)
-            .order_by(CrackModeProfile.performance_score.desc())
-        ).all())
-        
-        for rank, profile in enumerate(div_profiles, start=1):
+
+        for rank, profile in enumerate(profiles, start=1):
             profile.division_rank = rank
-    
+
     session.commit()
-    print("✅ Weekly division update complete!")
 
 
 def update_global_rankings(session: Session):
@@ -566,20 +585,12 @@ def update_global_rankings(session: Session):
 
 def weekly_system_update(session: Session):
     """
-    🎮 WEEKLY CRON JOB
+    Updates global rankings (for leaderboard display)
     
-    Run every Sunday at midnight:
-    1. Update division rankings (promote/relegate based on performance_score)
-    2. Update global rankings (for leaderboard display)
-    
-    This is the core of the FIFA system!
     """
-    print("🎮 === WEEKLY SYSTEM UPDATE STARTING ===")
-    
     # Step 1: Update division rankings (FIFA system)
     update_division_rankings(session)
     
     # Step 2: Update global rankings (for display)
     update_global_rankings(session)
     
-    print("🎮 === WEEKLY SYSTEM UPDATE COMPLETE ===")

@@ -10,7 +10,7 @@ interface LeaderboardTableProps {
   profiles: CrackModeProfilePublic[];
   myProfile?: CrackModeProfilePublic | null;
   showDivision: boolean;
-  getZoneStatus?: ((profile: CrackModeProfilePublic) => 'promotion' | 'relegation' | 'safe' | null) | null;
+  getZoneStatus?: ((profile: CrackModeProfilePublic) => 'promotion' | 'safe' | 'danger' | 'relegate')
   currentUser?: UserPublic | null;
 }
 

@@ -37,7 +37,7 @@ interface PlayerRowProps {
   profile: CrackModeProfilePublic;
   isCurrentUser: boolean;
   showDivision: boolean;
-  zone: 'promotion' | 'relegation' | 'safe' | null;
+  zone: 'promotion' | 'safe' | 'danger' | 'relegate' | null;
   currentUser?: UserPublic | null;
 }
 
@@ -213,7 +213,7 @@ export function PlayerRow({ profile, isCurrentUser, showDivision, zone, currentU
             </HStack>
           </Badge>
         )}
-        {zone === 'relegation' && (
+        {zone === 'relegate' && (
           <Badge colorPalette="red" size="sm" variant={"surface"}>
             <HStack gap={1}>
               <Icon fontSize="xs"><BiTrendingDown /></Icon>

@@ -155,7 +155,7 @@ class LeetCodeService:
     
     async def get_weekly_stats(self, leetcode_username: str) -> Dict[str, int]:
         """
-        🎮 FIFA SYSTEM: Get problems solved in last 7 days with difficulty breakdown
+        Get problems solved in last 7 days with difficulty breakdown
         
         Returns: {
             "total": 15,
@@ -216,7 +216,7 @@ class LeetCodeService:
     
     async def get_monthly_stats(self, leetcode_username: str) -> Dict[str, int]:
         """
-        🎮 FIFA SYSTEM: Get problems solved in last 30 days with difficulty breakdown
+        Get problems solved in last 30 days with difficulty breakdown
         
         Returns: {
             "total": 45,

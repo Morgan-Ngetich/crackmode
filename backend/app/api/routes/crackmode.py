@@ -122,7 +122,7 @@ async def sync_my_leetcode_stats(
     session: SessionDep,
 ):
     """
-    🎮 FIFA SYSTEM: Sync LeetCode stats with weekly/monthly velocity tracking
+    Sync LeetCode stats with weekly/monthly velocity tracking
     
     This syncs:
     - All-time stats (easy, medium, hard, contest, streaks)
@@ -145,7 +145,7 @@ async def sync_my_leetcode_stats(
     calendar = await leetcode.get_calendar(profile.leetcode_username)
     contest = await leetcode.get_contest_info(profile.leetcode_username)
     
-    # 🎮 FIFA SYSTEM: Fetch weekly and monthly stats
+    # Fetch weekly and monthly stats
     weekly_stats = await leetcode.get_weekly_stats(profile.leetcode_username)
     monthly_stats = await leetcode.get_monthly_stats(profile.leetcode_username)
     
@@ -157,7 +157,6 @@ async def sync_my_leetcode_stats(
         leetcode.calculate_streak(calendar) if calendar else (0, 0)
     )
     
-    # ===== PREPARE ALL-TIME STATS =====
     all_time_stats = {
         "easy": solved_stats["easy"],
         "medium": solved_stats["medium"],
@@ -168,7 +167,6 @@ async def sync_my_leetcode_stats(
         "longest_streak": longest_streak,
     }
     
-    # ===== UPDATE WITH FIFA SYSTEM =====
     updated_profile = crud.update_crackmode_stats_with_velocity(
         session=session,
         profile=profile,
@@ -176,6 +174,8 @@ async def sync_my_leetcode_stats(
         weekly_stats=weekly_stats,
         monthly_stats=monthly_stats,
     )
+    
+    
     
     # Update user's extended profile if profile_data is available
     if profile_data:
@@ -185,8 +185,9 @@ async def sync_my_leetcode_stats(
             profile_data=profile_data
         )
     
-    # Update global rankings (for leaderboard display)
+    # Update BOTH global and division ranks immediately so user sees fresh position
     crud.update_global_rankings(session)
+    crud.update_division_rankings(session)
     session.refresh(updated_profile)
     
     return updated_profile.to_public()

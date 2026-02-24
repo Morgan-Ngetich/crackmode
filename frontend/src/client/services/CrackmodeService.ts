@@ -81,7 +81,7 @@ export class CrackmodeService {
     }
     /**
      * Sync My Leetcode Stats
-     * 🎮 FIFA SYSTEM: Sync LeetCode stats with weekly/monthly velocity tracking
+     * Sync LeetCode stats with weekly/monthly velocity tracking
      *
      * This syncs:
      * - All-time stats (easy, medium, hard, contest, streaks)
