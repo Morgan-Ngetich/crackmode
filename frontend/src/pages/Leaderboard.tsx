@@ -34,7 +34,7 @@ export default function Leaderboard() {
     const { promotionThreshold, relegationThreshold } = promotionStatus;
     
     if (profile.division_rank <= promotionThreshold) return 'promotion';
-    if (profile.division_rank >= relegationThreshold) return 'relegation';
+    if (profile.division_rank >= relegationThreshold) return 'relegate';
     return 'safe';
   };
 
