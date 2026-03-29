@@ -23,30 +23,32 @@ import { useSession } from './useSession';
  */
 export function useAuthRouteGuard() {
   const { user, isLoading } = useAuth();
-  const { isPendingValidation } = useSession()
+  const { isPendingValidation } = useSession();
   const { open: promptOpen } = useAuthPromptStore();
   const matches = useMatches();
 
   // Get backend-validated user
-  const { data: validatedUser, isLoading: isValidating } = useAuthQuery();
+  const { data: validatedUser, isLoading: isValidating, error: authError } = useAuthQuery();
 
   const protectedRoute = isProtectedRoute(matches);
 
-  // User is blocked if:
-  // 1. Still loading session from Supabase, OR
-  // 2. Have a session but waiting for backend validation, OR
-  // 3. On a protected route without a validated user and prompt is open
+  // Check if banned via the 403 ACCOUNT_SUSPENDED error
+  // (validatedUser will be null when banned, so we detect via error instead)
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const isBanned = (authError as any)?.body?.detail === "ACCOUNT_SUSPENDED";
+  
   const isBlocked =
     isLoading ||
     isPendingValidation ||
     isValidating ||
     (protectedRoute && !validatedUser && promptOpen);
 
-  // User is validated if backend has confirmed the user exists
   const isValidated = Boolean(validatedUser);
 
   return {
-    user: validatedUser || user, // Prefer validated user
+    user: validatedUser ?? null,
+    rawUser: user,
+    isBanned,
     isLoading: isLoading || isPendingValidation || isValidating,
     protectedRoute,
     promptOpen,

@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ChakraProvider } from '@chakra-ui/react';
+import { ChakraProvider, Flex, Text, Button, Icon } from '@chakra-ui/react';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { routeTree } from './routeTree.gen';
@@ -11,36 +11,72 @@ import { GlobalStyles } from './components/ui/GlobalStyles';
 import { MDXProvider } from '@mdx-js/react';
 import MDXComponents from '@/components/common/MDXComponents';
 import { HelmetProvider } from 'react-helmet-async';
+import { useBannedCheck } from '@/hooks/auth/useBannedCheck';
+import { FaWhatsapp } from 'react-icons/fa';
+import { useAuth } from './hooks/auth/useAuth';
 
 const queryClient = new QueryClient();
 
 const router = createRouter({
   routeTree,
-  context: {
-    queryClient,
-  },
+  context: { queryClient },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any);
 
+const BannedGuard = ({ children }: { children: React.ReactNode }) => {
+  const { isBanned, isLoading } = useBannedCheck();
+  const { signOut } = useAuth(); // Get signOut function to allow banned users to sign out
+
+  if (isLoading) return <>{children}</>;
+
+  if (isBanned) {
+    return (
+      <Flex minH="100vh" align="center" justify="center" direction="column" gap={6}
+        bg={{ base: "gray.50", _dark: "gray.950" }}
+      >
+        <Text fontSize="4xl">🚫</Text>
+        <Flex direction="column" align="center" gap={2}>
+          <Text fontSize="xl" fontWeight="bold">Account Suspended</Text>
+          <Text color="gray.500" textAlign="center" maxW="sm">
+            Your account has been suspended. Join our WhatsApp community to appeal or inquire further.
+          </Text>
+        </Flex>
+        <a href="https://chat.whatsapp.com/Biz5sc2ow3v8Mg2aId6yOH" target="_blank" rel="noopener noreferrer">
+          <Button
+            bg="green.500"
+            color="white"
+            size="lg"
+            gap={2}
+            _hover={{ bg: "green.600" }}
+          >
+            <Icon boxSize={5}>
+              <FaWhatsapp />
+            </Icon>
+            Join our WhatsApp
+          </Button>
+        </a >
+        <Button
+          size="lg"
+          onClick={async () => {
+            await signOut();
+            window.location.href = '/signup';
+          }}
+        >
+          Sign in with a different account
+        </Button>
+      </Flex>
+    );
+  }
+
+  return <>{children}</>;
+};
+
 const App = () => {
-  // TODO: Re-enable session loading UI, on specific routes as needed
-  // const { isLoading } = useSession();
-
-  // // Only show spinner if we're on client AND loading AND no cached session
-  // if (typeof window !== 'undefined' && isLoading) {
-  //   // Check if we have a session cookie to avoid unnecessary spinner
-  //   const hasSessionCookie = document.cookie.includes('sb-session');
-
-  //   if (!hasSessionCookie) {
-  //     return (
-  //       <Flex justify="center" align="center" height="100vh">
-  //         <Spinner color="teal.500" size="xl" />
-  //       </Flex>
-  //     );
-  //   }
-  // }
-
-  return <RouterProvider router={router} />;
+  return (
+    <BannedGuard>
+      <RouterProvider router={router} />
+    </BannedGuard>
+  );
 };
 
 const AppTree = () => (
@@ -61,10 +97,7 @@ const AppTree = () => (
   </StrictMode>
 );
 
-// Check if we're in a browser environment
 if (typeof window !== 'undefined') {
   const container = document.getElementById("root")!;
-  
-  // Use createRoot (no hydration)
   createRoot(container).render(<AppTree />);
 }
