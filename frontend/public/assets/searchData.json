@@ -16,8 +16,8 @@
       "pattern"
     ],
     "headings": [],
-    "publishedAt": "2026-01-04T04:18:51.301Z",
-    "updatedAt": "2026-01-17T17:47:27.107Z",
+    "publishedAt": "2026-02-24T22:09:24.511Z",
+    "updatedAt": "2026-02-24T22:09:24.511Z",
     "author": "Morgan Ngetich",
     "readingTime": 1,
     "seo": {
@@ -25,7 +25,7 @@
       "description": "CRACK MODE ACTIVE Welcome to CrackMode! The ultimate community for crushing LeetCode and mastering algorithms.",
       "keywords": "introduction, leetcode, algorithm, optimization, coding, problem-solving, pattern, community, crackmode, grinding, solve",
       "robots": "index,follow",
-      "jsonLd": "{\"@context\":\"https://schema.org\",\"@type\":\"Article\",\"headline\":\"Introduction\",\"description\":\"CRACK MODE ACTIVE Welcome to CrackMode! The ultimate community for crushing LeetCode and mastering algorithms.\",\"url\":\"https://crackmode.vercel.app/docs/introduction\",\"datePublished\":\"2026-01-04T04:18:51.301Z\",\"dateModified\":\"2026-01-17T17:47:27.107Z\",\"author\":{\"@type\":\"Person\",\"name\":\"Morgan Ngetich\"},\"publisher\":{\"@type\":\"Organization\",\"name\":\"CrackMode\",\"logo\":{\"@type\":\"ImageObject\",\"url\":\"https://crackmode.vercel.app/group.png\"}},\"mainEntityOfPage\":{\"@type\":\"WebPage\",\"@id\":\"https://crackmode.vercel.app/docs/introduction\"},\"wordCount\":105,\"timeRequired\":\"PT1M\",\"inLanguage\":\"en-US\",\"isAccessibleForFree\":true}"
+      "jsonLd": "{\"@context\":\"https://schema.org\",\"@type\":\"Article\",\"headline\":\"Introduction\",\"description\":\"CRACK MODE ACTIVE Welcome to CrackMode! The ultimate community for crushing LeetCode and mastering algorithms.\",\"url\":\"https://crackmode.vercel.app/docs/introduction\",\"datePublished\":\"2026-02-24T22:09:24.511Z\",\"dateModified\":\"2026-02-24T22:09:24.511Z\",\"author\":{\"@type\":\"Person\",\"name\":\"Morgan Ngetich\"},\"publisher\":{\"@type\":\"Organization\",\"name\":\"CrackMode\",\"logo\":{\"@type\":\"ImageObject\",\"url\":\"https://crackmode.vercel.app/group.png\"}},\"mainEntityOfPage\":{\"@type\":\"WebPage\",\"@id\":\"https://crackmode.vercel.app/docs/introduction\"},\"wordCount\":105,\"timeRequired\":\"PT1M\",\"inLanguage\":\"en-US\",\"isAccessibleForFree\":true}"
     },
     "socialMedia": {
       "ogTitle": "Introduction | Crackmode Documentation",

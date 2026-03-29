@@ -67,8 +67,22 @@ const getUserData = async (): Promise<UserPublic | null> => {
     if (err && typeof err === 'object' && 'status' in err) {
       const status = (err as { status: number }).status;
 
-      if (status === 401 || status === 403) {
+      if (status === 401) {
         console.warn('Authentication error - clearing session');
+        await supabase.auth.signOut();
+        clearAuthSession();
+        updateUserMetadataCache({ is_mentor: undefined, uuid: undefined });
+        return null;
+      }
+
+      if (status === 403) {
+        // Don't sign out — check if banned first
+        //eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const detail = (err as any)?.body?.detail;
+        if (detail === "ACCOUNT_SUSPENDED") {
+          throw err; // Let React Query capture this as an error
+        }
+        // Other 403s (permissions etc) — sign out normally
         await supabase.auth.signOut();
         clearAuthSession();
         updateUserMetadataCache({ is_mentor: undefined, uuid: undefined });

@@ -81,21 +81,23 @@ export class CrackmodeService {
     }
     /**
      * Sync My Leetcode Stats
-     * Sync LeetCode stats with weekly/monthly velocity tracking
-     *
-     * This syncs:
-     * - All-time stats (easy, medium, hard, contest, streaks)
-     * - Weekly stats (last 7 days velocity) ⚡
-     * - Monthly stats (last 30 days consistency) ⚡
-     * - Performance score (determines division) ⚡
-     * - Division placement (based on performance) ⚡
      * @returns CrackModeProfilePublic Successful Response
      * @throws ApiError
      */
-    public static syncMyLeetcodeStatsApiV1CrackmodeSyncPost(): CancelablePromise<CrackModeProfilePublic> {
+    public static syncMyLeetcodeStatsApiV1CrackmodeSyncPost({
+        force = false,
+    }: {
+        force?: boolean,
+    }): CancelablePromise<CrackModeProfilePublic> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/v1/crackmode/sync',
+            query: {
+                'force': force,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
         });
     }
     /**

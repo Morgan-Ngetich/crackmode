@@ -22,7 +22,11 @@ export function LeetcodeProfileSetup() {
     navigate({ to: '/leaderboard' });
   };
 
-  if (!user && !isBlocked) {
+  if (isBlocked) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
     router.navigate({
       to: "/login",
       search: {
@@ -33,16 +37,13 @@ export function LeetcodeProfileSetup() {
     return null;
   }
 
-  if (isBlocked) {
-    return <div>Loading...</div>;
-  }
-
-  if (user && user.crackmode_profile?.leetcode_username) {
+  if (user.crackmode_profile?.leetcode_username) {
     router.navigate({
       to: "/leaderboard"
     });
     return null;
   }
+  
   return (
     <Box
       minH="100vh"
