@@ -594,3 +594,6 @@ def weekly_system_update(session: Session):
     # Step 2: Update global rankings (for display)
     update_global_rankings(session)
     
+    
+def get_all_crackmode_profiles(session: Session) -> list[CrackModeProfile]:
+    return session.exec(select(CrackModeProfile)).all()
