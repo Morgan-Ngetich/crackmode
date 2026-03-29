@@ -12,6 +12,7 @@ export type UserPublic = {
     full_name: string;
     email: string;
     avatar_url?: (string | null);
+    is_active: boolean;
     role: string;
     github_url?: (string | null);
     twitter_url?: (string | null);

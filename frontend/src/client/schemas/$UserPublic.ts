@@ -29,6 +29,10 @@ export const $UserPublic = {
                 type: 'null',
             }],
         },
+        is_active: {
+            type: 'boolean',
+            isRequired: true,
+        },
         role: {
             type: 'string',
             isRequired: true,

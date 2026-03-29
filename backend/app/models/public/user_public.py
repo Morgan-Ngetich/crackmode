@@ -11,6 +11,7 @@ class UserPublic(SQLModel):
     full_name: str
     email: str
     avatar_url: Optional[str] = None
+    is_active: bool
     role: str
 
     # Extended profile fields (from LeetCode)
