@@ -1,51 +1,56 @@
+import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CrackmodeService, type CrackModeProfilePublic, type CrackModeSetupRequest, type LeaderboardResponse } from '@/client';
+import {
+  CrackmodeService,
+  type CrackModeProfilePublic,
+  type CrackModeSetupRequest,
+  type LeaderboardResponse,
+} from '@/client';
 import { toNativePromise } from '@/utils/toNativePromisse';
 import { getApiErrorMessage } from '@/utils/errorUtils';
 import useToaster from '../../public/useToaster';
 
-/**
- * Hook for setting up a CrackMode profile (one-time setup)
- */
-export function useSetupCrackModeProfile() {
+// ─── Silent background sync ────────────────────────────────────────────────
+//
+// Call this once in any layout/page where fresh stats matter (e.g. leaderboard).
+// It will fire a sync automatically, but only if:
+//   1. The user has a CrackMode profile (hasProfile = true)
+//   2. The backend cooldown hasn't been hit yet (backend returns cached data if so)
+//
+// The user sees nothing — no toast, no spinner. Stats just get fresher over time.
+//
+export function useAutoSync(hasProfile: boolean) {
   const queryClient = useQueryClient();
-  const toast = useToaster();
 
-  return useMutation<CrackModeProfilePublic, Error, CrackModeSetupRequest>({
-    mutationFn: (data) => 
-      toNativePromise(CrackmodeService.setupCrackmodeProfileApiV1CrackmodeSetupPost({ requestBody: data })),
-    onSuccess: (profile) => {
-      toast({
-        id: 'setup-crackmode-success',
-        title: 'CrackMode Profile Created!',
-        description: `Welcome to ${profile.division} division, ${profile.leetcode_username}!`,
-        status: 'success',
-      });
-
-      // Invalidate all queries
-      queryClient.invalidateQueries();
+  const { mutate: silentSync } = useMutation<CrackModeProfilePublic, Error, void>({
+    mutationFn: () =>
+      toNativePromise(CrackmodeService.syncMyLeetcodeStatsApiV1CrackmodeSyncPost({})),
+    onSuccess: () => {
+      // Quietly refresh leaderboard + profile data in the background
+      queryClient.invalidateQueries({ queryKey: ['crackmode', 'profile'] });
+      queryClient.invalidateQueries({ queryKey: ['crackmode', 'leaderboard'] });
     },
-    onError: (error: unknown) => {
-      toast({
-        id: 'setup-crackmode-error',
-        title: 'Failed to setup CrackMode profile',
-        description: getApiErrorMessage(error),
-        status: 'error',
-      });
-    },
+    // Silently swallow errors — this is best-effort, never block the UI
+    onError: () => {},
   });
+
+  useEffect(() => {
+    if (!hasProfile) return;
+    silentSync();
+  }, [hasProfile, silentSync]); // fires once per mount — backend cooldown prevents API spam
 }
 
-/**
- * Hook for syncing LeetCode stats manually
- */
+// ─── Manual sync (keeps the button for power users) ────────────────────────
 export function useSyncLeetCodeStats() {
   const queryClient = useQueryClient();
   const toast = useToaster();
 
   return useMutation<CrackModeProfilePublic, Error, void>({
-    mutationFn: () => 
-      toNativePromise(CrackmodeService.syncMyLeetcodeStatsApiV1CrackmodeSyncPost()),
+    mutationFn: () =>
+      // force=true bypasses the 30-min cooldown so the button always works
+      toNativePromise(
+        CrackmodeService.syncMyLeetcodeStatsApiV1CrackmodeSyncPost({ force: true })
+      ),
     onSuccess: (profile) => {
       toast({
         id: 'sync-stats-success',
@@ -53,8 +58,6 @@ export function useSyncLeetCodeStats() {
         description: `Rank: #${profile.rank} | Score: ${profile.total_score} pts`,
         status: 'success',
       });
-
-      // Invalidate related queries
       queryClient.invalidateQueries({ queryKey: ['crackmode', 'profile'] });
       queryClient.invalidateQueries({ queryKey: ['crackmode', 'leaderboard'] });
     },
@@ -69,9 +72,37 @@ export function useSyncLeetCodeStats() {
   });
 }
 
-/**
- * Hook for fetching leaderboard data
- */
+// ─── Setup ─────────────────────────────────────────────────────────────────
+export function useSetupCrackModeProfile() {
+  const queryClient = useQueryClient();
+  const toast = useToaster();
+
+  return useMutation<CrackModeProfilePublic, Error, CrackModeSetupRequest>({
+    mutationFn: (data) =>
+      toNativePromise(
+        CrackmodeService.setupCrackmodeProfileApiV1CrackmodeSetupPost({ requestBody: data })
+      ),
+    onSuccess: (profile) => {
+      toast({
+        id: 'setup-crackmode-success',
+        title: 'CrackMode Profile Created!',
+        description: `Welcome to ${profile.division} division, ${profile.leetcode_username}!`,
+        status: 'success',
+      });
+      queryClient.invalidateQueries();
+    },
+    onError: (error: unknown) => {
+      toast({
+        id: 'setup-crackmode-error',
+        title: 'Failed to setup CrackMode profile',
+        description: getApiErrorMessage(error),
+        status: 'error',
+      });
+    },
+  });
+}
+
+// ─── Leaderboard queries ────────────────────────────────────────────────────
 interface LeaderboardFilters {
   division?: string | null;
   season?: string | null;
@@ -82,54 +113,35 @@ interface LeaderboardFilters {
 export function useLeaderboard(filters: LeaderboardFilters = {}) {
   return useQuery<LeaderboardResponse, Error>({
     queryKey: ['crackmode', 'leaderboard', filters],
-    queryFn: () => 
+    queryFn: () =>
       toNativePromise(
         CrackmodeService.getLeaderboardApiV1CrackmodeLeaderboardGet({
-          division: filters.division,
-          season: filters.season,
+          division: filters.division ?? undefined,
+          season: filters.season ?? undefined,
           limit: filters.limit ?? 100,
           offset: filters.offset ?? 0,
         })
       ),
-    staleTime: 1000 * 60 * 5, // 5 minutes - leaderboard doesn't change super frequently
+    staleTime: 1000 * 60 * 5,
   });
 }
 
-/**
- * Hook for fetching leaderboard by division
- */
 export function useLeaderboardByDivision(division: string, season?: string | null) {
-  return useLeaderboard({
-    division,
-    season,
-    limit: 100,
-    offset: 0,
-  });
+  return useLeaderboard({ division, season, limit: 100, offset: 0 });
 }
 
-/**
- * Hook for fetching top leaderboard (all divisions)
- */
-export function useTopLeaderboard(limit: number = 50) {
-  return useLeaderboard({
-    limit,
-    offset: 0,
-  });
+export function useTopLeaderboard(limit = 50) {
+  return useLeaderboard({ limit, offset: 0 });
 }
 
-/**
- * Main CrackMode hook - combines all functionality
- */
+// ─── Combined hook ──────────────────────────────────────────────────────────
 export function useCrackMode() {
   const setupProfile = useSetupCrackModeProfile();
   const syncStats = useSyncLeetCodeStats();
 
   return {
-    // Mutations
     setupProfile,
     syncStats,
-
-    // Helper methods
     isSettingUp: setupProfile.isPending,
     isSyncing: syncStats.isPending,
   };

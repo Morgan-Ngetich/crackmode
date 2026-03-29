@@ -1,14 +1,13 @@
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from app.api.deps import SessionDep, CurrentUser
 from app.models import (
-    CrackModeProfile,
     CrackModeProfilePublic,
     CrackModeSetupRequest,
     LeaderboardResponse,
 )
 from app import crud
 from app.utils.leetcode_services import LeetCodeService
-from app.tasks.sync import sync_leetcode_stats_task
+from app.tasks.leetcode_profile_sync import sync_profile
 from typing import Optional
 from datetime import datetime, timezone
 
@@ -115,82 +114,38 @@ async def setup_crackmode_profile(
 
     return crackmode_profile.to_public()
 
-
 @router.post("/sync", response_model=CrackModeProfilePublic)
 async def sync_my_leetcode_stats(
     current_user: CurrentUser,
     session: SessionDep,
+    force: bool = False,
 ):
-    """
-    Sync LeetCode stats with weekly/monthly velocity tracking
-    
-    This syncs:
-    - All-time stats (easy, medium, hard, contest, streaks)
-    - Weekly stats (last 7 days velocity) ⚡
-    - Monthly stats (last 30 days consistency) ⚡
-    - Performance score (determines division) ⚡
-    - Division placement (based on performance) ⚡
-    """
-    
     profile = crud.get_crackmode_profile_by_user_id(session, current_user.id)
-    
+
     if not profile:
         raise HTTPException(404, detail="Profile not found. Please set up CrackMode first.")
-    
+
+    COOLDOWN_MINUTES = 30
+    if not force and profile.last_synced:
+        last_synced = profile.last_synced.replace(tzinfo=timezone.utc)
+        elapsed = datetime.now(timezone.utc) - last_synced
+        if elapsed.total_seconds() < COOLDOWN_MINUTES * 60:
+            return profile.to_public()
+
     leetcode = LeetCodeService()
-    
-    # ===== FETCH ALL DATA =====
-    profile_data = await leetcode.get_profile(profile.leetcode_username)
-    solved_stats = await leetcode.get_solved_stats(profile.leetcode_username)
-    calendar = await leetcode.get_calendar(profile.leetcode_username)
-    contest = await leetcode.get_contest_info(profile.leetcode_username)
-    
-    # Fetch weekly and monthly stats
-    weekly_stats = await leetcode.get_weekly_stats(profile.leetcode_username)
-    monthly_stats = await leetcode.get_monthly_stats(profile.leetcode_username)
-    
-    if not solved_stats:
+    success = await sync_profile(session, profile)
+
+    if not success:
         raise HTTPException(503, detail="LeetCode API unavailable. Please try again.")
-    
-    # Calculate streaks
-    current_streak, longest_streak = (
-        leetcode.calculate_streak(calendar) if calendar else (0, 0)
-    )
-    
-    all_time_stats = {
-        "easy": solved_stats["easy"],
-        "medium": solved_stats["medium"],
-        "hard": solved_stats["hard"],
-        "total": solved_stats["total"],
-        "contest_rating": contest.get("contestRating", 0) if contest else 0,
-        "current_streak": current_streak,
-        "longest_streak": longest_streak,
-    }
-    
-    updated_profile = crud.update_crackmode_stats_with_velocity(
-        session=session,
-        profile=profile,
-        all_time_stats=all_time_stats,
-        weekly_stats=weekly_stats,
-        monthly_stats=monthly_stats,
-    )
-    
-    
-    
-    # Update user's extended profile if profile_data is available
-    if profile_data:
-        crud.update_user_extended_profile(
-            session=session,
-            user=current_user,
-            profile_data=profile_data
-        )
-    
-    # Update BOTH global and division ranks immediately so user sees fresh position
+
+    if profile_data := await leetcode.get_profile(profile.leetcode_username):
+        crud.update_user_extended_profile(session=session, user=current_user, profile_data=profile_data)
+
     crud.update_global_rankings(session)
     crud.update_division_rankings(session)
-    session.refresh(updated_profile)
-    
-    return updated_profile.to_public()
+    session.refresh(profile)
+
+    return profile.to_public()
 
 
 
