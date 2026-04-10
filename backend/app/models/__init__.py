@@ -15,6 +15,7 @@ from .users import (
 from .crackmode_profile import (
     CrackModeProfile,
 )
+from .sync_task import SyncTask
 
 # Step 3: Import public models (DTOs) - AFTER all ORM models
 from .public import (
@@ -38,5 +39,6 @@ __all__ = [
     "CrackModeProfile",
     "CrackModeSetupRequest",
     "CrackModeProfilePublic",
-    "LeaderboardResponse"
+    "LeaderboardResponse",
+    "SyncTask",
 ]

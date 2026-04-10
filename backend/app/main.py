@@ -1,3 +1,5 @@
+import traceback
+from app.tasks.broadcast_job import broadcast_job
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
@@ -12,43 +14,85 @@ from contextlib import asynccontextmanager
 
 
 async def daily_sync_job():
-    await asyncio.sleep(10)  # let the app fully start before first sync
+    await asyncio.sleep(10)   # let the app fully boot before first run
     while True:
+        task_record = None
         try:
             print(f"🔄 Starting daily sync at {datetime.now(timezone.utc)}")
-            with next(get_session()) as session:
-                profiles = crud.get_all_crackmode_profiles(session)
-                synced, failed = 0, 0
 
-                for profile in profiles:
-                    success = await sync_profile(session, profile)
-                    if success:
-                        synced += 1
-                    else:
-                        failed += 1
-                        print(f"⚠️ Failed to sync: {profile.leetcode_username}")
-                    await asyncio.sleep(2)
+            with next(get_session()) as session:
+                # Create a DB record so we can inspect sync status via API
+                task_record = crud.create_sync_task(session, task_type="daily_sync")
+                profiles = crud.get_all_crackmode_profiles(session)
+
+                crud.update_sync_task(
+                    session, task_record,
+                    status="running",
+                    total_profiles=len(profiles),
+                    started_at=datetime.now(timezone.utc),
+                )
+
+  
+                # Semaphore caps concurrent tasks — rate limiter handles the
+                # 90/hour budget; this caps how many tasks are alive at once.
+                # 15 concurrent × 2 calls each = 30 slots competing for the
+                # rate limiter, which is fine — extras just queue.
+                sem = asyncio.Semaphore(15)
+
+                async def _sync(p):
+                    async with sem:
+                        return await sync_profile(session, p)
+
+                results = await asyncio.gather(
+                    *[_sync(p) for p in profiles],
+                    return_exceptions=True,
+                )
+
+                synced = sum(1 for r in results if r is True)
+                failed = len(results) - synced
 
                 crud.update_global_rankings(session)
                 crud.update_division_rankings(session)
+
+                crud.update_sync_task(
+                    session, task_record,
+                    status="done",
+                    synced_count=synced,
+                    failed_count=failed,
+                    completed_at=datetime.now(timezone.utc),
+                )
                 print(f"✅ Daily sync complete — {synced} synced, {failed} failed")
 
         except Exception as e:
-            import traceback
-
             print(f"❌ Daily sync job crashed: {e}")
-            traceback.print_exc()  # full stack trace for debugging
+            traceback.print_exc()
+            # Mark the task as failed if we got far enough to create one
+            if task_record is not None:
+                try:
+                    with next(get_session()) as session:
+                        task_record = crud.get_sync_task(session, task_record.id)
+                        if task_record:
+                            crud.update_sync_task(
+                                session, task_record,
+                                status="failed",
+                                error=str(e)[:500],
+                                completed_at=datetime.now(timezone.utc),
+                            )
+                except Exception:
+                    pass
 
         await asyncio.sleep(60 * 60 * 24)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    task = asyncio.create_task(daily_sync_job())
+    task1 = asyncio.create_task(daily_sync_job())
+    task2 = asyncio.create_task(broadcast_job())   # ← add this
     yield
-    task.cancel()
+    task1.cancel()
+    task2.cancel()
     try:
-        await task
+        await asyncio.gather(task1, task2, return_exceptions=True)
     except asyncio.CancelledError:
         pass
 

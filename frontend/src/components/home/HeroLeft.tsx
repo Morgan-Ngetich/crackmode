@@ -80,7 +80,7 @@ const HeroLeft = () => (
           <Badge colorPalette="red" size={{ base: "md", md: "lg" }} variant="surface">Hard = 5pts</Badge>
         </HStack>
         <Text fontSize={{ base: "xs", md: "sm" }} color="fg.muted" textAlign={{ base: "center", md: "left" }}>
-          Your <strong>weekly velocity</strong> determines your division. Solve more, rank higher.
+          Your <strong>weekly velocity</strong> (65% of your score) determines your division. Solve more, rank higher.
         </Text>
       </VStack>
     </Box>

@@ -3,7 +3,8 @@ from fastapi import APIRouter
 from app.api.routes import (
     crackmode,
     users,
-    auth
+    auth,
+    tasks,
 )
 
 from app.api.routes.crackmode_og import og
@@ -27,4 +28,9 @@ api_router.include_router(
 # Crackmode
 api_router.include_router(
     crackmode.router,
+)
+
+# Tasks (sync job observability)
+api_router.include_router(
+    tasks.router,
 )

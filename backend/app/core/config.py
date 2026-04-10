@@ -113,6 +113,11 @@ class Settings(BaseSettings):
     # class Config:
     #     env_file = ".env"
     #     extra = "ignore"
+    
+    ANTHROPIC_API_KEY: Optional[str] = None
+    WHATSAPP_TOKEN: Optional[str] = None
+    WHATSAPP_PHONE_ID: Optional[str] = None
+    WHATSAPP_GROUP_ID: Optional[str] = None
 
 
 @lru_cache
