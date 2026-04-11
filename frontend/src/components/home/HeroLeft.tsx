@@ -9,21 +9,23 @@ import { IoLogoWhatsapp } from "react-icons/io";
 
 const HeroLeft = () => (
   <Box flex={1} p={{ base: 4, md: 6 }}>
-    {/* Tagline */}
+    {/* Tagline pill */}
     <Flex
-      bgColor={{ base: "gray.200", _dark: "gray.700" }}
+      bg={{ base: "gray.100", _dark: "gray.800" }}
+      border="1px solid"
+      borderColor={{ base: "gray.200", _dark: "gray.700" }}
       w="fit-content"
-      gap={{ base: 1, md: 4 }}
+      gap={{ base: 1, md: 2 }}
       alignItems="center"
       px={3} py={1}
       borderRadius="full"
-      mb={0}
+      mb={4}
       mx={{ base: "auto", md: 0 }}
     >
-      <Icon color={{ base: "yellow.500", _dark: "yellow.300" }}>
+      <Icon color={{ base: "yellow.500", _dark: "yellow.300" }} fontSize="sm">
         <BsFillPatchCheckFill />
       </Icon>
-      <Text fontSize="xs">No Gatekeeping. No Flexing. Just Learning Together.</Text>
+      <Text fontSize="xs" color="fg.muted">No Gatekeeping. No Flexing. Just Learning Together.</Text>
     </Flex>
 
     {/* Heading */}
@@ -33,6 +35,7 @@ const HeroLeft = () => (
       mb={4}
       textAlign={{ base: "center", md: "start" }}
       fontWeight="bold"
+      lineHeight="1.1"
     >
       Master Coding Interviews.{" "}
       <Text as="span" color="teal.500">Level Up.</Text>
@@ -85,47 +88,57 @@ const HeroLeft = () => (
       </VStack>
     </Box>
 
-    {/* CTAs */}
+    {/* CTAs — primary solid, others ghost */}
     <Flex gap={3} justify={{ base: "center", md: "flex-start" }} flexWrap="wrap">
       <Link to="/docs">
-        <Button size={{ base: "md", md: "lg" }} colorPalette="teal" variant="outline">
+        <Button size={{ base: "md", md: "lg" }} colorPalette="teal" variant="solid">
           <Icon fontSize="lg"><FaBook /></Icon>
           Start Learning
         </Button>
       </Link>
       <Link to="/leaderboard">
-        <Button size={{ base: "md", md: "lg" }} colorPalette="orange" variant="outline">
+        <Button size={{ base: "md", md: "lg" }} variant="outline">
           <Icon fontSize="lg"><FaTrophy /></Icon>
           View Leaderboard
         </Button>
       </Link>
       <a href="https://chat.whatsapp.com/Biz5sc2ow3v8Mg2aId6yOH" target="_blank" rel="noopener noreferrer">
-        <Button size={{ base: "md", md: "lg" }} variant="surface">
+        <Button size={{ base: "md", md: "lg" }} variant="ghost">
           <Icon fontSize="lg" color="green.500"><IoLogoWhatsapp /></Icon>
           Join Community
         </Button>
       </a>
     </Flex>
 
-    {/* Stats */}
-    <Box bg="gray.700" borderRadius="lg" boxShadow="lg" p={{ base: 2, md: 6 }} textAlign="center" mt={6}>
+    {/* Stats bar */}
+    <Box
+      bg={{ base: "gray.900", _dark: "gray.800" }}
+      borderRadius="xl"
+      borderWidth={1}
+      borderColor={{ base: "gray.700", _dark: "gray.700" }}
+      boxShadow="lg"
+      p={{ base: 3, md: 5 }}
+      textAlign="center"
+      mt={6}
+    >
       <SimpleGrid columns={4} gap={4}>
         <Box>
-          <Text fontSize={{ base: "lg", md: "xl", lg: "2xl" }} fontWeight="bold" color="#3498EB">600+</Text>
-          <Text fontSize={{ base: "xs", md: "sm" }} color="white">Active CrackModes</Text>
+          <Text fontSize={{ base: "lg", md: "xl", lg: "2xl" }} fontWeight="bold" color="blue.400">600+</Text>
+          <Text fontSize={{ base: "xs", md: "sm" }} color="gray.400">Active Members</Text>
         </Box>
         <Box>
-          <Text fontSize={{ base: "lg", md: "xl", lg: "2xl" }} fontWeight="bold" color="#C39BBF">Daily</Text>
-          <Text fontSize={{ base: "xs", md: "sm" }} color="white">Coding Challenges</Text>
+          <Text fontSize={{ base: "lg", md: "xl", lg: "2xl" }} fontWeight="bold" color="purple.400">Daily</Text>
+          <Text fontSize={{ base: "xs", md: "sm" }} color="gray.400">Challenges</Text>
         </Box>
         <Box>
-          <Text fontSize={{ base: "lg", md: "xl", lg: "2xl" }} fontWeight="bold" color="#02adad">75+</Text>
-          <Text fontSize={{ base: "xs", md: "sm" }} color="white">LeetCode Problems</Text>
+          <Text fontSize={{ base: "lg", md: "xl", lg: "2xl" }} fontWeight="bold" color="teal.400">75+</Text>
+          <Text fontSize={{ base: "xs", md: "sm" }} color="gray.400">LeetCode Problems</Text>
         </Box>
         <Box my="auto">
-          <Text fontSize={{ base: "2xl", md: "3xl", lg: "4xl" }} fontWeight="bold" color="orange" lineHeight="0.8">
-            9:30 <span style={{ fontSize: "15px" }}>PM</span>
+          <Text fontSize={{ base: "2xl", md: "3xl", lg: "4xl" }} fontWeight="bold" color="orange.400" lineHeight="0.9">
+            9:30 <Text as="span" fontSize="xs">PM</Text>
           </Text>
+          <Text fontSize={{ base: "xs", md: "sm" }} color="gray.400">Daily Session</Text>
         </Box>
       </SimpleGrid>
     </Box>

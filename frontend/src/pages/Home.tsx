@@ -10,9 +10,11 @@ import {
   SimpleGrid,
   Text,
   VStack,
+  Image,
 } from "@chakra-ui/react";
 import { Link } from "@tanstack/react-router";
 import CrackModeHeader from "@/components/common/CrackModeHeader";
+import DocumentSEOHead from "@/seo/DocumentSEOHead";
 import HeroLeft from "../components/home/HeroLeft";
 import HeroCarousel from "../components/home/HeroCarousel";
 import {
@@ -24,8 +26,50 @@ import {
   FaChartLine,
   FaUsers,
   FaCalendarAlt,
+  FaGithub,
+  FaCodeBranch,
+  FaStar,
+  FaReact,
+  FaPython,
+  FaDocker,
 } from "react-icons/fa";
 import { IoLogoWhatsapp } from "react-icons/io";
+import { SiSupabase, SiFastapi, SiPostgresql, SiGooglegemini } from "react-icons/si";
+
+// ─── Section: Social Proof Strip ─────────────────────────────────────────────
+const SocialProofStrip = () => (
+  <Box
+    borderBottom="1px solid"
+    borderTop="1px solid"
+    borderColor={{ base: "gray.200", _dark: "gray.800" }}
+    bg={{ base: "gray.50", _dark: "gray.950" }}
+    py={3}
+    overflow="hidden"
+  >
+    <Container maxW="5xl">
+      <Flex
+        justify="center"
+        align="center"
+        gap={{ base: 6, md: 12 }}
+        flexWrap="wrap"
+        fontSize="sm"
+        color="fg.muted"
+      >
+        {[
+          { icon: <FaFire />, label: "Daily coding challenges" },
+          { icon: <FaBook />, label: "LeetCode 75 covered" },
+          { icon: <FaGithub />, label: "Open source" },
+          { icon: <IoLogoWhatsapp />, label: "WhatsApp community" },
+        ].map(({ icon, label }) => (
+          <HStack key={label} gap={2} opacity={0.75}>
+            <Icon fontSize="sm">{icon}</Icon>
+            <Text fontSize="xs" fontWeight="medium" whiteSpace="nowrap">{label}</Text>
+          </HStack>
+        ))}
+      </Flex>
+    </Container>
+  </Box>
+);
 
 // ─── Section: What is CrackMode ──────────────────────────────────────────────
 const WhatIsCrackMode = () => (
@@ -84,18 +128,148 @@ const WhatIsCrackMode = () => (
             borderColor={{ base: `${color}.200`, _dark: `${color}.700` }}
             bg={{ base: `${color}.50`, _dark: `${color}.900/20` }}
           >
-            <Icon
-              fontSize="2xl"
-              color={{ base: `${color}.600`, _dark: `${color}.400` }}
-              mb={3}
-            >
-              {icon({ size: 24 })}
-            </Icon>
-            <Text fontWeight="bold" fontSize="lg" mb={2}>{title}</Text>
+            <HStack gap={3}>
+              <Icon
+                fontSize="2xl"
+                color={{ base: `${color}.600`, _dark: `${color}.400` }}
+                mb={3}
+              >
+                {icon({ size: 24 })}
+              </Icon>
+              <Text fontWeight="bold" fontSize="lg" mb={2}>{title}</Text>
+            </HStack>
             <Text fontSize="sm" color="fg.muted">{desc}</Text>
           </Box>
         ))}
       </SimpleGrid>
+    </Container>
+  </Box>
+);
+
+// ─── Browser frame mockup ─────────────────────────────────────────────────────
+const BrowserFrame = ({
+  url,
+  label,
+  src,
+  gradient,
+}: {
+  url: string;
+  label: string;
+  src?: string;
+  gradient: string;
+}) => (
+  <Box
+    borderRadius="xl"
+    overflow="hidden"
+    borderWidth="1px"
+    borderColor={{ base: "gray.200", _dark: "gray.700" }}
+    boxShadow="2xl"
+    flex={1}
+    minW={0}
+  >
+    {/* Browser chrome */}
+    <Box
+      bg={{ base: "gray.100", _dark: "gray.800" }}
+      px={4}
+      py={2.5}
+      borderBottom="1px solid"
+      borderColor={{ base: "gray.200", _dark: "gray.700" }}
+    >
+      <HStack gap={3}>
+        <HStack gap={1.5} flexShrink={0}>
+          <Box w={3} h={3} borderRadius="full" bg="red.400" />
+          <Box w={3} h={3} borderRadius="full" bg="yellow.400" />
+          <Box w={3} h={3} borderRadius="full" bg="green.500" />
+        </HStack>
+        <Box
+          flex={1}
+          bg={{ base: "white", _dark: "gray.900" }}
+          borderRadius="md"
+          px={3}
+          py={1}
+          textAlign="center"
+        >
+          <Text fontSize="xs" color="fg.subtle" fontFamily="mono">{url}</Text>
+        </Box>
+      </HStack>
+    </Box>
+
+    {/* Screenshot or placeholder */}
+    {src ? (
+      <Image src={src} alt={label} w="full" display="block" />
+    ) : (
+      <Box
+        h={{ base: "180px", md: "240px" }}
+        background={gradient}
+        position="relative"
+        overflow="hidden"
+      >
+        {/* Decorative mock UI lines */}
+        <Box position="absolute" inset={0} p={4}>
+          <Box h={3} w="40%" bg="whiteAlpha.200" borderRadius="md" mb={3} />
+          <SimpleGrid columns={3} gap={2} mb={4}>
+            {[1, 2, 3].map((i) => (
+              <Box key={i} h={16} bg="whiteAlpha.100" borderRadius="lg" />
+            ))}
+          </SimpleGrid>
+          {[80, 60, 90, 50, 70].map((w, i) => (
+            <Box key={i} h={2} w={`${w}%`} bg="whiteAlpha.150" borderRadius="full" mb={2} />
+          ))}
+        </Box>
+        {/* Label overlay */}
+        <Flex
+          position="absolute"
+          inset={0}
+          align="center"
+          justify="center"
+          bg="blackAlpha.400"
+        >
+          <VStack gap={1}>
+            <Text color="white" fontWeight="bold" fontSize="sm">{label}</Text>
+            <Text color="whiteAlpha.700" fontSize="xs">Add screenshot to /public/screenshots/</Text>
+          </VStack>
+        </Flex>
+      </Box>
+    )}
+  </Box>
+);
+
+// ─── Section: App Preview ─────────────────────────────────────────────────────
+const AppPreviewSection = () => (
+  <Box as="section" py={{ base: 16, md: 24 }} bg={{ base: "white", _dark: "gray.950" }}>
+    <Container maxW="7xl">
+      <VStack gap={4} mb={12} textAlign="center">
+        <Badge colorPalette="teal" size="lg" variant="surface" px={4} py={1} borderRadius="full">
+          See It In Action
+        </Badge>
+        <Heading size={{ base: "2xl", md: "4xl" }} fontWeight="bold">
+          Built for serious grinders.{" "} <br />
+          <Text as="span" color="teal.500">Looks the part.</Text>
+        </Heading>
+        <Text fontSize={{ base: "md", md: "lg" }} color="fg.muted" maxW="2xl">
+          A full leaderboard with division rankings, a structured docs platform with LeetCode 75
+          walkthroughs, and a WhatsApp broadcast that drops your daily lesson at 8am.
+        </Text>
+      </VStack>
+
+      <Flex
+        gap={{ base: 6, md: 10 }}
+        direction={{ base: "column", lg: "row" }}
+        align="stretch"
+      >
+        <BrowserFrame
+          url="crackmode.vercel.app/leaderboard"
+          label="Leaderboard"
+          src="/screenshots/leaderboard.png"
+          gradient="linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)"
+        />
+        <BrowserFrame
+          url="crackmode.vercel.app/docs"
+          label="Docs — LeetCode 75"
+          src="/screenshots/docs.png"
+          gradient="linear-gradient(135deg, #0d1f2d 0%, #1a3a4a 50%, #0a4d68 100%)"
+        />
+      </Flex>
     </Container>
   </Box>
 );
@@ -109,133 +283,102 @@ const ScoringSection = () => (
           Scoring System
         </Badge>
         <Heading size={{ base: "2xl", md: "4xl" }} fontWeight="bold">
-          Every problem counts.{" "}
+          Every problem counts.{" "} <br />
           <Text as="span" color="orange.400">Harder = more points.</Text>
         </Heading>
-        <Text fontSize={{ base: "md", md: "lg" }} color="fg.muted" maxW="2xl">
-          Points are awarded by difficulty. Your{" "}
-          <strong>weekly velocity</strong> (65%) is the biggest factor — what you
-          did last month matters less than what you did this week.
-        </Text>
       </VStack>
 
-      {/* Difficulty badges */}
-      <Flex justify="center" gap={6} flexWrap="wrap" mb={12}>
+      {/* Difficulty cards */}
+      <SimpleGrid columns={{ base: 3 }} gap={{ base: 3, md: 6 }} mb={10}>
         {[
-          { label: "Easy", pts: "1 pt", palette: "green" },
-          { label: "Medium", pts: "3 pts", palette: "yellow" },
-          { label: "Hard", pts: "5 pts", palette: "red" },
-        ].map(({ label, pts, palette }) => (
+          { label: "Easy",   pts: "1 pt",  palette: "green",  sub: "Arrays, strings" },
+          { label: "Medium", pts: "3 pts", palette: "yellow", sub: "DP, graphs, trees" },
+          { label: "Hard",   pts: "5 pts", palette: "red",    sub: "Advanced patterns" },
+        ].map(({ label, pts, palette, sub }) => (
           <Box
             key={label}
             textAlign="center"
-            p={6}
+            p={{ base: 4, md: 8 }}
             borderRadius="xl"
             borderWidth={2}
             borderColor={{ base: `${palette}.200`, _dark: `${palette}.700` }}
             bg={{ base: `${palette}.50`, _dark: `${palette}.900/20` }}
-            minW="140px"
           >
-            <Text fontSize="3xl" fontWeight="black" color={`${palette}.500`}>{pts}</Text>
-            <Badge colorPalette={palette} variant="surface" mt={2}>{label}</Badge>
+            <Text fontSize={{ base: "3xl", md: "5xl" }} fontWeight="black" color={`${palette}.500`} lineHeight={1}>{pts}</Text>
+            <Badge colorPalette={palette} variant="surface" my={2}>{label}</Badge>
+            <Text fontSize="xs" color="fg.muted">{sub}</Text>
           </Box>
         ))}
-      </Flex>
+      </SimpleGrid>
 
-      {/* Performance score breakdown */}
-      <Box
-        borderRadius="2xl"
-        borderWidth={2}
-        borderColor="border.emphasized"
-        p={{ base: 6, md: 10 }}
-        bg={{ base: "white", _dark: "gray.800" }}
-      >
-        <Heading size="lg" mb={6} textAlign="center">
-          How your Performance Score is calculated
-        </Heading>
-        <SimpleGrid columns={{ base: 1, md: 3 }} gap={6} mb={8}>
-          {[
-            {
-              pct: "65%",
-              label: "This Week's Grind",
-              color: "orange",
-              desc: "Easy×1 + Medium×3 + Hard×5 points from the last 7 days. The biggest driver of your rank.",
-            },
-            {
-              pct: "25%",
-              label: "Monthly Consistency",
-              color: "teal",
-              desc: "Average weekly points over the last 30 days ÷ 4 weeks. Shows you don't just burst once a month.",
-            },
-            {
-              pct: "10%",
-              label: "Legacy Bonus",
-              color: "purple",
-              desc: "All-time score contribution — capped at 100 pts. Veterans get a small edge, not a free pass.",
-            },
-          ].map(({ pct, label, color, desc }) => (
-            <VStack key={label} align="start" gap={2}>
-              <HStack>
-                <Text
-                  fontSize="3xl"
-                  fontWeight="black"
-                  color={{ base: `${color}.600`, _dark: `${color}.400` }}
-                >
-                  {pct}
-                </Text>
-                <Text fontWeight="bold">{label}</Text>
-              </HStack>
-              <Text fontSize="sm" color="fg.muted">{desc}</Text>
-            </VStack>
-          ))}
-        </SimpleGrid>
+      {/* Performance weight breakdown */}
+      <Heading size="md" textAlign="center" mb={6} color="fg.muted" fontWeight="medium">
+        Your Performance Score is weighted:
+      </Heading>
+      <SimpleGrid columns={{ base: 1, md: 3 }} gap={4} mb={8}>
+        {[
+          { pct: "65%", label: "This Week",    color: "orange", sub: "Last 7 days of grind" },
+          { pct: "25%", label: "Monthly Avg",  color: "teal",   sub: "Consistency over 30 days" },
+          { pct: "10%", label: "Legacy Bonus", color: "purple", sub: "All-time — capped at 100 pts" },
+        ].map(({ pct, label, color, sub }) => (
+          <Box
+            key={label}
+            p={{ base: 4, md: 6 }}
+            borderRadius="xl"
+            borderWidth={2}
+            borderColor={{ base: `${color}.200`, _dark: `${color}.700` }}
+            bg={{ base: `${color}.50`, _dark: `${color}.900/20` }}
+            textAlign="center"
+          >
+            <Text fontSize={{ base: "4xl", md: "5xl" }} fontWeight="black" color={`${color}.500`} lineHeight={1}>{pct}</Text>
+            <Text fontWeight="bold" mt={2}>{label}</Text>
+            <Text fontSize="xs" color="fg.muted" mt={1}>{sub}</Text>
+          </Box>
+        ))}
+      </SimpleGrid>
 
-        <SimpleGrid columns={{ base: 1, md: 2 }} gap={6}>
-          <Box
-            p={4}
-            borderRadius="lg"
-            bg={{ base: "yellow.50", _dark: "yellow.900/20" }}
-            borderWidth={1}
-            borderColor={{ base: "yellow.200", _dark: "yellow.700" }}
-          >
-            <HStack mb={2}>
-              <Icon color="yellow.500"><FaFire size={18} /></Icon>
-              <Text fontWeight="bold">Streak Multiplier</Text>
-            </HStack>
-            <Text fontSize="sm" color="fg.muted">
-              +2.5% per consecutive day, up to <strong>+60% max bonus</strong> at 24 days.
-              Solve at least one problem daily to grow your streak.
-            </Text>
+      {/* Streak + Penalty */}
+      <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
+        <HStack
+          p={{ base: 4, md: 6 }}
+          borderRadius="xl"
+          borderWidth={2}
+          borderColor={{ base: "yellow.200", _dark: "yellow.700" }}
+          bg={{ base: "yellow.50", _dark: "yellow.900/20" }}
+          gap={4}
+        >
+          <Icon fontSize="3xl" color="yellow.500" flexShrink={0}><FaFire /></Icon>
+          <Box>
+            <Text fontWeight="bold">Streak Multiplier</Text>
+            <Text fontSize="sm" color="fg.muted">+2.5%/day · up to <strong>+60% bonus</strong> at 24 days</Text>
           </Box>
-          <Box
-            p={4}
-            borderRadius="lg"
-            bg={{ base: "red.50", _dark: "red.900/20" }}
-            borderWidth={1}
-            borderColor={{ base: "red.200", _dark: "red.700" }}
-          >
-            <HStack mb={2}>
-              <Icon color="red.500"><FaShieldAlt size={18} /></Icon>
-              <Text fontWeight="bold">Inactivity Penalty</Text>
-            </HStack>
-            <Text fontSize="sm" color="fg.muted">
-              0 problems this week → <strong>×0.4 multiplier</strong>. Ghost for a week and your
-              score craters. 1-2 problems → ×0.70. 3-4 → ×0.90. 5+ → no penalty.
-            </Text>
+        </HStack>
+        <HStack
+          p={{ base: 4, md: 6 }}
+          borderRadius="xl"
+          borderWidth={2}
+          borderColor={{ base: "red.200", _dark: "red.700" }}
+          bg={{ base: "red.50", _dark: "red.900/20" }}
+          gap={4}
+        >
+          <Icon fontSize="3xl" color="red.500" flexShrink={0}><FaShieldAlt /></Icon>
+          <Box>
+            <Text fontWeight="bold">Inactivity Penalty</Text>
+            <Text fontSize="sm" color="fg.muted">0 problems → <strong>×0.4</strong> · 5+ problems → no penalty</Text>
           </Box>
-        </SimpleGrid>
-      </Box>
+        </HStack>
+      </SimpleGrid>
     </Container>
   </Box>
 );
 
 // ─── Section: Divisions ───────────────────────────────────────────────────────
 const DIVISIONS = [
-  { name: "Diamond",  icon: "💎", color: "blue",   minScore: 140, desc: "Elite — 28+ weighted problems/week" },
-  { name: "Platinum", icon: "💿", color: "cyan",   minScore: 75,  desc: "Advanced — 18+ weighted problems/week" },
-  { name: "Gold",     icon: "🥇", color: "yellow", minScore: 38,  desc: "Competitive — 8-10 problems/week" },
-  { name: "Silver",   icon: "🥈", color: "gray",   minScore: 12,  desc: "Growing — ~4 problems/week" },
-  { name: "Bronze",   icon: "🥉", color: "orange", minScore: 0,   desc: "Starting out — just getting going" },
+  { name: "Diamond", icon: "💎", color: "blue", minScore: 140, desc: "Elite — 28+ weighted problems/week" },
+  { name: "Platinum", icon: "💿", color: "cyan", minScore: 75, desc: "Advanced — 18+ weighted problems/week" },
+  { name: "Gold", icon: "🥇", color: "yellow", minScore: 38, desc: "Competitive — 8-10 problems/week" },
+  { name: "Silver", icon: "🥈", color: "gray", minScore: 12, desc: "Growing — ~4 problems/week" },
+  { name: "Bronze", icon: "🥉", color: "orange", minScore: 0, desc: "Starting out — just getting going" },
 ] as const;
 
 const DivisionsSection = () => (
@@ -250,16 +393,16 @@ const DivisionsSection = () => (
           Division System
         </Badge>
         <Heading size={{ base: "2xl", md: "4xl" }} fontWeight="bold">
-          Climb the ladder.{" "}
+          Climb the ladder.{" "} <br />       
           <Text as="span" color="blue.400">Or get relegated.</Text>
         </Heading>
-        <Text fontSize={{ base: "md", md: "lg" }} color="fg.muted" maxW="2xl">
-          Five divisions, each earned through weekly performance — not career totals.
-          Stop grinding and you drop. Stay active and you rise.
+        <Text fontSize={{ base: "md", md: "lg" }} color="fg.muted" maxW="xl">
+          Five tiers. Earned weekly. Stop grinding and you drop.
         </Text>
       </VStack>
 
-      <SimpleGrid columns={{ base: 1, sm: 2, md: 5 }} gap={4} mb={10}>
+      {/* Division cards */}
+      <SimpleGrid columns={{ base: 2, sm: 2, md: 5 }} gap={4} mb={8}>
         {DIVISIONS.map((div) => (
           <Box
             key={div.name}
@@ -270,51 +413,53 @@ const DivisionsSection = () => (
             bg={{ base: `${div.color}.50`, _dark: `${div.color}.900/20` }}
             textAlign="center"
           >
-            <Text fontSize="3xl" mb={2}>{div.icon}</Text>
-            <Text fontWeight="bold" fontSize="lg">{div.name}</Text>
-            <Badge colorPalette={div.color} variant="surface" my={2}>
+            <Text fontSize="3xl" mb={1}>{div.icon}</Text>
+            <Text fontWeight="bold">{div.name}</Text>
+            <Badge colorPalette={div.color} variant="surface" my={2} fontSize="xs">
               {div.minScore > 0 ? `${div.minScore}+ pts` : "Starting"}
             </Badge>
-            <Text fontSize="xs" color="fg.muted" mt={1}>{div.desc}</Text>
           </Box>
         ))}
       </SimpleGrid>
 
-      <SimpleGrid columns={{ base: 1, md: 2 }} gap={6}>
-        <Box
-          p={6}
-          borderRadius="xl"
-          borderWidth={2}
-          borderColor={{ base: "green.200", _dark: "green.700" }}
-          bg={{ base: "green.50", _dark: "green.900/20" }}
-        >
-          <HStack mb={3}>
-            <Icon color="green.500"><FaChartLine size={20} /></Icon>
-            <Text fontWeight="bold" fontSize="lg">Promotion Rules</Text>
-          </HStack>
-          <VStack align="start" gap={2} fontSize="sm" color="fg.muted">
-            <Text>• Hit the <strong>full threshold</strong> for the next division</Text>
-            <Text>• No grace period — reach it and you're promoted next sync</Text>
-            <Text>• Weekly performance is recalculated on every sync</Text>
-          </VStack>
-        </Box>
-        <Box
-          p={6}
-          borderRadius="xl"
-          borderWidth={2}
-          borderColor={{ base: "red.200", _dark: "red.700" }}
-          bg={{ base: "red.50", _dark: "red.900/20" }}
-        >
-          <HStack mb={3}>
-            <Icon color="red.500"><FaShieldAlt size={20} /></Icon>
-            <Text fontWeight="bold" fontSize="lg">Relegation Rules</Text>
-          </HStack>
-          <VStack align="start" gap={2} fontSize="sm" color="fg.muted">
-            <Text>• Must fall <strong>20% below</strong> your division floor to drop</Text>
-            <Text>• Example: Gold floor = 38 pts → you drop below 30.4 to relegate</Text>
-            <Text>• One bad week won't kill you — two will</Text>
-          </VStack>
-        </Box>
+      {/* Promotion / Relegation — icon-led */}
+      <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
+        {[
+          {
+            icon: <FaChartLine />,
+            color: "green",
+            title: "Promotion",
+            items: ["Hit the full point threshold", "Promoted on next sync", "No grace period"],
+          },
+          {
+            icon: <FaShieldAlt />,
+            color: "red",
+            title: "Relegation",
+            items: ["Fall 20% below your floor", "Gold 38 pts → drop at 30.4", "One bad week won't kill you"],
+          },
+        ].map(({ icon, color, title, items }) => (
+          <Box
+            key={title}
+            p={6}
+            borderRadius="xl"
+            borderWidth={2}
+            borderColor={{ base: `${color}.200`, _dark: `${color}.700` }}
+            bg={{ base: `${color}.50`, _dark: `${color}.900/20` }}
+          >
+            <HStack mb={4} gap={3}>
+              <Icon fontSize="xl" color={`${color}.500`}>{icon}</Icon>
+              <Text fontWeight="bold" fontSize="lg">{title}</Text>
+            </HStack>
+            <VStack align="start" gap={3}>
+              {items.map((item) => (
+                <HStack key={item} gap={2} align="start">
+                  <Text color={`${color}.500`} fontWeight="bold" flexShrink={0}>→</Text>
+                  <Text fontSize="sm" color="fg.muted">{item}</Text>
+                </HStack>
+              ))}
+            </VStack>
+          </Box>
+        ))}
       </SimpleGrid>
     </Container>
   </Box>
@@ -329,73 +474,201 @@ const LeaderboardSection = () => (
           Leaderboard
         </Badge>
         <Heading size={{ base: "2xl", md: "4xl" }} fontWeight="bold">
-          Two ways to compete.{" "}
+          Two ways to compete.{" "} <br />
           <Text as="span" color="yellow.500">One way to win.</Text>
         </Heading>
-        <Text fontSize={{ base: "md", md: "lg" }} color="fg.muted" maxW="2xl">
-          The global leaderboard ranks everyone by all-time score. Division
-          leaderboards rank peers within your tier by current performance. Grind.
-        </Text>
       </VStack>
 
-      <SimpleGrid columns={{ base: 1, md: 2 }} gap={8} mb={10}>
-        <Box
-          p={8}
-          borderRadius="2xl"
-          borderWidth={2}
-          borderColor={{ base: "yellow.200", _dark: "yellow.700" }}
-          bg={{ base: "yellow.50", _dark: "yellow.900/20" }}
-        >
-          <HStack mb={4}>
-            <Icon fontSize="2xl" color="yellow.500"><FaTrophy size={28} /></Icon>
-            <Heading size="md">Global Leaderboard</Heading>
-          </HStack>
-          <VStack align="start" gap={3} fontSize="sm" color="fg.muted">
-            <Text>Ranked by <strong>Total Score</strong> — the sum of all difficulty points earned all-time.</Text>
-            <Text>Formula: <strong>(Easy×1) + (Medium×3) + (Hard×5)</strong> across your entire LeetCode history.</Text>
-            <Text>Streak bonuses and contest bonuses are added on top.</Text>
-            <Text>This is your career legacy — it only ever goes up.</Text>
-          </VStack>
-        </Box>
-
-        <Box
-          p={8}
-          borderRadius="2xl"
-          borderWidth={2}
-          borderColor={{ base: "teal.200", _dark: "teal.700" }}
-          bg={{ base: "teal.50", _dark: "teal.900/20" }}
-        >
-          <HStack mb={4}>
-            <Icon fontSize="2xl" color="teal.500"><FaBolt size={28} /></Icon>
-            <Heading size="md">Division Leaderboard</Heading>
-          </HStack>
-          <VStack align="start" gap={3} fontSize="sm" color="fg.muted">
-            <Text>Ranked by <strong>Performance Score</strong> within your current division.</Text>
-            <Text>Resets with each division change — fresh start at every level.</Text>
-            <Text>65% of your score is THIS week's grind. Compete with peers at your level.</Text>
-            <Text>Top of your division = promoted. Bottom = relegated.</Text>
-          </VStack>
-        </Box>
+      <SimpleGrid columns={{ base: 1, md: 2 }} gap={6} mb={6}>
+        {[
+          {
+            icon: <FaTrophy />,
+            color: "yellow",
+            title: "Global Leaderboard",
+            stat: "All-time",
+            items: ["Ranked by total difficulty points", "Easy×1 · Medium×3 · Hard×5", "Career legacy — only goes up"],
+          },
+          {
+            icon: <FaBolt />,
+            color: "teal",
+            title: "Division Leaderboard",
+            stat: "Weekly",
+            items: ["Ranked by performance score", "65% = this week's grind", "Top = promoted · Bottom = relegated"],
+          },
+        ].map(({ icon, color, title, stat, items }) => (
+          <Box
+            key={title}
+            p={{ base: 5, md: 7 }}
+            borderRadius="2xl"
+            borderWidth={2}
+            borderColor={{ base: `${color}.200`, _dark: `${color}.700` }}
+            bg={{ base: `${color}.50`, _dark: `${color}.900/20` }}
+          >
+            <HStack mb={4} justify="space-between">
+              <HStack gap={3}>
+                <Icon fontSize="2xl" color={`${color}.500`}>{icon}</Icon>
+                <Text fontWeight="bold" fontSize="lg">{title}</Text>
+              </HStack>
+              <Badge colorPalette={color} variant="solid" borderRadius="full">{stat}</Badge>
+            </HStack>
+            <VStack align="start" gap={3}>
+              {items.map((item) => (
+                <HStack key={item} gap={2}>
+                  <Text color={`${color}.500`} fontWeight="black" fontSize="lg" lineHeight={1}>·</Text>
+                  <Text fontSize="sm" color="fg.muted">{item}</Text>
+                </HStack>
+              ))}
+            </VStack>
+          </Box>
+        ))}
       </SimpleGrid>
 
-      {/* Sync cadence info */}
+      {/* Sync stats — 3 visual bubbles */}
+      <SimpleGrid columns={{ base: 3 }} gap={4}>
+        {[
+          { icon: <FaCalendarAlt />, value: "24h",     label: "Auto sync",      color: "teal"   },
+          { icon: <FaBolt />,        value: "30 min",  label: "Manual cooldown", color: "orange" },
+          { icon: <FaChartLine />,   value: "Instant", label: "Recalculation",  color: "blue"   },
+        ].map(({ icon, value, label, color }) => (
+          <Box
+            key={label}
+            p={{ base: 2, md: 5 }}
+            borderRadius="xl"
+            borderWidth={2}
+            borderColor={{ base: `${color}.200`, _dark: `${color}.700` }}
+            bg={{ base: `${color}.50`, _dark: `${color}.900/20` }}
+            textAlign="center"
+          >
+            <Icon fontSize="xl" color={`${color}.500`} mb={2}>{icon}</Icon>
+            <Text fontSize={{ base: "lg", md: "2xl" }} fontWeight="black" color={`${color}.500`}>{value}</Text>
+            <Text fontSize="xs" color="fg.muted" mt={1}>{label}</Text>
+          </Box>
+        ))}
+      </SimpleGrid>
+    </Container>
+  </Box>
+);
+
+// ─── Section: Open Source ─────────────────────────────────────────────────────
+const TECH_STACK = [
+  { icon: <FaReact />, label: "React", color: "blue.400" },
+  { icon: <SiFastapi />, label: "FastAPI", color: "teal.400" },
+  { icon: <SiPostgresql />, label: "PostgreSQL", color: "blue.500" },
+  { icon: <SiSupabase />, label: "Supabase", color: "green.500" },
+  { icon: <FaDocker />, label: "Docker", color: "blue.400" },
+  { icon: <SiGooglegemini />, label: "Gemini AI", color: "purple.400" },
+  { icon: <FaPython />, label: "Python", color: "yellow.400" },
+];
+
+const CONTRIB_STEPS = [
+  { num: "01", title: "Fork the repo", desc: "Star it while you're there 😉" },
+  { num: "02", title: "Pick an issue", desc: "Browse open issues or suggest a feature" },
+  { num: "03", title: "Open a PR", desc: "We review fast and merge faster" },
+];
+
+const OpenSourceSection = () => (
+  <Box
+    as="section"
+    py={{ base: 16, md: 24 }}
+    bg={{ base: "white", _dark: "gray.950" }}
+  >
+    <Container maxW="5xl">
+      <VStack gap={4} mb={12} textAlign="center">
+        <Badge colorPalette="green" size="lg" variant="surface" px={4} py={1} borderRadius="full">
+          Open Source
+        </Badge>
+        <Heading size={{ base: "2xl", md: "4xl" }} fontWeight="bold">
+          Built in public.{" "}
+          <Text as="span" color="green.500">Open to everyone.</Text>
+        </Heading>
+        <Text fontSize={{ base: "md", md: "lg" }} color="fg.muted" maxW="2xl">
+          CrackMode is fully open source. Browse the code, report bugs, suggest features,
+          or contribute directly. Every PR is welcome.
+        </Text>
+
+        <HStack gap={4} flexWrap="wrap" justify="center" pt={2}>
+          <a href="https://github.com/Morgan-Ngetich/crackmode" target="_blank" rel="noopener noreferrer">
+            <Button size="lg" colorPalette="gray" variant="solid">
+              <Icon><FaGithub /></Icon>
+              View on GitHub
+            </Button>
+          </a>
+          <a href="https://github.com/Morgan-Ngetich/crackmode/issues" target="_blank" rel="noopener noreferrer">
+            <Button size="lg" variant="outline">
+              <Icon><FaCodeBranch /></Icon>
+              Open an Issue
+            </Button>
+          </a>
+        </HStack>
+      </VStack>
+
+      {/* How to contribute steps */}
+      <SimpleGrid columns={{ base: 1, md: 3 }} gap={6} mb={12}>
+        {CONTRIB_STEPS.map(({ num, title, desc }) => (
+          <Box
+            key={num}
+            p={6}
+            borderRadius="xl"
+            borderWidth={2}
+            borderColor={{ base: "gray.200", _dark: "gray.700" }}
+            bg={{ base: "white", _dark: "gray.800" }}
+            position="relative"
+          >
+            <Text
+              fontSize="4xl"
+              fontWeight="black"
+              color={{ base: "gray.100", _dark: "gray.700" }}
+              position="absolute"
+              top={3}
+              right={4}
+              lineHeight={1}
+            >
+              {num}
+            </Text>
+            <Text fontWeight="bold" fontSize="lg" mb={1}>{title}</Text>
+            <Text fontSize="sm" color="fg.muted">{desc}</Text>
+          </Box>
+        ))}
+      </SimpleGrid>
+
+      {/* Tech stack */}
+      <Box textAlign="center">
+        <Text fontSize="sm" color="fg.subtle" fontWeight="medium" mb={5} textTransform="uppercase" letterSpacing="wider">
+          Built with
+        </Text>
+        <Flex justify="center" gap={{ base: 4, md: 8 }} flexWrap="wrap">
+          {TECH_STACK.map(({ icon, label, color }) => (
+            <VStack key={label} gap={1}>
+              <Icon fontSize="2xl" color={color}>{icon}</Icon>
+              <Text fontSize="xs" color="fg.muted">{label}</Text>
+            </VStack>
+          ))}
+        </Flex>
+      </Box>
+
+      {/* Star CTA */}
       <Box
-        p={6}
-        borderRadius="xl"
+        mt={12}
+        p={{ base: 5, md: 8 }}
+        borderRadius="2xl"
         borderWidth={2}
-        borderColor="border.emphasized"
-        bg={{ base: "white", _dark: "gray.800" }}
+        borderColor={{ base: "yellow.200", _dark: "yellow.800" }}
+        bg={{ base: "yellow.50", _dark: "yellow.900/20" }}
         textAlign="center"
       >
-        <HStack justify="center" mb={3}>
-          <Icon color="teal.500"><FaCalendarAlt size={20} /></Icon>
-          <Text fontWeight="bold" fontSize="lg">When does my rank update?</Text>
+        <HStack justify="center" mb={2}>
+          <Icon color="yellow.500" fontSize="xl"><FaStar /></Icon>
+          <Heading size="md">Leave a star if this helps you grind</Heading>
         </HStack>
-        <Text fontSize="sm" color="fg.muted" maxW="xl" mx="auto">
-          Stats sync automatically every <strong>24 hours</strong> for all users. You can also
-          manually sync from your profile — with a <strong>30-minute cooldown</strong> to prevent
-          spam. Rankings are recalculated immediately after every sync.
+        <Text fontSize="sm" color="fg.muted" mb={4}>
+          It helps others discover CrackMode and motivates us to keep building.
         </Text>
+        <a href="https://github.com/Morgan-Ngetich/crackmode" target="_blank" rel="noopener noreferrer">
+          <Button variant="outline" colorPalette="yellow" size="sm">
+            <Icon><FaGithub /></Icon>
+            github.com/Morgan-Ngetich/crackmode
+          </Button>
+        </a>
       </Box>
     </Container>
   </Box>
@@ -421,13 +694,13 @@ const FinalCTA = () => (
       </Text>
       <Flex gap={4} justify="center" flexWrap="wrap">
         <Link to="/leaderboard">
-          <Button size="lg" colorPalette="teal">
+          <Button size="lg" colorPalette="orange" variant="outline">
             <Icon><FaTrophy /></Icon>
             View Leaderboard
           </Button>
         </Link>
         <Link to="/docs">
-          <Button size="lg" colorPalette="orange" variant="outline">
+          <Button size="lg" colorPalette="teal" variant="outline">
             <Icon><FaBook /></Icon>
             Start Learning
           </Button>
@@ -446,6 +719,10 @@ const FinalCTA = () => (
 // ─── Main Page ────────────────────────────────────────────────────────────────
 const Home = () => (
   <>
+    <DocumentSEOHead
+      title="CrackMode — Master LeetCode. Compete. Level Up."
+      description="Join 600+ coders grinding LeetCode daily. Earn your division through weekly performance, follow structured DSA + System Design walkthroughs, and compete with peers at your level."
+    />
     <CrackModeHeader mode="home" />
 
     {/* Hero */}
@@ -471,11 +748,15 @@ const Home = () => (
       </Container>
     </Box>
 
+    <SocialProofStrip />
+
     {/* Landing page sections */}
     <WhatIsCrackMode />
+    <AppPreviewSection />
     <ScoringSection />
     <DivisionsSection />
     <LeaderboardSection />
+    <OpenSourceSection />
     <FinalCTA />
 
     <style>{`

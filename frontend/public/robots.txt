@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# High-value pages
+Allow: /docs
+Allow: /leaderboard
+
+# Auth pages — no SEO value
+Disallow: /login
+Disallow: /signup
+Disallow: /verify-email
+Disallow: /leetcode-setup
+Disallow: /auth/
+
+Sitemap: https://crackmode.vercel.app/sitemap.xml

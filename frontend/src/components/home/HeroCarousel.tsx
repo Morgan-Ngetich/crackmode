@@ -26,24 +26,34 @@ const HeroCarousel = () => {
       alignItems="center"
       position="relative"
       w="full"
-      px={currentSlide === 0 ? 0 : 3}
       pb={8}
     >
-      <Flex w="full" justify="center">
-        {currentSlide === 0 && (
-          <Box animation="fadeIn 0.5s" w="full">
-            <ViewCalendar />
-          </Box>
-        )}
+      {/* Card wrapper */}
+      <Box
+        w="full"
+        overflow="hidden"
+        p={currentSlide === 0 ? 0 : 4}
+        minH="380px"
+        display="flex"
+        flexDirection="column"
+        justifyContent="center"
+      >
+        <Flex w="full" justify="center">
+          {currentSlide === 0 && (
+            <Box animation="fadeIn 0.5s" w="full">
+              <ViewCalendar />
+            </Box>
+          )}
 
-        {currentSlide === 1 && (
-          <LeaderboardSlide players={topPlayers} isLoading={isLoading} />
-        )}
+          {currentSlide === 1 && (
+            <LeaderboardSlide players={topPlayers} isLoading={isLoading} />
+          )}
 
-        {currentSlide === 2 && (
-          <DivisionsSlide />
-        )}
-      </Flex>
+          {currentSlide === 2 && (
+            <DivisionsSlide />
+          )}
+        </Flex>
+      </Box>
 
       {/* Dots */}
       <HStack
