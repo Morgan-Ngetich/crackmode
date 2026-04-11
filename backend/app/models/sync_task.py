@@ -11,8 +11,6 @@ class SyncTask(SQLModel, table=True):
     Used for both:
     - Daily batch sync (task_type="daily_sync")
     - Individual profile syncs triggered by API (task_type="profile_sync")
-
-    Gives observability into what the sync job is doing without Celery.
     """
 
     __tablename__ = "sync_tasks"

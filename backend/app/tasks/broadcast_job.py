@@ -43,8 +43,8 @@ async def broadcast_job():
             minute = now.minute
             today_key = now.strftime("%Y-%m-%d")
 
-            # ── 8am — Morning lesson + problem ────────────────────────────
-            if hour == 8 and minute < 5 and not _already_sent(f"morning_{today_key}"):
+            # ── 8am EAT = 5am UTC ─────────────────────────────────────────────
+            if hour == 5 and minute < 5 and not _already_sent(f"morning_{today_key}"):
                 print("📚 Sending morning lesson...")
                 topic = get_daily_topic()
                 message = await generate_morning_lesson_and_problem(topic)
@@ -52,8 +52,8 @@ async def broadcast_job():
                 _mark_sent(f"morning_{today_key}")
                 print("✅ Morning lesson sent")
 
-            # ── 12pm — Midday leaderboard shoutout ────────────────────────
-            elif hour == 12 and minute < 5 and not _already_sent(f"midday_{today_key}"):
+            # ── 12pm EAT = 9am UTC ────────────────────────────────────────────
+            elif hour == 9 and minute < 5 and not _already_sent(f"midday_{today_key}"):
                 print("🏆 Sending midday leaderboard...")
                 with next(get_session()) as session:
                     message = await generate_midday_leaderboard(session)
@@ -61,8 +61,8 @@ async def broadcast_job():
                 _mark_sent(f"midday_{today_key}")
                 print("✅ Midday leaderboard sent")
 
-            # ── 6pm — Evening solution + explanation ──────────────────────
-            elif hour == 18 and minute < 5 and not _already_sent(f"evening_{today_key}"):
+            # ── 6pm EAT = 3pm UTC ─────────────────────────────────────────────
+            elif hour == 15 and minute < 5 and not _already_sent(f"evening_{today_key}"):
                 print("💡 Sending evening solution...")
                 topic = get_daily_topic()
                 message = await generate_evening_solution(topic)
@@ -70,8 +70,8 @@ async def broadcast_job():
                 _mark_sent(f"evening_{today_key}")
                 print("✅ Evening solution sent")
 
-            # ── 9pm — Streak/activity callout ─────────────────────────────
-            elif hour == 21 and minute < 5 and not _already_sent(f"night_{today_key}"):
+            # ── 9pm EAT = 6pm UTC ─────────────────────────────────────────────
+            elif hour == 18 and minute < 5 and not _already_sent(f"night_{today_key}"):
                 print("🔥 Sending night callout...")
                 with next(get_session()) as session:
                     message = await generate_evening_streak_callout(session)

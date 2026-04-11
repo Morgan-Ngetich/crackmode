@@ -15,7 +15,7 @@ services:
       - uploads:/shared/uploads
     expose:
       - "8000"
-      - "5173:5173"
+      - "5173"
 
   # BACKEND SERVICE
   backend:
@@ -53,8 +53,9 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - crakcmode_postgres_data:/var/lib/postgresql/data/pgdata
+      - crackmode_postgres_data:/var/lib/postgresql/data/pgdata  # ← fixed typo
 
 volumes:
-  crakcmode_postgres_data:
+  uploads:
+  crackmode_postgres_data:  # ← fixed typo
     external: true

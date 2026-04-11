@@ -4,27 +4,6 @@ set -e
 echo "ENTRYPOINT script received arguments: $@"
 
 case "$1" in
-  "celery_worker")
-    echo "🐇 Starting Celery worker..."
-    shift
-    
-    # Check for --llm flag
-    if [[ "$1" == "--llm" ]]; then
-      echo "🧠 Starting LLM-specific worker (concurrency: 2)"
-      shift
-      exec celery -A app.core.celery worker -Q llm --loglevel=info --concurrency=2 --hostname=llm_worker@%h "$@"
-    else
-      echo "🔄 Starting default worker (concurrency: 4)"
-      exec celery -A app.core.celery worker -Q default --loglevel=info --concurrency=4 --hostname=default_worker@%h "$@"
-    fi
-    ;;
-
-  "celery_beat")
-    echo "⏰ Starting Celery Beat..."
-    shift
-    exec celery -A app.core.celery beat --loglevel=info "$@"
-    ;;
-
   "fastapi" | "")
     echo "⏳ Waiting for DB..."
     python app/utils/init.py

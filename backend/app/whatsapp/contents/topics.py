@@ -1,4 +1,7 @@
-from datetime import datetime
+from datetime import datetime, date, timezone
+
+# ── Set this to the day you launch the competition ────────────────────────────
+COMPETITION_START_DATE = date(2026, 4, 11)  # ← Day 1
 
 # Alternates: DSA/Algo day → System Design day → repeat
 DAILY_TOPICS = [
@@ -40,42 +43,44 @@ CATEGORY_EMOJIS = {
 
 
 def get_current_index() -> int:
-    """Get today's index into DAILY_TOPICS based on day of year."""
-    day_of_year = datetime.now().timetuple().tm_yday
-    return (day_of_year - 1) % len(DAILY_TOPICS)
+    """
+    Get today's index based on days elapsed since COMPETITION_START_DATE.
+    Day 1 = index 0 = Stacks. Cycles through all topics after 28 days.
+    """
+    today = datetime.now(timezone.utc).date()
+    days_elapsed = (today - COMPETITION_START_DATE).days
+    # Clamp to 0 if called before competition starts
+    days_elapsed = max(0, days_elapsed)
+    return days_elapsed % len(DAILY_TOPICS)
 
 
 def get_daily_topic() -> dict:
     """Get today's topic with its index attached."""
     index = get_current_index()
     topic = DAILY_TOPICS[index].copy()
-    topic["index"] = index          # 0-based position in the list
-    topic["day_number"] = index + 1 # human-friendly "Day 7"
+    topic["index"] = index
+    topic["day_number"] = index + 1
     return topic
 
 
 def get_topics_covered_so_far() -> list[dict]:
-    """
-    Return all topics covered UP TO AND INCLUDING today.
-    Used in morning messages to show progress.
-    """
+    """Return all topics covered UP TO AND INCLUDING today."""
     index = get_current_index()
-    return DAILY_TOPICS[:index + 1]  # inclusive of today
+    return DAILY_TOPICS[:index + 1]
 
 
 def get_topics_covered_summary() -> str:
     """
-    Returns a formatted WhatsApp-ready summary of all topics covered so far,
-    grouped by category. Injected into the morning lesson message.
+    WhatsApp-ready summary of all topics covered so far, grouped by category.
+    Injected into morning messages.
     """
     covered = get_topics_covered_so_far()
 
     if len(covered) <= 1:
-        return ""  # Don't show recap on day 1 — nothing to recap yet
+        return ""  # Nothing to recap on Day 1
 
-    # Group by category
     grouped: dict[str, list[str]] = {}
-    for t in covered[:-1]:  # exclude today — it's the new one
+    for t in covered[:-1]:  # exclude today — it's the new topic
         cat = t["category"]
         grouped.setdefault(cat, []).append(t["topic"])
 
