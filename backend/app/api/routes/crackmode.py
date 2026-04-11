@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from app.api.deps import SessionDep, CurrentUser
 from app.models import (
@@ -22,27 +23,38 @@ async def setup_crackmode_profile(
     background_tasks: BackgroundTasks,
 ):
     """
-    Setup CrackMode profile by linking LeetCode username
-    This is a one-time setup (unless user changes username)
-    
-    This endpoint also syncs extended profile data like:
-    - GitHub, Twitter, LinkedIn URLs
-    - Country, Company, School
-    - About/Bio
-    - Website
-    """
-    # Check if profile already exists
-    existing = crud.get_crackmode_profile_by_user_id(session, current_user.id)
+    One-time setup: link a LeetCode username to this account.
 
+    API calls: 2
+      1. GET /:username          — verify the username exists, grab social links
+      2. GET /:username/solved   — initial all-time stats
+
+    Calendar and contest are intentionally skipped at setup:
+    - Streak starts at 0 and will be computed correctly on the first sync.
+    - Contest rating starts at 0 and will be synced separately.
+    Both are correct defaults for a brand-new profile.
+    """
+    existing = crud.get_crackmode_profile_by_user_id(session, current_user.id)
     if existing:
         raise HTTPException(
             status_code=400,
             detail="CrackMode profile already exists. Use /sync to update stats.",
         )
+        
+    # Check if username already claimed by another user
+    if crud.get_crackmode_profile_by_leetcode_username(session, request.leetcode_username):
+        raise HTTPException(
+            status_code=409,
+            detail="This LeetCode username is already linked to another account",
+        )
 
-    # Verify LeetCode username exists and get profile data
     leetcode = LeetCodeService()
-    profile_data = await leetcode.get_profile(request.leetcode_username)
+
+    # Fire both calls in parallel — 2 total, each rate-limited
+    profile_data, solved_stats = await asyncio.gather(
+        leetcode.get_profile(request.leetcode_username),
+        leetcode.get_solved_stats(request.leetcode_username),
+    )
 
     if not profile_data:
         raise HTTPException(
@@ -50,78 +62,59 @@ async def setup_crackmode_profile(
             detail=f"LeetCode user '{request.leetcode_username}' not found",
         )
 
-    # Check if username already claimed by another user
-    existing_username = crud.get_crackmode_profile_by_leetcode_username(
-        session, request.leetcode_username
-    )
-
-    if existing_username:
-        raise HTTPException(
-            status_code=409,
-            detail="This LeetCode username is already linked to another account",
-        )
-
-    # Fetch initial stats
-    solved_stats = await leetcode.get_solved_stats(request.leetcode_username)
-    calendar = await leetcode.get_calendar(request.leetcode_username)
-    contest = await leetcode.get_contest_info(request.leetcode_username)
-
     if not solved_stats:
         raise HTTPException(
-            status_code=400, detail="Failed to fetch LeetCode stats. Please try again."
+            status_code=400,
+            detail="Failed to fetch LeetCode stats. Please try again.",
         )
 
-    # Calculate streaks
-    current_streak, longest_streak = (
-        leetcode.calculate_streak(calendar) if calendar else (0, 0)
-    )
-
-    initial_stats = {
-        "easy": solved_stats["easy"],
-        "medium": solved_stats["medium"],
-        "hard": solved_stats["hard"],
-        "total": solved_stats["total"],
-        "contest_rating": contest.get("contestRating", 0) if contest else 0,
-        "current_streak": current_streak,
-        "longest_streak": longest_streak,
-    }
-
-    # Create CrackMode profile
     crackmode_profile = crud.create_crackmode_profile(
         session=session,
         user_id=current_user.id,
         leetcode_username=request.leetcode_username,
-        initial_stats=initial_stats,
+        initial_stats={
+            "easy":   solved_stats["easy"],
+            "medium": solved_stats["medium"],
+            "hard":   solved_stats["hard"],
+            "total":  solved_stats["total"],
+            # Streak and contest start at 0 — first sync will populate them
+        },
     )
-    
-    # Update user's extended profile with LeetCode data
-    # This includes GitHub, Twitter, LinkedIn, website, country, company, school, about
-    updated_user = crud.update_user_extended_profile(
-        session=session,
-        user=current_user,
-        profile_data=profile_data
+
+    # Persist social links / bio from LeetCode profile
+    crud.update_user_extended_profile(
+        session=session, user=current_user, profile_data=profile_data
     )
-    
-    # Update rankings
-    crud.update_rankings(session)
-    
-    # Refresh to get updated ranks
+
+    # Rankings are heavy — run after the response is returned
+    background_tasks.add_task(crud.update_global_rankings, session)
+    background_tasks.add_task(crud.update_division_rankings, session)
+
     session.refresh(crackmode_profile)
-
-    # TODO: Uncomment when celery service is up.
-    # # Trigger background ranking update
-    # background_tasks.add_task(crud.update_rankings, session)
-
     return crackmode_profile.to_public()
+
 
 @router.post("/sync", response_model=CrackModeProfilePublic)
 async def sync_my_leetcode_stats(
     current_user: CurrentUser,
     session: SessionDep,
+    background_tasks: BackgroundTasks,
     force: bool = False,
 ):
-    profile = crud.get_crackmode_profile_by_user_id(session, current_user.id)
+    """
+    Sync the current user's LeetCode stats.
 
+    API calls: 2  (via sync_profile → get_sync_data)
+      1. /solved
+      2. /submission?200
+
+    Extended profile data (GitHub, Twitter, LinkedIn…) is NOT refreshed
+    on every sync — it was set at setup and changes very rarely.
+    Refreshing it would cost a 3rd API call every 30 minutes per user.
+
+    30-minute cooldown enforced unless force=true.
+    """
+    profile = crud.get_crackmode_profile_by_user_id(session, current_user.id)
     if not profile:
         raise HTTPException(404, detail="Profile not found. Please set up CrackMode first.")
 
@@ -132,21 +125,17 @@ async def sync_my_leetcode_stats(
         if elapsed.total_seconds() < COOLDOWN_MINUTES * 60:
             return profile.to_public()
 
-    leetcode = LeetCodeService()
     success = await sync_profile(session, profile)
 
     if not success:
         raise HTTPException(503, detail="LeetCode API unavailable. Please try again.")
 
-    if profile_data := await leetcode.get_profile(profile.leetcode_username):
-        crud.update_user_extended_profile(session=session, user=current_user, profile_data=profile_data)
+    # Rankings are heavy — run after the response is returned
+    background_tasks.add_task(crud.update_global_rankings, session)
+    background_tasks.add_task(crud.update_division_rankings, session)
 
-    crud.update_global_rankings(session)
-    crud.update_division_rankings(session)
     session.refresh(profile)
-
     return profile.to_public()
-
 
 
 @router.get("/leaderboard", response_model=LeaderboardResponse)
@@ -158,16 +147,15 @@ async def get_leaderboard(
     offset: int = 0,
 ):
     """
-    Get leaderboard
+    Get leaderboard.
 
-    Filters:
-    - division: Bronze, Silver, Gold, Platinum, Diamond
-    - season: Season 1, Season 2, etc.
-    - limit: Number of results (max 100)
-    - offset: Pagination offset
+    Sort order:
+    - With division filter  → ordered by division_rank (performance score within tier)
+    - Without filter        → ordered by global rank (all-time total score)
+
+    Returns total = full matching count for real pagination.
     """
-
-    profiles = crud.get_leaderboard(
+    profiles, total_count = crud.get_leaderboard(
         session=session,
         division=division,
         season=season,
@@ -177,7 +165,7 @@ async def get_leaderboard(
 
     return LeaderboardResponse(
         profiles=[p.to_public() for p in profiles],
-        total=len(profiles),
+        total=total_count,
         division=division,
         season=season,
     )

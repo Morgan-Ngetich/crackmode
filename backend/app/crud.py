@@ -1,11 +1,10 @@
 from fastapi import HTTPException
-from typing import List
-from sqlmodel import Session, select
+from sqlmodel import Session, select, func
 from sqlalchemy.orm import selectinload
 from app.core.security import verify_password
 from uuid import UUID
 from app.utils.logger_config import llm_logger
-from app.models import CrackModeProfile, User
+from app.models import CrackModeProfile, SyncTask, User
 from typing import Optional, List
 from datetime import datetime, timezone
 from app.utils import scoring
@@ -248,97 +247,51 @@ def create_crackmode_profile(
     session: Session,
     user_id: int,
     leetcode_username: str,
-    initial_stats: dict
+    initial_stats: dict,
 ) -> CrackModeProfile:
-    """Create new CrackMode profile"""
-    
-    # Calculate initial division based on total problems
-    total = initial_stats.get("total", 0)
-    if total < 50:
-        division = "Bronze"
-    elif total < 150:
-        division = "Silver"
-    elif total < 300:
-        division = "Gold"
-    elif total < 500:
-        division = "Platinum"
-    else:
-        division = "Diamond"
-    
-    # Calculate initial score
-    difficulty_points = (
-        initial_stats.get("easy", 0) * 1 +
-        initial_stats.get("medium", 0) * 3 +
-        initial_stats.get("hard", 0) * 5
-    )
-    
+    """
+    Create a new CrackMode profile.
+
+    Division always starts at Bronze regardless of all-time problem count.
+    We have no weekly/monthly velocity data at setup time, so placing anyone
+    above Bronze based on raw totals would give them a misleading rank that
+    crashes on their first real sync. Bronze is honest — the first sync will
+    place them correctly.
+    """
+    easy   = initial_stats.get("easy",   0)
+    medium = initial_stats.get("medium", 0)
+    hard   = initial_stats.get("hard",   0)
+    total  = initial_stats.get("total",  0)
+
+    difficulty_points = easy * 1 + medium * 3 + hard * 5
+    streak_bonus  = initial_stats.get("current_streak", 0) * 10
+    contest_bonus = initial_stats.get("contest_rating",  0) // 10
+
     profile = CrackModeProfile(
         user_id=user_id,
         leetcode_username=leetcode_username,
-        division=division,
-        total_score=difficulty_points,
-        difficulty_points=difficulty_points,
-        total_easy=initial_stats.get("easy", 0),
-        total_medium=initial_stats.get("medium", 0),
-        total_hard=initial_stats.get("hard", 0),
+        # Start everyone in Bronze — first sync will set the real division
+        division="Bronze",
+        total_easy=easy,
+        total_medium=medium,
+        total_hard=hard,
         total_problems_solved=total,
+        difficulty_points=difficulty_points,
+        streak_bonus=streak_bonus,
+        contest_bonus=contest_bonus,
+        total_score=difficulty_points + streak_bonus + contest_bonus,
         contest_rating=initial_stats.get("contest_rating", 0),
         current_streak=initial_stats.get("current_streak", 0),
         longest_streak=initial_stats.get("longest_streak", 0),
         last_synced=datetime.now(timezone.utc),
     )
-    
+
     session.add(profile)
     session.commit()
     session.refresh(profile)
     return profile
 
 
-def update_crackmode_stats(
-    session: Session,
-    profile: CrackModeProfile,
-    stats: dict
-) -> CrackModeProfile:
-    """ Update CrackMode profile with fresh LeetCode stats """
-    
-    # Update raw stats
-    profile.total_easy = stats.get("easy", profile.total_easy)
-    profile.total_medium = stats.get("medium", profile.total_medium)
-    profile.total_hard = stats.get("hard", profile.total_hard)
-    profile.total_problems_solved = stats.get("total", profile.total_problems_solved)
-    profile.contest_rating = stats.get("contest_rating", profile.contest_rating)
-    profile.current_streak = stats.get("current_streak", profile.current_streak)
-    profile.longest_streak = max(
-        profile.longest_streak, 
-        stats.get("longest_streak", 0)
-    )
-    
-    # Recalculate score components
-    profile.difficulty_points = (
-        profile.total_easy * 1 +
-        profile.total_medium * 3 +
-        profile.total_hard * 5
-    )
-    profile.streak_bonus = profile.current_streak * 10
-    profile.contest_bonus = profile.contest_rating // 10
-    
-    # Update total score
-    profile.total_score = (
-        profile.difficulty_points +
-        profile.streak_bonus +
-        profile.weekly_bonus +
-        profile.contest_bonus
-    )
-    
-    # Update sync timestamp
-    profile.last_synced = datetime.now(timezone.utc)
-    profile.sync_error = None
-    profile.updated_at = datetime.now(timezone.utc)
-    
-    session.add(profile)
-    session.commit()
-    session.refresh(profile)
-    return profile
 
 
 def get_leaderboard(
@@ -346,55 +299,52 @@ def get_leaderboard(
     division: Optional[str] = None,
     season: Optional[str] = None,
     limit: int = 100,
-    offset: int = 0
-) -> List[CrackModeProfile]:
-    """Get leaderboard with optional filters"""
-    
-    statement = select(CrackModeProfile).options(
-        selectinload(CrackModeProfile.user)
-    ).order_by(CrackModeProfile.rank.asc())
-    
+    offset: int = 0,
+) -> tuple[List[CrackModeProfile], int]:
+    """
+    Get leaderboard with optional filters.
+
+    Returns (profiles, total_count) where total_count is the number of
+    rows matching the filters — not just the current page size.
+
+    Sort order:
+    - Division filter active → order by division_rank (performance_score rank within tier)
+    - No division filter    → order by global rank (total_score rank)
+    """
+    filters = []
     if division:
-        statement = statement.where(CrackModeProfile.division == division)
-    
+        filters.append(CrackModeProfile.division == division)
     if season:
-        statement = statement.where(CrackModeProfile.season == season)
-    
-    statement = statement.offset(offset).limit(limit)
-    
-    return list(session.exec(statement).all())
+        filters.append(CrackModeProfile.season == season)
+
+    # Total matching rows (for real pagination)
+    count_stmt = select(func.count(CrackModeProfile.id))
+    for f in filters:
+        count_stmt = count_stmt.where(f)
+    total_count = session.exec(count_stmt).one()
+
+    # Sort by division_rank when filtered, global rank otherwise
+    order_col = (
+        CrackModeProfile.division_rank.asc()
+        if division
+        else CrackModeProfile.rank.asc()
+    )
+
+    stmt = (
+        select(CrackModeProfile)
+        .options(selectinload(CrackModeProfile.user))
+        .order_by(order_col)
+        .offset(offset)
+        .limit(limit)
+    )
+    for f in filters:
+        stmt = stmt.where(f)
+
+    return list(session.exec(stmt).all()), total_count
 
 
-def update_rankings(session: Session):
-    """
-    Recalculate global and division rankings
-    Should be run periodically (e.g., every hour)
-    """
-    
-    # Update global rankings
-    profiles = session.exec(
-        select(CrackModeProfile).order_by(CrackModeProfile.total_score.desc())
-    ).all()
-    
-    for rank, profile in enumerate(profiles, start=1):
-        profile.rank = rank
-    
-    # Update division rankings
-    divisions = ["Bronze", "Silver", "Gold", "Platinum", "Diamond"]
-    for division in divisions:
-        div_profiles = session.exec(
-            select(CrackModeProfile)
-            .where(CrackModeProfile.division == division)
-            .order_by(CrackModeProfile.total_score.desc())
-        ).all()
-        
-        for rank, profile in enumerate(div_profiles, start=1):
-            profile.division_rank = rank
-    
-    session.commit()
-    
-    
-    
+
+
     
 def update_crackmode_stats_with_velocity(
     session: Session,
@@ -467,8 +417,13 @@ def update_crackmode_stats_with_velocity(
         monthly_stats=monthly_stats,
     )
     
-    # ===== 🎮 UPDATE DIVISION BASED ON PERFORMANCE SCORE =====
-    new_division = scoring.determine_division_by_score(profile.performance_score)
+    # ===== UPDATE DIVISION (with relegation buffer) =====
+    # Pass current_division so the 20%-below-floor protection is applied.
+    # Without this, determine_division_by_score takes the raw path and the
+    # relegation buffer is never used — fix for the dead-code bug.
+    new_division = scoring.determine_division_by_score(
+        profile.performance_score, profile.division
+    )
     if profile.division != new_division:
         print(f"🎮 Division change: {profile.leetcode_username} {profile.division} → {new_division}")
     profile.division = new_division
@@ -485,63 +440,6 @@ def update_crackmode_stats_with_velocity(
     return profile
 
 
-# def update_division_rankings(session: Session):
-#     """
-#     Recalculate division rankings based on performance_score
-
-#     How it works:
-#     1. For each division, rank users by performance_score
-#     2. Top 20% get promoted (except Diamond)
-#     3. Bottom 20% get relegated (except Bronze)
-#     4. Middle 60% stay
-#     """
-    
-#     divisions = ["Bronze", "Silver", "Gold", "Platinum", "Diamond"]
-
-#     for i, division in enumerate(divisions):
-#         # Get all profiles in this division, sorted by performance_score
-#         profiles = list(session.exec(
-#             select(CrackModeProfile)
-#             .where(CrackModeProfile.division == division)
-#             .order_by(CrackModeProfile.performance_score.desc())
-#         ).all())
-        
-#         if not profiles:
-#             continue
-        
-#         total = len(profiles)
-#         promote_count = int(total * 0.2)  # Top 20%
-#         relegate_count = int(total * 0.2)  # Bottom 20%
-        
-#         # ===== PROMOTE TOP 20% (except Diamond) =====
-#         if i < len(divisions) - 1:  # Not Diamond
-#             for profile in profiles[:promote_count]:
-#                 old_division = profile.division
-#                 profile.division = divisions[i + 1]
-#                 print(f"  ⬆️ {profile.leetcode_username}: {old_division} → {profile.division}")
-        
-#         # ===== RELEGATE BOTTOM 20% (except Bronze) =====
-#         if i > 0:  # Not Bronze
-#             for profile in profiles[-relegate_count:]:
-#                 old_division = profile.division
-#                 profile.division = divisions[i - 1]
-#                 print(f"  ⬇️ {profile.leetcode_username}: {old_division} → {profile.division}")
-        
-#         # ===== UPDATE DIVISION RANKS =====
-#         # Re-fetch after promotions/relegations
-#         div_profiles = list(session.exec(
-#             select(CrackModeProfile)
-#             .where(CrackModeProfile.division == division)
-#             .order_by(CrackModeProfile.performance_score.desc())
-#         ).all())
-        
-#         for rank, profile in enumerate(div_profiles, start=1):
-#             profile.division_rank = rank
-    
-#     session.commit()
-#     print("✅ Weekly division update complete!")
-
-# crud.py
 
 def update_division_rankings(session: Session):
     """
@@ -583,17 +481,99 @@ def update_global_rankings(session: Session):
     session.commit()
 
 
-def weekly_system_update(session: Session):
-    """
-    Updates global rankings (for leaderboard display)
-    
-    """
-    # Step 1: Update division rankings (FIFA system)
-    update_division_rankings(session)
-    
-    # Step 2: Update global rankings (for display)
-    update_global_rankings(session)
-    
-    
 def get_all_crackmode_profiles(session: Session) -> list[CrackModeProfile]:
     return session.exec(select(CrackModeProfile)).all()
+
+
+
+def create_sync_task(
+    session: Session,
+    task_type: str = "daily_sync",
+    triggered_by_user_id: Optional[int] = None,
+) -> SyncTask:
+    task = SyncTask(task_type=task_type, triggered_by_user_id=triggered_by_user_id)
+    session.add(task)
+    session.commit()
+    session.refresh(task)
+    return task
+
+
+def get_sync_task(session: Session, task_id: str) -> Optional[SyncTask]:
+    return session.get(SyncTask, task_id)
+
+
+def get_latest_sync_task(session: Session, task_type: str = "daily_sync") -> Optional[SyncTask]:
+    return session.exec(
+        select(SyncTask)
+        .where(SyncTask.task_type == task_type)
+        .order_by(SyncTask.created_at.desc())
+        .limit(1)
+    ).first()
+
+
+def update_sync_task(session: Session, task: SyncTask, **kwargs) -> SyncTask:
+    for key, value in kwargs.items():
+        setattr(task, key, value)
+    session.add(task)
+    session.commit()
+    session.refresh(task)
+    return task
+
+
+def get_top_solvers_this_week(session: Session, limit: int = 3) -> list[CrackModeProfile]:
+    return list(session.exec(
+        select(CrackModeProfile)
+        .order_by(CrackModeProfile.weekly_total.desc())
+        .limit(limit)
+    ).all())
+
+
+def get_longest_streak_user(session: Session) -> CrackModeProfile | None:
+    return session.exec(
+        select(CrackModeProfile)
+        .order_by(CrackModeProfile.current_streak.desc())
+        .limit(1)
+    ).first()
+
+
+def get_weekly_winner(session: Session) -> CrackModeProfile | None:
+    return session.exec(
+        select(CrackModeProfile)
+        .order_by(CrackModeProfile.weekly_total.desc())
+        .limit(1)
+    ).first()
+
+
+def get_division_leaders(session: Session) -> dict[str, CrackModeProfile | None]:
+    divisions = ["Diamond", "Platinum", "Gold", "Silver", "Bronze"]
+    leaders = {}
+    for division in divisions:
+        leader = session.exec(
+            select(CrackModeProfile)
+            .where(CrackModeProfile.division == division)
+            .order_by(CrackModeProfile.performance_score.desc())
+            .limit(1)
+        ).first()
+        if leader:
+            leaders[division] = leader
+    return leaders
+
+def get_most_active_today(session: Session, limit: int = 3) -> list:
+    """Users who synced today — proxy for activity."""
+    from datetime import datetime, timedelta, timezone
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
+    return list(session.exec(
+        select(CrackModeProfile)
+        .where(CrackModeProfile.last_synced >= cutoff)
+        .order_by(CrackModeProfile.weekly_total.desc())
+        .limit(limit)
+    ).all())
+
+
+def get_streak_leaders(session: Session, limit: int = 3) -> list:
+    return list(session.exec(
+        select(CrackModeProfile)
+        .where(CrackModeProfile.current_streak > 0)
+        .order_by(CrackModeProfile.current_streak.desc())
+        .limit(limit)
+    ).all())

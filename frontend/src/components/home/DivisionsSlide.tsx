@@ -2,10 +2,10 @@ import { Box, Button, Badge, Heading, SimpleGrid, Text, VStack } from "@chakra-u
 import { Link } from "@tanstack/react-router";
 
 const DIVISIONS = [
-  { name: "Diamond", icon: "💎", color: "blue",   minScore: 150 },
-  { name: "Platinum", icon: "💿", color: "cyan",   minScore: 80  },
-  { name: "Gold",     icon: "🥇", color: "yellow", minScore: 40  },
-  { name: "Silver",   icon: "🥈", color: "gray",   minScore: 15  },
+  { name: "Diamond",  icon: "💎", color: "blue",   minScore: 140 },
+  { name: "Platinum", icon: "💿", color: "cyan",   minScore: 75  },
+  { name: "Gold",     icon: "🥇", color: "yellow", minScore: 38  },
+  { name: "Silver",   icon: "🥈", color: "gray",   minScore: 12  },
   { name: "Bronze",   icon: "🥉", color: "orange", minScore: 0   },
 ] as const;
 

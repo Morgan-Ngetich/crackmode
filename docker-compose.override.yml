@@ -1,11 +1,10 @@
 services:
   frontend:
-    # FIX 4: Add all necessary ports for dev
     ports:
-      - "80:80"      # Nginx HTTP
-      - "443:443"    # Nginx HTTPS (if using SSL)
-      - "8080:8080"  # Node.js SSR server (for direct access if needed)
-      - "5173:5173"  # Vite dev server (if running dev mode)
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+      - "5173:5173"
     env_file:
       - .env
     environment:
@@ -21,8 +20,13 @@ services:
     environment:
       - DOMAIN=localhost
     volumes:
-      - ./backend:/app  # For hot reload (e.g., uvicorn --reload)
+      - ./backend:/app
 
   db:
     ports:
-      - "5433:5432"  # override to avoid clashing local PG
+      - "5433:5432"
+
+volumes:
+  uploads:
+  crackmode_postgres_data:  # ← must match base file
+    external: true

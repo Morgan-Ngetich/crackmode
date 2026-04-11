@@ -1,11 +1,6 @@
-from app.core.celery import celery_app
-from app.utils.validation import with_session
 from uuid import UUID
 from datetime import datetime, timezone
 
-# TODO uncomment this after creating celery service on railway
-# @celery_app.task(name="app.tasks.sync_user_from_supabase_task")
-# @with_session
 def sync_user_from_supabase_task(
   user_id: str,
   email: str, 
@@ -32,9 +27,6 @@ def sync_user_from_supabase_task(
 
 
 
-# TODO: Uncomment after creating celery service on railway
-# @celery_app.task(name="app.tasks.sync_leetcode_stats_task")
-# @with_session
 def sync_leetcode_stats_task(
     user_id: int,
     leetcode_username: str,
@@ -99,9 +91,6 @@ def sync_leetcode_stats_task(
         return {"status": "error", "message": str(e)}
 
 
-# Periodic task to sync all users (runs every 6 hours)
-# @celery_app.task(name="app.tasks.sync_all_leetcode_stats")
-# @with_session
 def sync_all_leetcode_stats_task(*, session):
     """
     Background task to sync ALL users' LeetCode stats
