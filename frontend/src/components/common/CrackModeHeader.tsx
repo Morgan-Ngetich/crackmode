@@ -17,10 +17,11 @@ import {
   Collapsible,
   useDisclosure,
   Heading,
-  Icon
+  Icon,
+  Link
 } from '@chakra-ui/react';
 import { IoMenu } from "react-icons/io5";
-import { FaChevronDown, FaSearch, FaTimes, FaCalendar, FaTrophy, FaBook } from 'react-icons/fa';
+import { FaChevronDown, FaSearch, FaTimes, FaCalendar, FaTrophy, FaBook, FaGithub } from 'react-icons/fa';
 import { IoSync } from "react-icons/io5";
 import { Avatar } from '@/components/ui/avatar';
 import { ColorModeButton } from '@/components/ui';
@@ -239,6 +240,23 @@ const CrackModeHeader: React.FC<CrackModeHeaderProps> = ({
 
             {/* Mode-specific right action (e.g., Sync button) */}
             {!isMobile && modeContent.rightAction}
+
+            {/* GitHub Link */}
+            {mode !== "docs" && (
+              <Link
+                href="https://github.com/Morgan-Ngetich/crackmode"
+                target="_blank"
+              >
+                <IconButton
+                  rel="noopener noreferrer"
+                  aria-label="View on GitHub"
+                  variant="outline"
+                  size="md"
+                >
+                  <FaGithub />
+                </IconButton>
+              </Link>
+            )}
 
             {/* Color Mode Toggle */}
             {(!isMobile || mode !== "docs") && <ColorModeButton size="sm" />}
