@@ -142,7 +142,7 @@ The backend is deployed on **Railway** via an automated CI/CD pipeline. Any push
 
 - Migrations are not applied automatically on startup — always run `alembic upgrade head` manually after model changes.
 - When adding dependencies, always use Poetry. Direct `pip install` will not persist inside the container.
-- Unlike MENTspace, CrackMode's backend does not use RabbitMQ or Celery — async tasks are handled differently.
+- Unlike MENTspace, CrackMode's backend does not use RabbitMQ or Celery — async tasks are handled differently
 
 ---
 
