@@ -12,6 +12,7 @@ interface LeaderboardTableProps {
   showDivision: boolean;
   getZoneStatus?: ((profile: CrackModeProfilePublic) => 'promotion' | 'safe' | 'danger' | 'relegate')
   currentUser?: UserPublic | null;
+  scoreKey?: 'total_score' | 'competition_score';
 }
 
 export function LeaderboardTable({
@@ -20,6 +21,7 @@ export function LeaderboardTable({
   showDivision,
   getZoneStatus,
   currentUser,
+  scoreKey = 'total_score',
 }: LeaderboardTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery, 300);
@@ -103,6 +105,7 @@ export function LeaderboardTable({
                   showDivision={showDivision}
                   zone={getZoneStatus ? getZoneStatus(profile) : null}
                   currentUser={currentUser}
+                  scoreKey={scoreKey}
                 />
               ))
             )}

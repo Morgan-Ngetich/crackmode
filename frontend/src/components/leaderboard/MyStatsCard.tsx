@@ -1,6 +1,6 @@
 // MyStatsCard.tsx
 
-import { Box, HStack, VStack, Text, Icon, SimpleGrid, Popover, Portal } from '@chakra-ui/react';
+import { Box, HStack, VStack, Text, Icon, SimpleGrid, Popover, Portal, Link } from '@chakra-ui/react';
 import { FaFire, FaTrophy, FaBolt, FaInfoCircle } from 'react-icons/fa';
 import { BiTrendingUp, BiTrendingDown } from 'react-icons/bi';
 import { MdEmojiEvents } from 'react-icons/md';
@@ -229,19 +229,25 @@ export function MyStatsCard({ profile, promotionStatus }: MyStatsCardProps) {
           icon={<FaTrophy />}
           info={CARD_INFO.division}
         >
-          <VStack align="stretch" gap={1}>
-            <HStack gap={2} align="baseline">
-              <Text fontSize="2xl">
-                {DIVISION_ICONS[profile.division as keyof typeof DIVISION_ICONS]}
+          <Link
+            href={`/leaderboard/divisions/${profile.division.charAt(0).toUpperCase() +
+              profile.division.slice(1).toLowerCase()
+              }`}
+          >
+            <VStack align="stretch" gap={1}>
+              <HStack gap={2} align="baseline">
+                <Text fontSize="2xl">
+                  {DIVISION_ICONS[profile.division as keyof typeof DIVISION_ICONS]}
+                </Text>
+                <Text fontSize={{ base: '2xl', md: '3xl' }} fontWeight="700">
+                  {profile.division}
+                </Text>
+              </HStack>
+              <Text fontSize="sm" color="fg.muted" fontWeight="semibold">
+                Rank #{profile.division_rank}
               </Text>
-              <Text fontSize={{ base: '2xl', md: '3xl' }} fontWeight="700">
-                {profile.division}
-              </Text>
-            </HStack>
-            <Text fontSize="sm" color="fg.muted" fontWeight="semibold">
-              Rank #{profile.division_rank}
-            </Text>
-          </VStack>
+            </VStack>
+          </Link>
         </StatCard>
 
         {/* 2. Performance Score */}
@@ -313,25 +319,25 @@ export function MyStatsCard({ profile, promotionStatus }: MyStatsCardProps) {
             }
             iconBg={
               promotionStatus.status === 'promotion' ? 'rgba(34,197,94,0.1)'
-              : promotionStatus.status === 'relegation' ? 'rgba(239,68,68,0.1)'
-              : 'rgba(59,130,246,0.1)'
+                : promotionStatus.status === 'relegation' ? 'rgba(239,68,68,0.1)'
+                  : 'rgba(59,130,246,0.1)'
             }
             iconColor={
               promotionStatus.status === 'promotion' ? 'green.400'
-              : promotionStatus.status === 'relegation' ? 'red.400'
-              : 'blue.400'
+                : promotionStatus.status === 'relegation' ? 'red.400'
+                  : 'blue.400'
             }
             icon={
               promotionStatus.status === 'promotion' ? <BiTrendingUp />
-              : promotionStatus.status === 'relegation' ? <BiTrendingDown />
-              : <MdEmojiEvents />
+                : promotionStatus.status === 'relegation' ? <BiTrendingDown />
+                  : <MdEmojiEvents />
             }
             info={CARD_INFO.status}
             borderWidth={2}
             borderColor={
               promotionStatus.status === 'promotion' ? 'green.600'
-              : promotionStatus.status === 'relegation' ? 'red.600'
-              : 'border.emphasized'
+                : promotionStatus.status === 'relegation' ? 'red.600'
+                  : 'border.emphasized'
             }
           >
             <VStack align="stretch" gap={1}>
@@ -340,8 +346,8 @@ export function MyStatsCard({ profile, promotionStatus }: MyStatsCardProps) {
                 fontWeight="700"
                 color={
                   promotionStatus.status === 'promotion' ? 'green.400'
-                  : promotionStatus.status === 'relegation' ? 'red.400'
-                  : 'fg'
+                    : promotionStatus.status === 'relegation' ? 'red.400'
+                      : 'fg'
                 }
               >
                 {promotionStatus.status === 'promotion' && 'Promotion Zone'}
