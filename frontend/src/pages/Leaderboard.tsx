@@ -1,10 +1,10 @@
-import { Container, VStack, Flex, Spinner, Box, Text, Button, HStack, Icon } from '@chakra-ui/react';
-import { FaFire } from 'react-icons/fa';
+import { Container, VStack, Flex, Spinner, Box, Text, Button, HStack, Icon, Tabs } from '@chakra-ui/react';
+import { FaFire, FaTrophy } from 'react-icons/fa';
 
 import { MyStatsCard } from '@/components/leaderboard/MyStatsCard';
 import { LeaderboardTable } from '@/components/leaderboard/LeaderboardTable';
 
-import { useLeaderboard } from '@/hooks/crackmode/leaderboard/useCrackmode';
+import { useLeaderboard, useCompetitionLeaderboard } from '@/hooks/crackmode/leaderboard/useCrackmode';
 import { useCrackModeProfile, useHasCrackModeProfile } from '@/hooks/crackmode/leaderboard/useCrackmodeProfile';
 import { usePromotionStatus } from '@/hooks/crackmode/leaderboard/useCrackmodeComparison';
 import { useNavigate } from '@tanstack/react-router';
@@ -25,6 +25,8 @@ export default function Leaderboard() {
     limit: 100,
     offset: 0,
   });
+
+  const { data: competitionLeaderboard, isLoading: isLoadingCompetition } = useCompetitionLeaderboard(100, 0);
 
   const promotionStatus = usePromotionStatus();
 
@@ -340,19 +342,70 @@ export default function Leaderboard() {
             />
           )}
 
-          {/* Leaderboard Table */}
-          {isLoadingGlobal ? (
-            <Flex justify="center" py={10}>
-              <Spinner size="xl" color="yellow.400" />
-            </Flex>
-          ) : (
-            <LeaderboardTable
-              profiles={globalLeaderboard?.profiles || []}
-              myProfile={myProfile}
-              showDivision={true}
-              getZoneStatus={getZoneStatus}
-            />
-          )}
+          {/* Leaderboard Tabs */}
+          <Tabs.Root defaultValue="global" variant="line">
+            <Tabs.List mb={4} borderColor={{ base: 'gray.200', _dark: 'gray.700' }}>
+              <Tabs.Trigger value="global" fontWeight="semibold">
+                Global
+              </Tabs.Trigger>
+              <Tabs.Trigger value="competition" fontWeight="semibold">
+                <HStack gap={1.5}>
+                  <Text>CrackMpetition</Text>
+                </HStack>
+              </Tabs.Trigger>
+            </Tabs.List>
+
+            <Tabs.Content value="global">
+              {isLoadingGlobal ? (
+                <Flex justify="center" py={10}>
+                  <Spinner size="xl" color="yellow.400" />
+                </Flex>
+              ) : (
+                <LeaderboardTable
+                  profiles={globalLeaderboard?.profiles || []}
+                  myProfile={myProfile}
+                  showDivision={true}
+                  getZoneStatus={getZoneStatus}
+                />
+              )}
+            </Tabs.Content>
+
+            <Tabs.Content value="competition">
+              {isLoadingCompetition ? (
+                <Flex justify="center" py={10}>
+                  <Spinner size="xl" color="yellow.400" />
+                </Flex>
+              ) : (
+                <>
+                  <Box
+                    mb={4}
+                    p={4}
+                    borderRadius="xl"
+                    border="1px solid"
+                    borderColor={{ base: 'yellow.200', _dark: 'yellow.800' }}
+                    bg={{ base: 'yellow.50', _dark: 'yellow.900/20' }}
+                  >
+                    <HStack gap={2}>
+                      <Icon color="yellow.500"><FaTrophy /></Icon>
+                      <Text fontWeight="bold" color={{ base: 'yellow.700', _dark: 'yellow.300' }} fontSize="sm">
+                        CrackMpetition · Apr 20 – Jun 20, 2026
+                      </Text>
+                    </HStack>
+                    <Text fontSize="xs" color={{ base: 'gray.600', _dark: 'gray.400' }} mt={1}>
+                      Ranked by points earned since April 20. Only grinding after the start date counts.
+                    </Text>
+                  </Box>
+                  <LeaderboardTable
+                    profiles={competitionLeaderboard?.profiles || []}
+                    myProfile={myProfile}
+                    showDivision={false}
+                    getZoneStatus={() => null}
+                    scoreKey="competition_score"
+                  />
+                </>
+              )}
+            </Tabs.Content>
+          </Tabs.Root>
         </VStack>
       </Container>
     </Box>

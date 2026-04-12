@@ -22,6 +22,10 @@
       "dest": "https://backend-production-d53dc.up.railway.app/api/v1/$1"
     },
     {
+      "src": "/google(.*)\\.html",
+      "dest": "/google$1.html"
+    },
+    {
       "src": "/screenshots/(.*)",
       "dest": "/screenshots/$1"
     },

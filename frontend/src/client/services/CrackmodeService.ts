@@ -53,14 +53,16 @@ export class CrackmodeService {
     }
     /**
      * Setup Crackmode Profile
-     * Setup CrackMode profile by linking LeetCode username
-     * This is a one-time setup (unless user changes username)
+     * One-time setup: link a LeetCode username to this account.
      *
-     * This endpoint also syncs extended profile data like:
-     * - GitHub, Twitter, LinkedIn URLs
-     * - Country, Company, School
-     * - About/Bio
-     * - Website
+     * API calls: 2
+     * 1. GET /:username          — verify the username exists, grab social links
+     * 2. GET /:username/solved   — initial all-time stats
+     *
+     * Calendar and contest are intentionally skipped at setup:
+     * - Streak starts at 0 and will be computed correctly on the first sync.
+     * - Contest rating starts at 0 and will be synced separately.
+     * Both are correct defaults for a brand-new profile.
      * @returns CrackModeProfilePublic Successful Response
      * @throws ApiError
      */
@@ -81,6 +83,17 @@ export class CrackmodeService {
     }
     /**
      * Sync My Leetcode Stats
+     * Sync the current user's LeetCode stats.
+     *
+     * API calls: 2  (via sync_profile → get_sync_data)
+     * 1. /solved
+     * 2. /submission?200
+     *
+     * Extended profile data (GitHub, Twitter, LinkedIn…) is NOT refreshed
+     * on every sync — it was set at setup and changes very rarely.
+     * Refreshing it would cost a 3rd API call every 30 minutes per user.
+     *
+     * 30-minute cooldown enforced unless force=true.
      * @returns CrackModeProfilePublic Successful Response
      * @throws ApiError
      */
@@ -102,13 +115,13 @@ export class CrackmodeService {
     }
     /**
      * Get Leaderboard
-     * Get leaderboard
+     * Get leaderboard.
      *
-     * Filters:
-     * - division: Bronze, Silver, Gold, Platinum, Diamond
-     * - season: Season 1, Season 2, etc.
-     * - limit: Number of results (max 100)
-     * - offset: Pagination offset
+     * Sort order:
+     * - With division filter  → ordered by division_rank (performance score within tier)
+     * - Without filter        → ordered by global rank (all-time total score)
+     *
+     * Returns total = full matching count for real pagination.
      * @returns LeaderboardResponse Successful Response
      * @throws ApiError
      */
@@ -135,6 +148,43 @@ export class CrackmodeService {
             errors: {
                 422: `Validation Error`,
             },
+        });
+    }
+    /**
+     * Get Competition Leaderboard
+     * Competition leaderboard sorted by points earned since Apr 20 (total_score - baseline).
+     * @returns LeaderboardResponse Successful Response
+     * @throws ApiError
+     */
+    public static getCompetitionLeaderboardApiV1CrackmodeCompetitionLeaderboardGet({
+        limit = 100,
+        offset,
+    }: {
+        limit?: number,
+        offset?: number,
+    }): CancelablePromise<LeaderboardResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/crackmode/competition/leaderboard',
+            query: {
+                'limit': limit,
+                'offset': offset,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * Snapshot Competition Baselines
+     * Admin-only: snapshot current total_score as competition baseline for all profiles.
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static snapshotCompetitionBaselinesApiV1CrackmodeCompetitionSnapshotPost(): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/crackmode/competition/snapshot',
         });
     }
 }

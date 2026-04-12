@@ -1,9 +1,15 @@
 import { useState, useEffect } from "react";
-import { Box, Flex, HStack } from "@chakra-ui/react";
+import { Box, Flex, HStack, Text } from "@chakra-ui/react";
 import ViewCalendar from "@/components/calendar/ViewCalendar";
 import LeaderboardSlide from "./LeaderboardSlide";
 import DivisionsSlide from "./DivisionsSlide";
 import { useLeaderboard } from "@/hooks/crackmode/leaderboard/useCrackmode";
+
+const SLIDES = [
+  { label: "Calendar" },
+  { label: "Leaderboard" },
+  { label: "Divisions" },
+];
 
 const HeroCarousel = () => {
   const [currentSlide, setCurrentSlide] = useState(1);
@@ -26,13 +32,13 @@ const HeroCarousel = () => {
       alignItems="center"
       position="relative"
       w="full"
-      pb={8}
+      pb={12}
     >
-      {/* Card wrapper */}
+      {/* Slide area */}
       <Box
         w="full"
         overflow="hidden"
-        p={currentSlide === 0 ? 0 : 4}
+        p={currentSlide === 0 ? 0 : 2}
         minH="380px"
         display="flex"
         flexDirection="column"
@@ -40,42 +46,64 @@ const HeroCarousel = () => {
       >
         <Flex w="full" justify="center">
           {currentSlide === 0 && (
-            <Box animation="fadeIn 0.5s" w="full">
+            <Box animation="fadeIn 0.4s" w="full">
               <ViewCalendar />
             </Box>
           )}
-
           {currentSlide === 1 && (
-            <LeaderboardSlide players={topPlayers} isLoading={isLoading} />
+            <Box animation="fadeIn 0.4s" w="full" display="flex" justifyContent="center">
+              <LeaderboardSlide players={topPlayers} isLoading={isLoading} />
+            </Box>
           )}
-
           {currentSlide === 2 && (
-            <DivisionsSlide />
+            <Box animation="fadeIn 0.4s" w="full" display="flex" justifyContent="center">
+              <DivisionsSlide />
+            </Box>
           )}
         </Flex>
       </Box>
 
-      {/* Dots */}
+      {/* Labeled dots */}
       <HStack
         position="absolute"
         bottom={2}
         left="50%"
         transform="translateX(-50%)"
-        gap={2}
+        gap={1}
         zIndex={10}
       >
-        {[0, 1, 2].map((index) => (
-          <Box
-            key={index}
-            w={currentSlide === index ? 8 : 2}
-            h={2}
-            borderRadius="full"
-            bg={currentSlide === index ? "teal.500" : "gray.400"}
-            transition="all 0.3s"
-            cursor="pointer"
-            onClick={() => setCurrentSlide(index)}
-          />
-        ))}
+        {SLIDES.map((slide, index) => {
+          const active = currentSlide === index;
+          return (
+            <Box
+              key={slide.label}
+              display="flex"
+              alignItems="center"
+              gap={1}
+              px={active ? 3 : 2}
+              py={1}
+              borderRadius="full"
+              bg={active ? "teal.500" : { base: "gray.200", _dark: "gray.700" }}
+              cursor="pointer"
+              onClick={() => setCurrentSlide(index)}
+              transition="all 0.3s"
+              overflow="hidden"
+            >
+              <Box
+                w={2}
+                h={2}
+                borderRadius="full"
+                bg={active ? "white" : { base: "gray.400", _dark: "gray.500" }}
+                flexShrink={0}
+              />
+              {active && (
+                <Text fontSize="2xs" fontWeight="bold" color="white" whiteSpace="nowrap">
+                  {slide.label}
+                </Text>
+              )}
+            </Box>
+          );
+        })}
       </HStack>
     </Box>
   );

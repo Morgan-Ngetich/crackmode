@@ -73,6 +73,9 @@ export const $CrackModeProfilePublic = {
             type: 'number',
             isRequired: true,
         },
+        competition_score: {
+            type: 'number',
+        },
         last_synced: {
             type: 'any-of',
             contains: [{

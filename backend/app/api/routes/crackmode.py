@@ -1,6 +1,6 @@
 import asyncio
 from fastapi import APIRouter, HTTPException, BackgroundTasks
-from app.api.deps import SessionDep, CurrentUser
+from app.api.deps import SessionDep, CurrentUser, CurrentSuperAdmin
 from app.models import (
     CrackModeProfilePublic,
     CrackModeSetupRequest,
@@ -169,3 +169,33 @@ async def get_leaderboard(
         division=division,
         season=season,
     )
+
+
+# ── CrackCompetition (Apr 20 – Jun 20 2026) ───────────────────────────────────
+
+@router.get("/competition/leaderboard", response_model=LeaderboardResponse)
+async def get_competition_leaderboard(
+    session: SessionDep,
+    limit: int = 100,
+    offset: int = 0,
+):
+    """Competition leaderboard sorted by points earned since Apr 20 (total_score - baseline)."""
+    profiles, total_count = crud.get_competition_leaderboard(
+        session=session,
+        limit=min(limit, 100),
+        offset=offset,
+    )
+    return LeaderboardResponse(
+        profiles=[p.to_public() for p in profiles],
+        total=total_count,
+    )
+
+
+@router.post("/competition/snapshot", status_code=200)
+async def snapshot_competition_baselines(
+    session: SessionDep,
+    _admin: CurrentSuperAdmin,
+):
+    """Admin-only: snapshot current total_score as competition baseline for all profiles."""
+    count = crud.snapshot_competition_baselines(session)
+    return {"snapshotted": count}

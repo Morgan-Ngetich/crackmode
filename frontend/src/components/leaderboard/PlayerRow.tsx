@@ -39,9 +39,10 @@ interface PlayerRowProps {
   showDivision: boolean;
   zone: 'promotion' | 'safe' | 'danger' | 'relegate' | null;
   currentUser?: UserPublic | null;
+  scoreKey?: 'total_score' | 'competition_score';
 }
 
-export function PlayerRow({ profile, isCurrentUser, showDivision, zone, currentUser }: PlayerRowProps) {
+export function PlayerRow({ profile, isCurrentUser, showDivision, zone, currentUser, scoreKey = 'total_score' }: PlayerRowProps) {
   const rank = profile.rank;
   const totalSolved = profile.total_easy + profile.total_medium + profile.total_hard;
 
@@ -179,7 +180,7 @@ export function PlayerRow({ profile, isCurrentUser, showDivision, zone, currentU
       <Table.Cell textAlign="end">
         <VStack gap={0} align="end">
           <Text fontSize="lg" fontWeight="bold">
-            {profile.total_score.toLocaleString()}
+            {profile[scoreKey].toLocaleString()}
           </Text>
           <Text fontSize="xs" color="gray.500">points</Text>
         </VStack>
