@@ -1,111 +1,141 @@
 import {
   Box, Button, Flex, Heading, SimpleGrid,
-  Text, HStack, VStack, Badge, Icon,
+  Text, HStack, Badge, Icon,
 } from "@chakra-ui/react";
 import { Link } from "@tanstack/react-router";
 import { BsFillPatchCheckFill } from "react-icons/bs";
-import { FaTrophy, FaBook } from "react-icons/fa";
+import { FaTrophy, FaBook, FaFire } from "react-icons/fa";
 import { IoLogoWhatsapp } from "react-icons/io";
 
 const HeroLeft = () => (
   <Box flex={1} p={{ base: 4, md: 6 }}>
     {/* Tagline pill */}
     <Flex
-      bg={{ base: "gray.100", _dark: "gray.800" }}
+      bg={{ base: "teal.50", _dark: "teal.900/30" }}
       border="1px solid"
-      borderColor={{ base: "gray.200", _dark: "gray.700" }}
+      borderColor={{ base: "teal.200", _dark: "teal.700" }}
       w="fit-content"
-      gap={{ base: 1, md: 2 }}
+      gap={2}
       alignItems="center"
       px={3} py={1}
       borderRadius="full"
-      mb={4}
+      mb={5}
       mx={{ base: "auto", md: 0 }}
     >
-      <Icon color={{ base: "yellow.500", _dark: "yellow.300" }} fontSize="sm">
+      <Icon color={{ base: "teal.500", _dark: "teal.300" }} fontSize="sm">
         <BsFillPatchCheckFill />
       </Icon>
-      <Text fontSize="xs" color="fg.muted">No Gatekeeping. No Flexing. Just Learning Together.</Text>
+      <Text fontSize="xs" fontWeight="medium" color={{ base: "teal.700", _dark: "teal.300" }}>
+        No Gatekeeping. No Flexing. Just Learning Together.
+      </Text>
     </Flex>
 
-    {/* Heading */}
+    {/* Heading — gradient text for the coloured spans */}
     <Heading
       as="h1"
       size={{ base: "3xl", md: "5xl" }}
-      mb={4}
+      mb={5}
       textAlign={{ base: "center", md: "start" }}
-      fontWeight="bold"
-      lineHeight="1.1"
+      fontWeight="black"
+      lineHeight="1.05"
+      letterSpacing="tight"
     >
-      Master Coding Interviews.{" "}
-      <Text as="span" color="teal.500">Level Up.</Text>
-      <Text as="span" color="orange.400" ml={2}>Compete.</Text>
+      Master Coding{" "}
+      <Text
+        as="span"
+        bgGradient="to-r"
+        gradientFrom="teal.400"
+        gradientTo="teal.600"
+        bgClip="text"
+      >
+        Interviews.
+      </Text>
+      <br />
+      <Text
+        as="span"
+        bgGradient="to-r"
+        gradientFrom="orange.400"
+        gradientTo="red.400"
+        bgClip="text"
+      >
+        Level Up. Compete.
+      </Text>
     </Heading>
 
-    {/* Value Props */}
-    <SimpleGrid columns={{ base: 1, md: 2 }} gap={4} mt={6} mb={4}>
-      <Box px={3} py={2} borderRadius="lg" borderWidth={2}
-        borderColor={{ base: "teal.200", _dark: "teal.700" }}
-        bg={{ base: "teal.50", _dark: "teal.900/20" }}>
-        <HStack mb={2}>
-          <Icon color={{ base: "teal.600", _dark: "teal.400" }} fontSize={{ base: "lg", md: "xl" }}>
-            <FaBook />
-          </Icon>
-          <Text fontWeight="bold" fontSize={{ base: "sm", md: "md" }}>Learn Together</Text>
-        </HStack>
-        <Text fontSize="xs" color="fg.muted">
-          LeetCode 75 + System Design in detailed explanation. From brute force to optimized.
-        </Text>
-      </Box>
-
-      <Box px={3} py={2} borderRadius="lg" borderWidth={2}
-        borderColor={{ base: "orange.200", _dark: "orange.700" }}
-        bg={{ base: "orange.50", _dark: "orange.900/20" }}>
-        <HStack mb={2}>
-          <Icon color={{ base: "orange.600", _dark: "orange.400" }} fontSize={{ base: "lg", md: "xl" }}>
-            <FaTrophy />
-          </Icon>
-          <Text fontWeight="bold" fontSize={{ base: "sm", md: "md" }}>Compete Daily</Text>
-        </HStack>
-        <Text fontSize="xs" color="fg.muted">
-          Weekly grinding determines your rank. Keep grinding or get relegated.
-        </Text>
-      </Box>
+    {/* Value props — left accent bar */}
+    <SimpleGrid columns={{ base: 1, md: 2 }} gap={3} mt={2} mb={5}>
+      {[
+        {
+          icon: <FaBook />,
+          color: "teal",
+          title: "Learn Together",
+          desc: "LeetCode 75 + System Design with step-by-step walkthroughs. Brute force to optimal.",
+        },
+        {
+          icon: <FaTrophy />,
+          color: "orange",
+          title: "Compete Daily",
+          desc: "Weekly grinding decides your rank. Keep solving or get relegated.",
+        },
+      ].map(({ icon, color, title, desc }) => (
+        <Box
+          key={title}
+          px={4} py={3}
+          borderRadius="xl"
+          borderLeftWidth={3}
+          borderLeftColor={`${color}.400`}
+          borderWidth={1}
+          borderColor={{ base: "gray.100", _dark: "gray.700" }}
+          bg={{ base: "white", _dark: "gray.800/60" }}
+          boxShadow="sm"
+        >
+          <HStack mb={1.5}>
+            <Icon color={`${color}.500`} fontSize="md">{icon}</Icon>
+            <Text fontWeight="bold" fontSize="sm">{title}</Text>
+          </HStack>
+          <Text fontSize="xs" color="fg.muted" lineHeight="tall">{desc}</Text>
+        </Box>
+      ))}
     </SimpleGrid>
 
-    {/* Scoring System */}
-    <Box px={4} mb={6}>
-      <VStack align={{ base: "center", md: "start" }} gap={2}>
-        <Text fontWeight="bold" fontSize={{ base: "xl", md: "2xl" }}>Simple Scoring System</Text>
-        <HStack gap={4} flexWrap="wrap" justify={{ base: "center", md: "flex-start" }}>
-          <Badge colorPalette="green" size={{ base: "md", md: "lg" }} variant="surface">Easy = 1pt</Badge>
-          <Badge colorPalette="yellow" size={{ base: "md", md: "lg" }} variant="surface">Medium = 3pts</Badge>
-          <Badge colorPalette="red" size={{ base: "md", md: "lg" }} variant="surface">Hard = 5pts</Badge>
-        </HStack>
-        <Text fontSize={{ base: "xs", md: "sm" }} color="fg.muted" textAlign={{ base: "center", md: "left" }}>
-          Your <strong>weekly velocity</strong> (65% of your score) determines your division. Solve more, rank higher.
-        </Text>
-      </VStack>
+    {/* Scoring pills */}
+    <Box px={1} mb={5}>
+      <HStack gap={2} flexWrap="wrap" justify={{ base: "center", md: "flex-start" }} mb={1.5}>
+        <Badge colorPalette="green" size="md" variant="surface" fontWeight="bold">Easy = 1 pt</Badge>
+        <Badge colorPalette="yellow" size="md" variant="surface" fontWeight="bold">Medium = 3 pts</Badge>
+        <Badge colorPalette="red" size="md" variant="surface" fontWeight="bold">Hard = 5 pts</Badge>
+      </HStack>
+      <Text fontSize="xs" color="fg.muted" textAlign={{ base: "center", md: "left" }}>
+        <Text as="span" fontWeight="semibold">Weekly velocity</Text> (65%) decides your division. Grind more, rank higher.
+      </Text>
     </Box>
 
-    {/* CTAs — primary solid, others ghost */}
-    <Flex gap={3} justify={{ base: "center", md: "flex-start" }} flexWrap="wrap">
+    {/* CTAs — clear hierarchy */}
+    <Flex gap={3} justify={{ base: "center", md: "flex-start" }} flexWrap="wrap" mb={6}>
       <Link to="/docs">
-        <Button size={{ base: "md", md: "lg" }} colorPalette="teal" variant="solid">
+        <Button
+          size={{ base: "md", md: "lg" }}
+          colorPalette="teal"
+          variant="solid"
+          fontWeight="bold"
+          boxShadow={{ _dark: "0 0 20px rgba(20,184,166,0.35)" }}
+          _hover={{ transform: "translateY(-1px)", boxShadow: "0 8px 24px rgba(20,184,166,0.4)" }}
+          transition="all 0.2s"
+        >
           <Icon fontSize="lg"><FaBook /></Icon>
           Start Learning
         </Button>
       </Link>
       <Link to="/leaderboard">
-        <Button size={{ base: "md", md: "lg" }} variant="outline">
+        <Button size={{ base: "md", md: "lg" }} colorPalette="orange" variant="outline" fontWeight="semibold">
           <Icon fontSize="lg"><FaTrophy /></Icon>
           View Leaderboard
         </Button>
       </Link>
       <a href="https://chat.whatsapp.com/Biz5sc2ow3v8Mg2aId6yOH" target="_blank" rel="noopener noreferrer">
-        <Button size={{ base: "md", md: "lg" }} variant="ghost">
+        <Button size={{ base: "md", md: "lg" }} variant="outline" color="fg.muted">
           <Icon fontSize="lg" color="green.500"><IoLogoWhatsapp /></Icon>
-          Join Community
+          Community
         </Button>
       </a>
     </Flex>
@@ -113,35 +143,75 @@ const HeroLeft = () => (
     {/* Stats bar */}
     <Box
       bg={{ base: "gray.900", _dark: "gray.800" }}
-      borderRadius="xl"
+      borderRadius="2xl"
       borderWidth={1}
-      borderColor={{ base: "gray.700", _dark: "gray.700" }}
-      boxShadow="lg"
+      borderColor={{ base: "gray.700", _dark: "gray.600" }}
+      boxShadow={{ base: "xl", _dark: "0 4px 32px rgba(0,0,0,0.5)" }}
       p={{ base: 3, md: 5 }}
       textAlign="center"
-      mt={6}
     >
       <SimpleGrid columns={4} gap={4}>
         <Box>
-          <Text fontSize={{ base: "lg", md: "xl", lg: "2xl" }} fontWeight="bold" color="blue.400">600+</Text>
-          <Text fontSize={{ base: "xs", md: "sm" }} color="gray.400">Active Members</Text>
+          <Text
+            fontSize={{ base: "xl", md: "2xl" }}
+            fontWeight="black"
+            bgGradient="to-r"
+            gradientFrom="blue.400"
+            gradientTo="cyan.400"
+            bgClip="text"
+          >
+            600+
+          </Text>
+          <Text fontSize={{ base: "2xs", md: "xs" }} color="gray.500">Members</Text>
         </Box>
         <Box>
-          <Text fontSize={{ base: "lg", md: "xl", lg: "2xl" }} fontWeight="bold" color="purple.400">Daily</Text>
-          <Text fontSize={{ base: "xs", md: "sm" }} color="gray.400">Challenges</Text>
+          <Text
+            fontSize={{ base: "xl", md: "2xl" }}
+            fontWeight="black"
+            bgGradient="to-r"
+            gradientFrom="purple.400"
+            gradientTo="pink.400"
+            bgClip="text"
+          >
+            Daily
+          </Text>
+          <Text fontSize={{ base: "2xs", md: "xs" }} color="gray.500">Challenges</Text>
         </Box>
         <Box>
-          <Text fontSize={{ base: "lg", md: "xl", lg: "2xl" }} fontWeight="bold" color="teal.400">75+</Text>
-          <Text fontSize={{ base: "xs", md: "sm" }} color="gray.400">LeetCode Problems</Text>
+          <Text
+            fontSize={{ base: "xl", md: "2xl" }}
+            fontWeight="black"
+            bgGradient="to-r"
+            gradientFrom="teal.400"
+            gradientTo="green.400"
+            bgClip="text"
+          >
+            75+
+          </Text>
+          <Text fontSize={{ base: "2xs", md: "xs" }} color="gray.500">LC Problems</Text>
         </Box>
         <Box my="auto">
-          <Text fontSize={{ base: "2xl", md: "3xl", lg: "4xl" }} fontWeight="bold" color="orange.400" lineHeight="0.9">
-            9:30 <Text as="span" fontSize="xs">PM</Text>
-          </Text>
-          <Text fontSize={{ base: "xs", md: "sm" }} color="gray.400">Daily Session</Text>
+          <HStack gap={1} justify="center" align="baseline">
+            <Text
+              fontSize={{ base: "2xl", md: "3xl" }}
+              fontWeight="black"
+              color="orange.400"
+              lineHeight="1"
+            >
+              9:30
+            </Text>
+            <Text fontSize={{ base: "2xs", md: "xs" }} color="orange.400" fontWeight="bold">PM</Text>
+          </HStack>
+          <Text fontSize={{ base: "2xs", md: "xs" }} color="gray.500">Daily Session</Text>
         </Box>
       </SimpleGrid>
     </Box>
+
+    {/* Streak indicator */}
+    <HStack justify={{ base: "center", md: "flex-start" }} gap={1.5} mt={3} opacity={0.7}>
+      <Icon fontSize="xs" color="orange.400"><FaFire /></Icon>
+      <Text fontSize="xs" color="fg.subtle">Daily sessions at 9:30 PM · Join tonight</Text>
+    </HStack>
   </Box>
 );
 
