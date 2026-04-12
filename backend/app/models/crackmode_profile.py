@@ -62,6 +62,9 @@ class CrackModeProfile(SQLModel, table=True):
     contest_rating: int = 0
     contest_ranking: int | None = None
 
+    # ── CrackCompetition (Apr 20 – Jun 20 2026) ───────────────────────────────
+    competition_baseline_score: int = 0  # snapshot of total_score on competition start
+
     last_synced: datetime | None = Field(
         default=None, sa_column=Column(DateTime(timezone=True))
     )
@@ -99,6 +102,8 @@ class CrackModeProfile(SQLModel, table=True):
             weekly_solves=self.weekly_solves,
             # Contest
             contest_rating=self.contest_rating,
+            # CrackCompetition
+            competition_score=max(0, self.total_score - self.competition_baseline_score),
             # Metadata
             last_synced=self.last_synced,
             created_at=self.created_at,

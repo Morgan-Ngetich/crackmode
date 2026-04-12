@@ -23,6 +23,7 @@ export type CrackModeProfilePublic = {
     longest_streak: number;
     weekly_solves: number;
     contest_rating: number;
+    competition_score?: number;
     last_synced: (string | null);
     created_at: string;
     updated_at: string;

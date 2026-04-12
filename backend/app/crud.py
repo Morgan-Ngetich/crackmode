@@ -577,3 +577,31 @@ def get_streak_leaders(session: Session, limit: int = 3) -> list:
         .order_by(CrackModeProfile.current_streak.desc())
         .limit(limit)
     ).all())
+
+
+# ── CrackCompetition ──────────────────────────────────────────────────────────
+
+def snapshot_competition_baselines(session: Session) -> int:
+    """Snapshot total_score into competition_baseline_score for all profiles. Run once on Apr 20."""
+    profiles = session.exec(select(CrackModeProfile)).all()
+    for profile in profiles:
+        profile.competition_baseline_score = profile.total_score
+    session.commit()
+    return len(profiles)
+
+
+def get_competition_leaderboard(
+    session: Session, limit: int = 100, offset: int = 0
+) -> tuple[list[CrackModeProfile], int]:
+    """Returns profiles sorted by competition score (total_score - competition_baseline_score) desc."""
+    total_count = session.exec(select(func.count(CrackModeProfile.id))).one()
+    profiles = list(session.exec(
+        select(CrackModeProfile)
+        .options(selectinload(CrackModeProfile.user))
+        .order_by(
+            (CrackModeProfile.total_score - CrackModeProfile.competition_baseline_score).desc()
+        )
+        .offset(offset)
+        .limit(limit)
+    ).all())
+    return profiles, total_count

@@ -134,6 +134,20 @@ export function useTopLeaderboard(limit = 50) {
   return useLeaderboard({ limit, offset: 0 });
 }
 
+export function useCompetitionLeaderboard(limit = 100, offset = 0) {
+  return useQuery<LeaderboardResponse, Error>({
+    queryKey: ['crackmode', 'competition-leaderboard', { limit, offset }],
+    queryFn: () =>
+      toNativePromise(
+        CrackmodeService.getCompetitionLeaderboardApiV1CrackmodeCompetitionLeaderboardGet({
+          limit,
+          offset,
+        })
+      ),
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
 // ─── Combined hook ──────────────────────────────────────────────────────────
 export function useCrackMode() {
   const setupProfile = useSetupCrackModeProfile();

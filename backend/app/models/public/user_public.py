@@ -66,7 +66,10 @@ class CrackModeProfilePublic(SQLModel):
     
     # Contest
     contest_rating: int
-    
+
+    # CrackCompetition
+    competition_score: int = 0  # total_score - competition_baseline_score
+
     # Metadata
     last_synced: datetime | None
     created_at: datetime
