@@ -11,8 +11,6 @@ if TYPE_CHECKING:
 
 class CrackModeProfile(SQLModel, table=True):
     """
-    🎮 FIFA-STYLE DIVISION SYSTEM
-
     Division is based on PERFORMANCE SCORE (recent velocity), not all-time stats
     """
 
