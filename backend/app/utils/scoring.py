@@ -1,5 +1,5 @@
 """
-FIFA-STYLE PERFORMANCE SCORING SYSTEM
+PERFORMANCE SCORING SYSTEM
 
 Division is determined by PERFORMANCE SCORE, not all-time stats.
 Performance score is based on:

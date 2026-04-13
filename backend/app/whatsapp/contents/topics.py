@@ -1,7 +1,7 @@
 from datetime import datetime, date, timezone
 
 # ── Set this to the day you launch the competition ────────────────────────────
-COMPETITION_START_DATE = date(2026, 4, 11)  # ← Day 1
+COMPETITION_START_DATE = date(2026, 4, 14)  # ← Day 1
 
 # Alternates: DSA/Algo day → System Design day → repeat
 DAILY_TOPICS = [

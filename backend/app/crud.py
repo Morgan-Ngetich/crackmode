@@ -379,7 +379,7 @@ def update_crackmode_stats_with_velocity(
         all_time_stats.get("longest_streak", 0)
     )
     
-    # ===== UPDATE WEEKLY STATS (FIFA SYSTEM) =====
+    # ===== UPDATE WEEKLY STATS =====
     profile.weekly_easy = weekly_stats.get("easy", 0)
     profile.weekly_medium = weekly_stats.get("medium", 0)
     profile.weekly_hard = weekly_stats.get("hard", 0)
@@ -387,7 +387,7 @@ def update_crackmode_stats_with_velocity(
     profile.weekly_solves = weekly_stats.get("total", 0)  # For leaderboard display
     profile.weekly_stats_updated_at = datetime.now(timezone.utc)
     
-    # ===== UPDATE MONTHLY STATS (FIFA SYSTEM) =====
+    # ===== UPDATE MONTHLY STATS =====
     profile.monthly_easy = monthly_stats.get("easy", 0)
     profile.monthly_medium = monthly_stats.get("medium", 0)
     profile.monthly_hard = monthly_stats.get("hard", 0)
